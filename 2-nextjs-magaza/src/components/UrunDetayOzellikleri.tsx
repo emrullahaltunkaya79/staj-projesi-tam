@@ -6,6 +6,7 @@ import { GorselGaleri } from "./GorselGaleri";
 import { StokAciliyet } from "./StokAciliyet";
 import { VaryasyonSecici, urunVaryasyonlari } from "./VaryasyonSecici";
 import { SepeteEkleButonu } from "./SepeteEkleButonu";
+import { imgUrl } from "@/lib/img";
 
 export function UrunDetayOzellikleri({
   urun,
@@ -36,10 +37,10 @@ export function UrunDetayOzellikleri({
     <>
       {/* Görsel galerisi */}
       <div className="relative">
-        <GorselGaleri anaGorsel={urun.image_url} urunAd={urun.name} />
+        <GorselGaleri anaGorsel={imgUrl(urun.id, urun.image_url)} urunAd={urun.name} />
         <div className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-2 shadow backdrop-blur">
           <KalpButonu
-            urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: urun.image_url, kategori: urun.category }}
+            urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
             boyut="buyuk"
           />
         </div>
@@ -90,7 +91,7 @@ export function UrunDetayOzellikleri({
         <div className="mt-8">
           {tumSecildi ? (
             <SepeteEkleButonu
-              urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: urun.image_url, birim: urun.unit }}
+              urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), birim: urun.unit }}
               musait={urun.available_quantity}
             />
           ) : (

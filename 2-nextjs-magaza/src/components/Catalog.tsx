@@ -1,4 +1,5 @@
 import type { Urun } from "@/lib/backoffice";
+import { imgUrl } from "@/lib/img";
 import Link from "next/link";
 import { KalpButonu } from "./KalpButonu";
 
@@ -11,7 +12,7 @@ export function UrunKarti({ urun }: { urun: Urun }) {
         <div className="relative flex aspect-[4/5] items-center justify-center overflow-hidden bg-[#f4f4f4] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.015]">
           {urun.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={urun.image_url} alt={urun.name} className="h-full w-full object-contain p-8" />
+            <img src={imgUrl(urun.id, urun.image_url)} alt={urun.name} loading="lazy" className="h-full w-full object-contain p-8" />
           ) : (
             <span className="text-5xl font-black text-black/10">{urun.name.slice(0, 1)}</span>
           )}
@@ -33,7 +34,7 @@ export function UrunKarti({ urun }: { urun: Urun }) {
       </Link>
       <div className="absolute right-3 top-3 z-10">
         <KalpButonu
-          urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: urun.image_url, kategori: urun.category }}
+          urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
         />
       </div>
     </div>

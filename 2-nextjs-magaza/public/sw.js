@@ -1,21 +1,16 @@
-const CACHE_NAME = "hba-v1";
+const CACHE_NAME = "hba-v3";
 const OFFLINE_URL = "/offline.html";
 
-// Ana sayfa + statik varlıkları önbelleğe al
+// Kurulumda yalnızca küçük, değişmeyen varlıklar önbelleğe alınır.
+// "/" önbelleğe ALINMAZ — sayfa içeriği değişken, network-first servis edilir.
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([
-        "/",
-        OFFLINE_URL,
-        "/manifest.json",
-      ]);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL, "/manifest.json"]))
   );
   self.skipWaiting();
 });
 
-// Eski önbellekleri temizle
+// Eski önbellekleri (hba-v1'deki dev HTML dahil) temizle
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((names) => {
@@ -27,7 +22,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch: cache-first (statik), network-first (API), offline fallback
+// Fetch: statik cache-first, sayfa ve API network-first, offline fallback
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
@@ -50,26 +45,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Sayfa istekleri: cache-first, network fallback, offline fallback
+  // Sayfa istekleri: network-first (her zaman taze HTML), offline'da cache → offline.html
   if (request.mode === "navigate") {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        return (
-          cached ||
-          fetch(request)
-            .then((res) => {
-              const copy = res.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-              return res;
-            })
-            .catch(() => caches.match(OFFLINE_URL))
-        );
-      })
+      fetch(request)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          return res;
+        })
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL))
+        )
     );
     return;
   }
 
-  // Statik varlıklar (CSS, JS, resim): cache-first
+  // Statik varlıklar (hash'li CSS/JS, ikon): cache-first
   if (url.origin === location.origin) {
     event.respondWith(
       caches.match(request).then((cached) => {

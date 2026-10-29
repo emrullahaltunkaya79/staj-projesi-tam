@@ -112,7 +112,7 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
                         {u.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={u.image_url} alt="" className="h-full w-full object-contain p-1" />
+                          <img src={`/api/img/${u.id}`} alt="" className="h-full w-full object-contain p-1" />
                         ) : (
                           <span className="text-lg font-black text-slate-300">{u.name.charAt(0)}</span>
                         )}

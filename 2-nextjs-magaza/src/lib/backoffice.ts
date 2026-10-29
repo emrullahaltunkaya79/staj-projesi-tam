@@ -33,6 +33,11 @@ export type Siparis = {
   items: { product_id: number; product_name: string; quantity: number; unit_price: number; line_total: number }[];
 };
 
+/** Base64 data URI'ler sayfa boyutunu ~24MB'a çıkarıyordu; görsel /api/img/{id} proxy'sinden akar. */
+function gorselProxy(p: Urun): Urun {
+  return p.image_url?.startsWith("data:") ? { ...p, image_url: `/api/img/${p.id}` } : p;
+}
+
 async function istek(path: string, init?: RequestInit) {
   const yanit = await fetch(`${BASE}${path}`, {
     ...init,
@@ -55,13 +60,13 @@ async function istek(path: string, init?: RequestInit) {
 
 export async function urunler(): Promise<Urun[]> {
   const sonuc = await istek("/products");
-  return sonuc.data ?? [];
+  return (sonuc.data ?? []).map(gorselProxy);
 }
 
 export async function urun(id: number): Promise<Urun | null> {
   try {
     const sonuc = await istek(`/products/${id}`);
-    return sonuc.data ?? null;
+    return sonuc.data ? gorselProxy(sonuc.data) : null;
   } catch {
     return null;
   }

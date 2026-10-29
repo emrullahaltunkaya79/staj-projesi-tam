@@ -69,7 +69,9 @@ export type SellerUrun = {
 };
 
 export async function sellerUrunler(): Promise<SellerUrun[]> {
-  return (await api<SellerUrun[]>("/products")) ?? [];
+  const list = (await api<SellerUrun[]>("/products")) ?? [];
+  // Base64 data URI HTML'e gömülmesin — görsel /api/img/{id} proxy'sinden akar
+  return list.map((u) => (u.image_url?.startsWith("data:") ? { ...u, image_url: `/api/img/${u.id}` } : u));
 }
 
 export async function sellerSiparisler(): Promise<
