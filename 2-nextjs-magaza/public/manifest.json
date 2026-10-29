@@ -1,0 +1,43 @@
+{
+  "name": "HepsiBirarada — Teknoloji & Ofis",
+  "short_name": "HepsiBirarada",
+  "description": "Teknoloji ve ofis ürünlerinde güvenilir alışveriş. CSPR ile ödeme, aynı gün kargo.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait-primary",
+  "lang": "tr",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Sepetim",
+      "url": "/sepet",
+      "description": "Sepetinizi görüntüleyin"
+    },
+    {
+      "name": "Favoriler",
+      "url": "/favoriler",
+      "description": "Favori ürünleriniz"
+    },
+    {
+      "name": "Satıcı Paneli",
+      "url": "/satici",
+      "description": "Satıcı yönetim paneli"
+    }
+  ]
+}
