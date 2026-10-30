@@ -59,6 +59,14 @@ body {
 .dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
 .dark .shadow-lg { box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important; }
 
+/* Marka rengi — TemaSecici html[data-tema] ile değiştirir */
+:root { --marka: #4f46e5; }
+[data-tema="siyah"] { --marka: #111827; }
+[data-tema="lacivert"] { --marka: #1e3a8a; }
+[data-tema="yesil"] { --marka: #065f46; }
+[data-tema="bordo"] { --marka: #7f1d1d; }
+[data-tema="indigo"] { --marka: #4f46e5; }
+
 /* Skeleton animasyonu */
 @keyframes shimmer {
   0% { background-position: -200px 0; }
@@ -99,4 +107,9 @@ body {
 
 .page-enter {
   animation: page-fade 0.3s ease-out;
+}
+
+@keyframes toast-giris {
+  from { opacity: 0; transform: translateY(12px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

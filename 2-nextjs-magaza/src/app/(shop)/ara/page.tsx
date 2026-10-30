@@ -1,3 +1,4 @@
+import { BosDurum } from "@/components/BosDurum";
 import { urunler } from "@/lib/backoffice";
 import { UrunKarti } from "@/components/Catalog";
 
@@ -28,7 +29,7 @@ export default async function AraSayfasi({ searchParams }: { searchParams: Promi
 
         {terim && sonuc.length === 0 && (
           <div className="py-20 text-center">
-            <p className="text-sm text-black/50">Sonuç bulunamadı.</p>
+            <BosDurum tur="arama" />
             <a href="/" className="mt-4 inline-block text-sm font-bold underline underline-offset-4">Tüm ürünlere göz at →</a>
           </div>
         )}

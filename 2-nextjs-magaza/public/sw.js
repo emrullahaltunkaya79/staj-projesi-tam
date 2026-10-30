@@ -1,4 +1,4 @@
-const CACHE_NAME = "hba-v3";
+const CACHE_NAME = "hba-v4";
 const OFFLINE_URL = "/offline.html";
 
 // Kurulumda yalnızca küçük, değişmeyen varlıklar önbelleğe alınır.
@@ -61,20 +61,19 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Statik varlıklar (hash'li CSS/JS, ikon): cache-first
+  // Statik varlıklar: stale-while-revalidate (anında önbellek, arka planda güncelleme —
+  // dev'de hash'siz chunk adları değiştiğinde bir sonraki yüklemede taze sürüm gelir)
   if (url.origin === location.origin) {
     event.respondWith(
       caches.match(request).then((cached) => {
-        return (
-          cached ||
-          fetch(request).then((res) => {
-            if (res.ok) {
-              const copy = res.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-            }
-            return res;
-          })
-        );
+        const agdan = fetch(request).then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return res;
+        }).catch(() => cached);
+        return cached || agdan;
       })
     );
   }

@@ -3,6 +3,7 @@ import { OdemeButonu } from "./OdemeButonu";
 import { IptalButonu } from "./IptalButonu";
 import { IadeButonu } from "./IadeButonu";
 import { Konfeti } from "@/components/Konfeti";
+import { OdemeAdimlari } from "@/components/OdemeAdimlari";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 const ADIMLAR: Record<string, string> = {
@@ -55,6 +56,7 @@ export default async function SiparisSayfasi({
         <div className="border-b border-black/20 pb-5">
           <h1 className="text-[40px] font-black leading-none tracking-[-0.03em] sm:text-[56px]">Sipariş</h1>
           <p className="mt-2 font-mono text-sm text-black/50">{s.order_no}</p>
+          <div className="mt-5"><OdemeAdimlari aktif={3} /></div>
         </div>
 
         {iadeDurumu ? (

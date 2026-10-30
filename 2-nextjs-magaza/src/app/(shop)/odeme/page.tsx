@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { sepet } from "@/components/CartProvider";
 import { auth } from "@/components/AuthProvider";
+import { OdemeAdimlari } from "@/components/OdemeAdimlari";
 import { KargoSecici, UCRETSIZ_KARGO_LIMITI } from "@/components/KargoSecici";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
@@ -117,6 +118,7 @@ export default function OdemeSayfasi() {
       <div className="mx-auto max-w-7xl">
         <div className="border-b border-black/20 pb-5">
           <h1 className="text-[56px] font-black leading-none tracking-[-0.03em] sm:text-[84px]">Ödeme</h1>
+          <div className="mt-5"><OdemeAdimlari aktif={2} /></div>
         </div>
 
         <form onSubmit={gonder} className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">

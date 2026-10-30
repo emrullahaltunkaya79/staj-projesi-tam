@@ -33,7 +33,7 @@ test.describe("Alışveriş hunisi", () => {
     const ekle = page.getByRole("button", { name: "Sepete Ekle" });
     await ekle.waitFor({ state: "visible", timeout: 20_000 });
     await ekle.click();
-    await expect(page.getByText("Sepete Eklendi")).toBeVisible();
+    await expect(page.getByRole("button", { name: "✓ Sepete Eklendi" })).toBeVisible();
 
     // Sepet
     await page.goto("/sepet");

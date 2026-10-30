@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import { KategoriSeridi } from "@/components/KategoriSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { urunler } from "@/lib/backoffice";
 
@@ -17,6 +18,20 @@ export default async function Home() {
   return (
     <div>
       <Hero />
+
+      {!hata && (
+        <KategoriSeridi
+          kategoriler={Object.entries(
+            tumu.reduce<Record<string, number>>((m, u) => {
+              const ad = u.category ?? "Diğer";
+              m[ad] = (m[ad] ?? 0) + 1;
+              return m;
+            }, {}),
+          )
+            .sort((a, b) => a[0].localeCompare(b[0], "tr"))
+            .map(([ad, sayi]) => ({ ad, sayi }))}
+        />
+      )}
 
       {hata ? (
         <div className="px-5 pb-20 sm:px-10">

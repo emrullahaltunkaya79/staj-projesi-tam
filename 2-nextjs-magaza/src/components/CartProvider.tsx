@@ -32,6 +32,14 @@ const KDV_ORANI = 20;
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [ogeler, setOgeler] = useState<SepetOgesi[]>([]);
   const [hazir, setHazir] = useState(false);
+  const [bildirim, setBildirim] = useState<{ ad: string; adet: number; anahtar: number } | null>(null);
+
+  // Toast 2.4 sn sonra kaybolur
+  useEffect(() => {
+    if (!bildirim) return;
+    const z = setTimeout(() => setBildirim(null), 2400);
+    return () => clearTimeout(z);
+  }, [bildirim]);
 
   useEffect(() => {
     try {
@@ -58,14 +66,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       araToplam,
       kdv,
       genelToplam: Math.round((araToplam + kdv) * 100) / 100,
-      ekle: (yeni, adet = 1) =>
+      ekle: (yeniOge, adet = 1) => {
+        setBildirim({ ad: yeniOge.ad, adet, anahtar: Date.now() });
         setOgeler((mevcut) => {
-          const varOlan = mevcut.find((o) => o.id === yeni.id && o.varyantId === yeni.varyantId);
+          const varOlan = mevcut.find((o) => o.id === yeniOge.id && o.varyantId === yeniOge.varyantId);
           if (varOlan) {
-            return mevcut.map((o) => (o.id === yeni.id ? { ...o, adet: o.adet + adet } : o));
+            return mevcut.map((o) => (o.id === yeniOge.id && o.varyantId === yeniOge.varyantId ? { ...o, adet: o.adet + adet } : o));
           }
-          return [...mevcut, { ...yeni, adet }];
-        }),
+          return [...mevcut, { ...yeniOge, adet }];
+        });
+      },
       adetGuncelle: (id, adet, varyantId) =>
         setOgeler((mevcut) =>
           adet <= 0
@@ -77,7 +87,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
   }, [ogeler]);
 
-  return <Baglam.Provider value={deger}>{children}</Baglam.Provider>;
+  return (
+    <Baglam.Provider value={deger}>
+      {children}
+      {bildirim && (
+        <div key={bildirim.anahtar}
+             className="fixed bottom-20 right-4 z-[90] flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-2xl sm:bottom-6"
+             style={{ animation: "toast-giris .25s ease-out" }}>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--marka)] text-sm font-black text-white">✓</span>
+          <div>
+            <p className="text-xs font-black">{bildirim.ad}</p>
+            <p className="text-[11px] text-black/50">sepete eklendi · {bildirim.adet} adet</p>
+          </div>
+        </div>
+      )}
+    </Baglam.Provider>
+  );
 }
 
 export function sepet() {

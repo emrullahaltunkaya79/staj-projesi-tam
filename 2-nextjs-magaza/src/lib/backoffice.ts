@@ -22,6 +22,9 @@ export type Urun = {
   in_stock: boolean;
   image_url: string | null;
   image_count?: number;
+  rating_avg?: number | null;
+  review_count?: number;
+  is_bestseller?: boolean;
 };
 
 /** İndirim uygulanmış nihai fiyat (API final_price vermezse kendisi hesaplar). */

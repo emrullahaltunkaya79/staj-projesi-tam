@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { sepet, type SepetOgesi } from "./CartProvider";
+import { sepeteUcur } from "@/lib/sepetFx";
 
 export function SepeteEkleButonu({ urun, musait }: { urun: Omit<SepetOgesi, "adet">; musait: number }) {
   const { ekle } = sepet();
@@ -16,8 +17,9 @@ export function SepeteEkleButonu({ urun, musait }: { urun: Omit<SepetOgesi, "ade
     );
   }
 
-  const ekleVeBildir = () => {
+  const ekleVeBildir = (e: React.MouseEvent) => {
     ekle(urun, adet);
+    sepeteUcur(urun.gorsel, e.currentTarget as HTMLElement);
     setEklendi(true);
     setTimeout(() => setEklendi(false), 1600);
   };
@@ -37,7 +39,7 @@ export function SepeteEkleButonu({ urun, musait }: { urun: Omit<SepetOgesi, "ade
       <button
         type="button"
         onClick={ekleVeBildir}
-        className="h-12 min-w-[180px] rounded-full bg-black px-8 text-sm font-bold text-white transition hover:bg-black/80 active:scale-95"
+        className="h-12 min-w-[180px] rounded-full bg-[var(--marka)] px-8 text-sm font-bold text-white transition hover:opacity-90 active:scale-95"
       >
         {eklendi ? "✓ Sepete Eklendi" : "Sepete Ekle"}
       </button>

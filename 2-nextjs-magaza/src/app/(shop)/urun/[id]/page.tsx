@@ -7,6 +7,7 @@ import { GorselGaleri } from "@/components/GorselGaleri";
 import { StokAciliyet } from "@/components/StokAciliyet";
 import { KalpButonu } from "@/components/KalpButonu";
 import { UrunDetayOzellikleri } from "@/components/UrunDetayOzellikleri";
+import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
 
 const ACIKLAMALAR: Record<string, string> = {
   Bilgisayar: "Günlük iş akışınızı hızlandıran, ergonomik ve dayanıklı bilgisayar donanımları. İki yıl garanti dahil.",
@@ -49,6 +50,12 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
       <section className="px-5 pb-24 sm:px-10">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2">
           <UrunDetayOzellikleri urun={u} />
+      <SonGoruntulenenler suAnki={{
+        id: u.id,
+        ad: u.name,
+        fiyat: u.final_price ?? u.sale_price,
+        gorsel: u.id ? `/api/img/${u.id}` : null,
+      }} />
 
           <div className="flex flex-col">
             <div className="mt-2 flex items-center gap-2 text-[13px] text-black/40">

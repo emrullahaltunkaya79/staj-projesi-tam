@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { sepet } from "@/components/CartProvider";
+import { OdemeAdimlari } from "@/components/OdemeAdimlari";
+import { BosDurum } from "@/components/BosDurum";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
@@ -13,16 +15,12 @@ export default function SepetSayfasi() {
       <div className="mx-auto max-w-7xl">
         <div className="border-b border-black/20 pb-5">
           <h1 className="text-[56px] font-black leading-none tracking-[-0.03em] sm:text-[84px]">Sepetim</h1>
+          <div className="mt-5"><OdemeAdimlari aktif={1} /></div>
         </div>
 
         {ogeler.length === 0 ? (
-          <div className="py-20 text-center">
-            <p className="text-sm text-black/50">Sepetiniz boş.</p>
-            <Link href="/" className="mt-4 inline-block rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition hover:bg-black/80">
-              Alışverişe Başla
-            </Link>
-          </div>
-        ) : (
+        <BosDurum tur="sepet" />
+      ) : (
           <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
               {ogeler.map((o) => (

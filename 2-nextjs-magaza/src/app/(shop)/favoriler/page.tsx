@@ -1,5 +1,7 @@
 "use client";
 
+import { BosDurum } from "@/components/BosDurum";
+
 import Link from "next/link";
 import { favori } from "@/components/FavoriProvider";
 import { KalpButonu } from "@/components/KalpButonu";
@@ -21,14 +23,8 @@ export default function FavorilerSayfasi() {
         </div>
 
         {favoriler.length === 0 ? (
-          <div className="py-20 text-center">
-            <span className="text-5xl">🤍</span>
-            <p className="mt-4 text-sm text-black/50">Henüz favori ürününüz yok.</p>
-            <Link href="/" className="mt-4 inline-block rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition hover:bg-black/80">
-              Ürünlere Göz At
-            </Link>
-          </div>
-        ) : (
+        <BosDurum tur="favori" />
+      ) : (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {favoriler.map((f) => (
               <div key={f.id} className="group relative">

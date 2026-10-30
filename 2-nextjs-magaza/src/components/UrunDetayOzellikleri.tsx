@@ -7,6 +7,7 @@ import { StokAciliyet } from "./StokAciliyet";
 import { VaryasyonSecici, urunVaryasyonlari } from "./VaryasyonSecici";
 import { SepeteEkleButonu } from "./SepeteEkleButonu";
 import { indirimliFiyat } from "@/lib/backoffice";
+import { GeriSayim } from "./GeriSayim";
 import { imgUrl } from "@/lib/img";
 
 export function UrunDetayOzellikleri({
@@ -76,6 +77,9 @@ export function UrunDetayOzellikleri({
             <>
               <span className="text-lg tabular-nums text-black/40 line-through">{fmt(urun.sale_price)} ₺</span>
               <span className="rounded-full bg-red-600 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">%{indirim} indirim</span>
+              <span className="flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold text-red-600">
+                ⏳ bugün <GeriSayim kompakt /> kadar
+              </span>
             </>
           )}
         </div>

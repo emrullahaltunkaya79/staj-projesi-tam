@@ -10,6 +10,10 @@ import { DarkModeToggle } from "./DarkModeToggle";
 import { dil } from "./DilProvider";
 import { LiveChat } from "./LiveChat";
 import { CerezOnayi } from "./CerezOnayi";
+import { GeriSayim } from "./GeriSayim";
+import { TemaSecici } from "./TemaSecici";
+import { KaydirmaYardimcisi } from "./KaydirmaYardimcisi";
+import { LogoIshari } from "./Logo";
 import { AuthModal } from "./AuthModal";
 
 /**
@@ -42,6 +46,9 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             <span className="mx-2 text-black/30">·</span>
             2.000 ₺ üzeri ÜCRETSİZ kargo!
           </p>
+          <span className="ml-3 hidden items-center gap-1.5 rounded-full bg-black px-3 py-1 text-[11px] font-bold text-white sm:flex">
+            ⏳ Kampanya bitiyor <GeriSayim />
+          </span>
           <button type="button" onClick={() => setBannerAcik(false)} aria-label="Kapat"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-black transition hover:opacity-60">✕</button>
         </div>
@@ -50,7 +57,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b-2 border-black bg-[#1a1a2e] px-5 pb-4 pt-5 shadow-lg shadow-black/20 sm:px-10">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-4">
           <a href="/" className="leading-none">
-            <span className="block text-[28px] font-black tracking-[-0.04em] text-white sm:text-[36px]">HepsiBirarada<span className="text-indigo-400">.</span></span>
+            <span className="flex items-center gap-2 text-[28px] font-black tracking-[-0.04em] text-white sm:text-[36px]"><LogoIshari boyut={30} />HepsiBirarada<span className="text-indigo-400">.</span></span>
             <span className="mt-0.5 block text-[11px] font-medium tracking-wide text-indigo-200/70 sm:text-xs">Teknoloji & Ofis — her şey tek yerde</span>
           </a>
 
@@ -114,16 +121,18 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 <span className="text-xs font-bold tabular-nums">{favoriSayi}</span>
               )}
             </a>
-            <a href="/sepet" aria-label="Sepet" className="relative flex items-center gap-1.5 rounded-full bg-indigo-600 px-3.5 py-2 text-white transition hover:bg-indigo-500 active:scale-95">
+            <a href="/sepet" aria-label="Sepet" data-sepet-hedef className="relative flex items-center gap-1.5 rounded-full bg-[var(--marka)] px-3.5 py-2 text-white transition hover:opacity-90 active:scale-95">
               <ShoppingCart className="h-4 w-4" strokeWidth={2} />
               <span className="text-sm font-bold tabular-nums">{toplamAdet}</span>
             </a>
+            <TemaSecici />
             <DarkModeToggle />
           </div>
         </div>
       </header>
 
       <AuthModal acik={authModalAcik} kapat={() => setAuthModalAcik(false)} />
+      <KaydirmaYardimcisi />
       <LiveChat />
 
       <div className="page-enter flex-1">{children}</div>

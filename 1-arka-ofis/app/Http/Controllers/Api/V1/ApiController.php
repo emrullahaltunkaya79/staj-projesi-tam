@@ -26,6 +26,21 @@ class ApiController extends Controller
      */
     public function products(Request $request): JsonResponse
     {
+        // Puan ortalamalari (onayli yorumlar) ve en cok satanlar (fatura kalemleri)
+        $puanlar = \DB::table('product_reviews')
+            ->selectRaw('product_id, ROUND(AVG(rating), 1) as oran, COUNT(*) as adet')
+            ->where('is_approved', true)
+            ->groupBy('product_id')
+            ->get()->keyBy('product_id');
+
+        $satislar = \DB::table('invoice_items')
+            ->selectRaw('product_id, SUM(quantity) as adet')
+            ->whereNotNull('product_id')
+            ->groupBy('product_id')
+            ->orderByDesc('adet')
+            ->limit(10)
+            ->get()->keyBy('product_id');
+
         $products = Product::with('category')
             ->orderBy('name')
             ->when($request->query('category_id'), fn ($q, $id) => $q->where('category_id', $id))
@@ -45,6 +60,9 @@ class ApiController extends Controller
                 'reserved_quantity' => $p->reserved_quantity,
                 'available_quantity' => $p->availableQuantity(),
                 'in_stock' => $p->availableQuantity() > 0,
+                'rating_avg' => $puanlar[$p->id]->oran ?? null,
+                'review_count' => (int) ($puanlar[$p->id]->adet ?? 0),
+                'is_bestseller' => isset($satislar[$p->id]) && (int) $satislar[$p->id]->adet >= 2,
                 'image_url' => $p->primaryImageUri(), // base64 data-URI (logo deseniyle aynı)
             ]);
 
