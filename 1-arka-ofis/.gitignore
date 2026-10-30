@@ -31,3 +31,5 @@ yarn-error.log
 /storage/logs
 lang/vendor
 /storage/fonts
+server.log
+dev.log

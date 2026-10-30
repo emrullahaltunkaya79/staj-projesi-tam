@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // admin = tüm yetkiler (kullanıcı yönetimi, kayıt silme), kullanici = standart kullanıcı
-            $table->enum('role', ['admin', 'kullanici'])->default('admin')->after('company_id');
+            // admin = tüm yetkiler, kullanici = standart kullanıcı, musteri = e-ticaret müşterisi
+            $table->enum('role', ['admin', 'kullanici', 'musteri'])->default('admin')->after('company_id');
         });
     }
 

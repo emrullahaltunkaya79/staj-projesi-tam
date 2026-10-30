@@ -1,0 +1,57 @@
+name: Testler
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: PHPUnit + Vite Derlemesi (PHP 8.4 / SQLite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodu indir
+        uses: actions/checkout@v4
+
+      - name: PHP kur
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, zip
+          coverage: none
+
+      - name: Composer önbelleği
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: PHP bağımlılıkları kur
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Node kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: npm önbelleği
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
+
+      - name: Frontend bağımlılıkları kur
+        run: npm ci
+
+      # Blade @vite direktifi manifest'e ihtiyaç duyar: önce derle
+      - name: Asset'leri derle (Vite)
+        run: npm run build
+
+      - name: Ortamı hazırla
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Testleri çalıştır (SQLite bellek-içi)
+        run: vendor/bin/phpunit --colors=always

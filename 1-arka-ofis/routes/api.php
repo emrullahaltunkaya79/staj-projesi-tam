@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/register', [AuthApiController::class, 'register'])->name('api.auth.register');
     Route::post('/auth/login', [AuthApiController::class, 'login'])->name('api.auth.login');
+    Route::post('/auth/forgot-password', [AuthApiController::class, 'forgotPassword'])->name('api.auth.forgot');
+    Route::post('/auth/reset-password', [AuthApiController::class, 'resetPassword'])->name('api.auth.reset');
+    Route::post('/auth/verify-email', [AuthApiController::class, 'verifyEmail'])->name('api.auth.verify');
+    Route::post('/auth/resend-verification', [AuthApiController::class, 'resendVerification'])->name('api.auth.resend');
 });
 
 // Auth (token gerektirir) — görsel proxy'si sayfa başına ~75 istek atar, limit buna göre yüksek
