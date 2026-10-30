@@ -19,6 +19,7 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
   const [birim, setBirim] = useState("adet");
   const [alisFiyat, setAlisFiyat] = useState("");
   const [satisFiyat, setSatisFiyat] = useState("");
+  const [indirim, setIndirim] = useState("");
   const [stok, setStok] = useState("");
   const [kod, setKod] = useState("");
 
@@ -29,11 +30,12 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
       setDuzenlenen(u);
       setAd(u.name); setKategori(u.category ?? ""); setBirim(u.unit);
       setAlisFiyat(String(u.purchase_price)); setSatisFiyat(String(u.sale_price));
+      setIndirim(u.discount_percent != null ? String(u.discount_percent) : "");
       setStok(String(u.stock_quantity)); setKod(u.code ?? "");
     } else {
       setDuzenlenen(null);
       setAd(""); setKategori(""); setBirim("adet");
-      setAlisFiyat(""); setSatisFiyat(""); setStok(""); setKod("");
+      setAlisFiyat(""); setSatisFiyat(""); setStok(""); setKod(""); setIndirim("");
     }
     setHata(null);
     setModalAcik(true);
@@ -46,6 +48,7 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
     const govde = JSON.stringify({
       name: ad, unit: birim,
       purchase_price: Number(alisFiyat), sale_price: Number(satisFiyat),
+      discount_percent: indirim.trim() === "" ? null : Number(indirim),
       stock_quantity: Number(stok), code: kod || null,
     });
 
@@ -194,6 +197,11 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">Satış Fiyatı (₺) *</label>
                 <input required type="number" step="0.01" min="0" value={satisFiyat} onChange={(e) => setSatisFiyat(e.target.value)}
+                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold text-slate-500">İndirim (%)</label>
+                <input type="number" min="0" max="90" value={indirim} onChange={(e) => setIndirim(e.target.value)} placeholder="0-90, boş = yok"
                        className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
               </div>
               <div>

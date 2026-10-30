@@ -60,6 +60,7 @@ export type SellerUrun = {
   category: string | null;
   sale_price: number;
   purchase_price: number;
+  discount_percent?: number | null;
   stock_quantity: number;
   available_quantity: number;
   in_stock: boolean;

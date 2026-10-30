@@ -14,12 +14,21 @@ export type Urun = {
   category: string | null;
   unit: string;
   sale_price: number;
+  discount_percent?: number | null;
+  final_price?: number;
   stock_quantity: number;
   reserved_quantity: number;
   available_quantity: number;
   in_stock: boolean;
   image_url: string | null;
 };
+
+/** İndirim uygulanmış nihai fiyat (API final_price vermezse kendisi hesaplar). */
+export function indirimliFiyat(u: Pick<Urun, "sale_price" | "discount_percent" | "final_price">): number {
+  if (u.final_price != null) return u.final_price;
+  const oran = u.discount_percent ?? 0;
+  return oran > 0 ? Math.round(u.sale_price * (100 - oran)) / 100 : u.sale_price;
+}
 
 export type Siparis = {
   order_no: string;

@@ -100,14 +100,14 @@ class OrderService
                 // Rezerv et
                 $product->increment('reserved_quantity', $qty);
 
-                $lineTotal = round($qty * (float) ($item['unit_price'] ?? $product->sale_price), 2);
+                $lineTotal = round($qty * (float) ($item['unit_price'] ?? $product->finalPrice()), 2);
                 $subtotal = round($subtotal + $lineTotal, 2);
 
                 $snapshot[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'quantity' => $qty,
-                    'unit_price' => (float) ($item['unit_price'] ?? $product->sale_price),
+                    'unit_price' => (float) ($item['unit_price'] ?? $product->finalPrice()),
                     'line_total' => $lineTotal,
                 ];
             }

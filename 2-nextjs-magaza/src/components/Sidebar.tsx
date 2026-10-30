@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
+import { indirimliFiyat } from "@/lib/backoffice";
 
 export type Filtreler = {
   minFiyat: string;
@@ -16,8 +17,8 @@ export const bosFiltreler: Filtreler = { minFiyat: "", maxFiyat: "", sadeceStok:
 
 export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
   let sonuc = urunler;
-  if (f.minFiyat) sonuc = sonuc.filter((u) => u.sale_price >= Number(f.minFiyat));
-  if (f.maxFiyat) sonuc = sonuc.filter((u) => u.sale_price <= Number(f.maxFiyat));
+  if (f.minFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) >= Number(f.minFiyat));
+  if (f.maxFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) <= Number(f.maxFiyat));
   if (f.sadeceStok) sonuc = sonuc.filter((u) => u.in_stock);
   return sonuc;
 }
@@ -31,8 +32,8 @@ export function urunFiltrele(
   let sonuc = kategori ? tumUrunler.filter((u) => u.category === kategori) : tumUrunler;
   sonuc = filtrele(sonuc, f);
   switch (sirala) {
-    case "fiyat-artan": return [...sonuc].sort((a, b) => a.sale_price - b.sale_price);
-    case "fiyat-azalan": return [...sonuc].sort((a, b) => b.sale_price - a.sale_price);
+    case "fiyat-artan": return [...sonuc].sort((a, b) => indirimliFiyat(a) - indirimliFiyat(b));
+    case "fiyat-azalan": return [...sonuc].sort((a, b) => indirimliFiyat(b) - indirimliFiyat(a));
     case "yeni": return [...sonuc].sort((a, b) => b.id - a.id);
     default: return sonuc;
   }

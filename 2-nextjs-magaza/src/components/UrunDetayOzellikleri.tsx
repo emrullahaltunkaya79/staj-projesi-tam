@@ -6,6 +6,7 @@ import { GorselGaleri } from "./GorselGaleri";
 import { StokAciliyet } from "./StokAciliyet";
 import { VaryasyonSecici, urunVaryasyonlari } from "./VaryasyonSecici";
 import { SepeteEkleButonu } from "./SepeteEkleButonu";
+import { indirimliFiyat } from "@/lib/backoffice";
 import { imgUrl } from "@/lib/img";
 
 export function UrunDetayOzellikleri({
@@ -19,6 +20,8 @@ export function UrunDetayOzellikleri({
     category: string | null;
     unit: string;
     sale_price: number;
+    discount_percent?: number | null;
+    final_price?: number;
     purchase_price?: number;
     stock_quantity: number;
     reserved_quantity: number;
@@ -28,6 +31,8 @@ export function UrunDetayOzellikleri({
   };
 }) {
   const [secimler, setSecimler] = useState<Record<string, string>>({});
+  const indirim = urun.discount_percent ?? 0;
+  const netFiyat = indirim > 0 ? indirimliFiyat(urun) : urun.sale_price;
   const varyasyonlar = urunVaryasyonlari(urun.name);
   const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
@@ -40,7 +45,7 @@ export function UrunDetayOzellikleri({
         <GorselGaleri anaGorsel={imgUrl(urun.id, urun.image_url)} urunAd={urun.name} />
         <div className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-2 shadow backdrop-blur">
           <KalpButonu
-            urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
+            urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
             boyut="buyuk"
           />
         </div>
@@ -54,7 +59,15 @@ export function UrunDetayOzellikleri({
           {urun.barcode ? ` · Barkod: ${urun.barcode}` : ""}
         </p>
 
-        <div className="mt-8 text-3xl font-black tabular-nums">{fmt(urun.sale_price)} ₺</div>
+        <div className="mt-8 flex flex-wrap items-baseline gap-3">
+          <span className="text-3xl font-black tabular-nums text-red-600">{fmt(netFiyat)} ₺</span>
+          {indirim > 0 && (
+            <>
+              <span className="text-lg tabular-nums text-black/40 line-through">{fmt(urun.sale_price)} ₺</span>
+              <span className="rounded-full bg-red-600 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">%{indirim} indirim</span>
+            </>
+          )}
+        </div>
 
         <p className="mt-3 text-sm font-medium">
           {urun.in_stock ? (
@@ -91,7 +104,7 @@ export function UrunDetayOzellikleri({
         <div className="mt-8">
           {tumSecildi ? (
             <SepeteEkleButonu
-              urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), birim: urun.unit }}
+              urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), birim: urun.unit }}
               musait={urun.available_quantity}
             />
           ) : (

@@ -20,9 +20,20 @@ class Product extends Model
         'unit',
         'purchase_price',
         'sale_price',
+        'discount_percent',
         'stock_quantity',
         'reserved_quantity',
     ];
+
+    /** İndirim uygulanmış nihai satış fiyatı. */
+    public function finalPrice(): float
+    {
+        $indirim = (int) ($this->discount_percent ?? 0);
+
+        return $indirim > 0
+            ? round((float) $this->sale_price * (100 - $indirim) / 100, 2)
+            : (float) $this->sale_price;
+    }
 
     protected function casts(): array
     {
