@@ -32,6 +32,14 @@ export default function OdemeSayfasi() {
   const ucretsizKargo = genelToplam >= UCRETSIZ_KARGO_LIMITI || kupon?.type === "free_shipping";
   const toplamKargo = ucretsizKargo ? 0 : kargoFiyat;
 
+  // Girişli kullanıcıysa bilgilerini ön-doldur
+  useEffect(() => {
+    if (kullanici) {
+      setName(kullanici.name);
+      setEmail(kullanici.email);
+    }
+  }, [kullanici?.id]);
+
   const kuponUygula = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!kuponKodu.trim()) return;

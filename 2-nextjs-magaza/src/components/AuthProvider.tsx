@@ -7,14 +7,22 @@ export type AuthUser = {
   name: string;
   email: string;
   contact_id: number;
+  email_verified?: boolean;
+};
+
+export type KayitSonuc = {
+  kullanici: AuthUser;
+  /** Demo: mail log'a gittiği için kayıt yanıtı kodu taşır */
+  dogrulamaKodu: string;
 };
 
 type AuthBaglami = {
   kullanici: AuthUser | null;
   girisYapmis: boolean;
   giris: (email: string, password: string) => Promise<AuthUser>;
-  kayit: (name: string, email: string, password: string) => Promise<AuthUser>;
+  kayit: (name: string, email: string, password: string) => Promise<KayitSonuc>;
   cikis: () => Promise<void>;
+  emailDogrula: (email: string, kod: string) => Promise<void>;
 };
 
 const Baglam = createContext<AuthBaglami | null>(null);
@@ -59,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return d.data.user;
   };
 
-  const kayit = async (name: string, email: string, password: string): Promise<AuthUser> => {
+  const kayit = async (name: string, email: string, password: string): Promise<KayitSonuc> => {
     const r = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -70,7 +78,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(TOKEN_KEY, d.data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(d.data.user));
     setKullanici(d.data.user);
-    return d.data.user;
+    return { kullanici: d.data.user, dogrulamaKodu: d.data.dogrulama_kodu ?? "" };
+  };
+
+  const emailDogrula = async (email: string, kod: string): Promise<void> => {
+    const r = await fetch("/api/auth/verify-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code: kod }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message || d.errors?.code?.[0] || "Doğrulama başarısız.");
+    // Yerel kullanıcıyı doğrulanmış işaretle
+    const guncel = kullanici ? { ...kullanici, email_verified: true } : null;
+    if (guncel) {
+      setKullanici(guncel);
+      localStorage.setItem(USER_KEY, JSON.stringify(guncel));
+    }
   };
 
   const cikis = async () => {
@@ -84,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Baglam.Provider value={{ kullanici, girisYapmis: !!kullanici, giris, kayit, cikis }}>
+    <Baglam.Provider value={{ kullanici, girisYapmis: !!kullanici, giris, kayit, cikis, emailDogrula }}>
       {children}
     </Baglam.Provider>
   );
