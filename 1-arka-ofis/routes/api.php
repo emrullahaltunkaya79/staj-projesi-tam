@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 | API v1 — E-ticaret entegrasyonu
 |--------------------------------------------------------------------------
 | Tüm endpoint'ler Sanctum token ister: Authorization: Bearer {token}
-| Rate limit: token başına dakikada 60 istek.
+| Rate limit: token başına dakikada 300 istek.
 */
 
 // Auth (token gerektirmez — throttle'lı)
@@ -21,8 +21,8 @@ Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/login', [AuthApiController::class, 'login'])->name('api.auth.login');
 });
 
-// Auth (token gerektirir)
-Route::middleware(['auth:sanctum', 'throttle:60,1'])
+// Auth (token gerektirir) — görsel proxy'si sayfa başına ~75 istek atar, limit buna göre yüksek
+Route::middleware(['auth:sanctum', 'throttle:300,1'])
     ->prefix('v1')
     ->group(function () {
         Route::get('/auth/me', [AuthApiController::class, 'me'])->name('api.auth.me');
