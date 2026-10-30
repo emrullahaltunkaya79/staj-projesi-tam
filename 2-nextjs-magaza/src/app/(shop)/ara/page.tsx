@@ -35,7 +35,7 @@ export default async function AraSayfasi({ searchParams }: { searchParams: Promi
         )}
 
         {sonuc.length > 0 && (
-          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
             {sonuc.map((u) => (
               <UrunKarti key={u.id} urun={u} />
             ))}

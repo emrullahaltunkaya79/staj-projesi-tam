@@ -56,7 +56,7 @@ export function KatalogIcerik({
         <div className="border-b border-black/20 pb-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex items-baseline gap-3">
-              <h1 className="text-[36px] font-black leading-none tracking-[-0.02em] sm:text-[48px]">{baslik}</h1>
+              <h1 className="text-[22px] font-black leading-none tracking-[-0.02em] sm:text-[28px]">{baslik}</h1>
               <span className="text-[13px] font-medium text-black/30">{sonuc.length} ürün</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -90,7 +90,7 @@ export function KatalogIcerik({
                         className="mt-3 text-sm font-bold underline underline-offset-4">Filtreleri temizle</button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
                 {sonuc.map((u) => (
                   <UrunKarti key={u.id} urun={u} />
                 ))}
