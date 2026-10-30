@@ -1,6 +1,7 @@
 import { siparis } from "@/lib/backoffice";
 import { OdemeButonu } from "./OdemeButonu";
 import { IptalButonu } from "./IptalButonu";
+import { IadeButonu } from "./IadeButonu";
 import { Konfeti } from "@/components/Konfeti";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
@@ -10,6 +11,10 @@ const ADIMLAR: Record<string, string> = {
   preparing: "Hazırlanıyor",
   shipped: "Kargoda",
   delivered: "Teslim",
+};
+const IADE_DURUM: Record<string, string> = {
+  return_requested: "İade Talebiniz Alındı",
+  returned: "İade Tamamlandı — Para İadesi Yapıldı",
 };
 
 export default async function SiparisSayfasi({
@@ -34,6 +39,7 @@ export default async function SiparisSayfasi({
   const adimlar = Object.keys(ADIMLAR);
   const aktifIndex = adimlar.indexOf(s.status);
   const iptal = s.status === "cancelled";
+  const iadeDurumu = IADE_DURUM[s.status];
 
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10">
@@ -51,7 +57,14 @@ export default async function SiparisSayfasi({
           <p className="mt-2 font-mono text-sm text-black/50">{s.order_no}</p>
         </div>
 
-        {iptal ? (
+        {iadeDurumu ? (
+          <div className={`mt-8 border px-5 py-4 text-sm font-bold ${s.status === "returned" ? "border-black bg-neutral-50 text-black" : "border-amber-300 bg-amber-50 text-amber-700"}`}>
+            ↩️ {iadeDurumu}
+            {s.status === "return_requested" && (
+              <p className="mt-1 text-xs font-medium text-amber-600/80">Talebiniz satıcı tarafından inceleniyor — onaylandığında ürün bedeli 14 gün içinde iade edilir.</p>
+            )}
+          </div>
+        ) : iptal ? (
           <div className="mt-8 border border-black/15 bg-neutral-50 px-5 py-4 text-sm font-bold text-black/60">
             Bu sipariş iptal edildi.
           </div>
@@ -101,11 +114,20 @@ export default async function SiparisSayfasi({
               <IptalButonu orderNo={s.order_no} />
             </div>
           )}
-          {s.status !== "pending" && s.status !== "cancelled" && (
+          {s.status !== "pending" && s.status !== "cancelled" && !iadeDurumu && (
             <div className="flex items-center gap-2 text-sm font-semibold text-black">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               Ödendi — Fatura: {s.invoice_no ?? "—"}
             </div>
+          )}
+          {s.invoice_no && (
+            <a href={`/api/orders/${s.order_no}/invoice-pdf`}
+               className="inline-flex h-10 items-center justify-center rounded-full bg-black px-6 text-xs font-bold text-white transition hover:bg-black/80 active:scale-95">
+              📄 Faturayı İndir (PDF)
+            </a>
+          )}
+          {s.status === "delivered" && (
+            <IadeButonu orderNo={s.order_no} />
           )}
           {s.tracking_no && (
             <div className="border-t border-black/15 pt-4 text-sm">

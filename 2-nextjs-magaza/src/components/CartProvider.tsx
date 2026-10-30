@@ -9,6 +9,8 @@ export type SepetOgesi = {
   adet: number;
   gorsel?: string | null;
   birim?: string;
+  secenek?: string;   // varyasyon etiketi (örn. "Siyah")
+  varyantId?: number; // DB'deki product_variants.id
 };
 
 type SepetBaglami = {
@@ -18,8 +20,8 @@ type SepetBaglami = {
   kdv: number;
   genelToplam: number;
       ekle: (yeniOge: Omit<SepetOgesi, "adet">, adet?: number) => void;
-  adetGuncelle: (id: number, adet: number) => void;
-  cikar: (id: number) => void;
+  adetGuncelle: (id: number, adet: number, varyantId?: number) => void;
+  cikar: (id: number, varyantId?: number) => void;
   temizle: () => void;
 };
 
@@ -58,17 +60,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       genelToplam: Math.round((araToplam + kdv) * 100) / 100,
       ekle: (yeni, adet = 1) =>
         setOgeler((mevcut) => {
-          const varOlan = mevcut.find((o) => o.id === yeni.id);
+          const varOlan = mevcut.find((o) => o.id === yeni.id && o.varyantId === yeni.varyantId);
           if (varOlan) {
             return mevcut.map((o) => (o.id === yeni.id ? { ...o, adet: o.adet + adet } : o));
           }
           return [...mevcut, { ...yeni, adet }];
         }),
-      adetGuncelle: (id, adet) =>
+      adetGuncelle: (id, adet, varyantId) =>
         setOgeler((mevcut) =>
-          adet <= 0 ? mevcut.filter((o) => o.id !== id) : mevcut.map((o) => (o.id === id ? { ...o, adet } : o)),
+          adet <= 0
+            ? mevcut.filter((o) => !(o.id === id && o.varyantId === varyantId))
+            : mevcut.map((o) => (o.id === id && o.varyantId === varyantId ? { ...o, adet } : o)),
         ),
-      cikar: (id) => setOgeler((mevcut) => mevcut.filter((o) => o.id !== id)),
+      cikar: (id, varyantId) => setOgeler((mevcut) => mevcut.filter((o) => !(o.id === id && o.varyantId === varyantId))),
       temizle: () => setOgeler([]),
     };
   }, [ogeler]);

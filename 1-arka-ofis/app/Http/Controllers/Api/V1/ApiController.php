@@ -57,7 +57,7 @@ class ApiController extends Controller
      */
     public function productShow(int $id): JsonResponse
     {
-        $product = Product::with('category', 'images')->find($id);
+        $product = Product::with('category', 'images', 'variants')->find($id);
 
         if (! $product) {
             return response()->json(['message' => 'Ürün bulunamadı.'], 404);
@@ -79,7 +79,14 @@ class ApiController extends Controller
                 'reserved_quantity' => $product->reserved_quantity,
                 'available_quantity' => $product->availableQuantity(),
                 'in_stock' => $product->availableQuantity() > 0,
+                'image_count' => $product->images->count(),
                 'image_url' => $product->primaryImageUri(),
+                'variants' => $product->variants->map(fn ($v) => [
+                    'id' => $v->id,
+                    'name' => $v->name,
+                    'stock_quantity' => $v->stock_quantity,
+                    'in_stock' => $v->stock_quantity > 0,
+                ])->values(),
             ],
         ]);
     }
@@ -168,6 +175,7 @@ class ApiController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
+            'items.*.variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
         ]);
 
         $order = $orderService->create($request->user()->company_id, $validated);
@@ -293,6 +301,109 @@ class ApiController extends Controller
 
         return response()->json([
             'message' => 'Sipariş iptal edildi.',
+            'data' => ['order_no' => $order->order_no, 'status' => $order->fresh()->status],
+        ]);
+    }
+
+    /**
+     * Ürün görselini doğrudan binary olarak servis eder (görsel proxy'si için hafif yol).
+     * GET /api/v1/products/{id}/image/{index}
+     */
+    public function productImage(int $id, int $index)
+    {
+        $product = Product::with(['images' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort')->orderBy('id')])
+            ->find($id);
+
+        if (! $product) {
+            return response()->json(['message' => 'Ürün bulunamadı.'], 404);
+        }
+
+        $image = $product->images->values()->get($index);
+
+        if (! $image) {
+            return response()->json(['message' => 'Görsel bulunamadı.'], 404);
+        }
+
+        $mutlak = storage_path('app/private/'.$image->path);
+        if (! is_file($mutlak)) {
+            return response()->json(['message' => 'Görsel dosyası yok.'], 404);
+        }
+
+        $mime = match (strtolower(pathinfo($mutlak, PATHINFO_EXTENSION))) {
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'image/jpeg',
+        };
+
+        return response()->file($mutlak, [
+            'Content-Type' => $mime,
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
+    }
+
+    /**
+     * Sipariş faturasını PDF olarak indirir (müşteri ekranı).
+     * GET /api/v1/orders/{orderNo}/invoice.pdf
+     */
+    public function invoicePdf(Request $request, string $orderNo)
+    {
+        $order = \App\Models\Order::where('company_id', $request->user()->company_id)
+            ->where('order_no', $orderNo)
+            ->with('invoice.items.product', 'invoice.contact')
+            ->firstOrFail();
+
+        if (! $order->invoice) {
+            return response()->json(['message' => 'Bu sipariş için fatura henüz kesilmedi.'], 404);
+        }
+
+        $fontDir = config('dompdf.options.font_dir', storage_path('fonts'));
+        if (! is_dir($fontDir)) {
+            mkdir($fontDir, 0777, true);
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('invoices.pdf', ['invoice' => $order->invoice])
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'default_font' => 'DejaVu Sans',
+                'is_html5_parser_enabled' => true,
+                'is_remote_enabled' => false,
+            ], true);
+
+        return $pdf->download($order->order_no . '-fatura.pdf');
+    }
+
+    /**
+     * Müşteri iade talebi.
+     * POST /api/v1/orders/{orderNo}/return-request
+     */
+    public function requestReturn(Request $request, string $orderNo, OrderService $orderService): JsonResponse
+    {
+        $order = \App\Models\Order::where('company_id', $request->user()->company_id)
+            ->where('order_no', $orderNo)
+            ->firstOrFail();
+
+        $orderService->requestReturn($order, $request->user()->company_id);
+
+        return response()->json([
+            'message' => 'İade talebiniz alındı. Ekibimiz inceleyip onaylayacak.',
+            'data' => ['order_no' => $order->order_no, 'status' => $order->fresh()->status],
+        ]);
+    }
+
+    /**
+     * Satıcı iade onayı (para iadesi + stok geri alma).
+     * POST /api/v1/orders/{orderNo}/return-approve
+     */
+    public function approveReturn(Request $request, string $orderNo, OrderService $orderService): JsonResponse
+    {
+        $order = \App\Models\Order::where('company_id', $request->user()->company_id)
+            ->where('order_no', $orderNo)
+            ->firstOrFail();
+
+        $orderService->approveReturn($order, $request->user()->company_id);
+
+        return response()->json([
+            'message' => 'İade onaylandı — stok geri alındı, para iadesi kaydedildi.',
             'data' => ['order_no' => $order->order_no, 'status' => $order->fresh()->status],
         ]);
     }

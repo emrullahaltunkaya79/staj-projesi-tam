@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Contact;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Warehouse;
 use App\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
@@ -87,6 +88,25 @@ class OrderService
                 $qty = (float) $item['quantity'];
                 $available = $product->availableQuantity();
 
+                // Varyant seçildiyse varyant stoğunu da kontrol et ve kilitle
+                $variant = null;
+                if (! empty($item['variant_id'])) {
+                    $variant = ProductVariant::where('product_id', $product->id)
+                        ->where('id', (int) $item['variant_id'])
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $variant) {
+                        throw ValidationException::withMessages(['items' => "Geçersiz varyasyon: {$item['variant_id']}"]);
+                    }
+
+                    if ($qty > $variant->stock_quantity) {
+                        throw ValidationException::withMessages([
+                            'items' => sprintf('"%s (%s)" için yetersiz varyant stoğu! Kalan: %d.', $product->name, $variant->name, $variant->stock_quantity),
+                        ]);
+                    }
+                }
+
                 // MÜSAİT stok kontrolü: fiziksel − rezerve
                 if ($qty > $product->availableQuantity()) {
                     throw ValidationException::withMessages([
@@ -100,12 +120,18 @@ class OrderService
                 // Rezerv et
                 $product->increment('reserved_quantity', $qty);
 
+                // Varyant stoğunu düş (sipariş stoktan ayrılır)
+                if ($variant) {
+                    $variant->decrement('stock_quantity', (int) $qty);
+                }
+
                 $lineTotal = round($qty * (float) ($item['unit_price'] ?? $product->finalPrice()), 2);
                 $subtotal = round($subtotal + $lineTotal, 2);
 
                 $snapshot[] = [
                     'product_id' => $product->id,
-                    'product_name' => $product->name,
+                    'product_name' => $variant ? $product->name.' ('.$variant->name.')' : $product->name,
+                    'variant_id' => $variant?->id,
                     'quantity' => $qty,
                     'unit_price' => (float) ($item['unit_price'] ?? $product->finalPrice()),
                     'line_total' => $lineTotal,
@@ -228,6 +254,13 @@ class OrderService
                 $order->contact->decrement('balance', $order->invoice->total);
             }
 
+            // Varyant stoklarını geri al (sipariş snapshot'ında variant_id taşınır)
+            foreach ($order->items as $item) {
+                if (! empty($item['variant_id'])) {
+                    ProductVariant::where('id', $item['variant_id'])->increment('stock_quantity', (int) $item['quantity']);
+                }
+            }
+
             // Pending ise: yalnızca rezervleri serbest bırak
             if ($order->status === 'pending') {
                 foreach ($order->items as $item) {
@@ -246,6 +279,62 @@ class OrderService
             );
 
             return $order->fresh();
+        });
+    }
+
+    /**
+     * Müşteri iade talebi oluşturur (yalnızca teslim edilmiş siparişler).
+     */
+    public function requestReturn(Order $order, int $companyId): Order
+    {
+        $order = Order::where('company_id', $companyId)->where('id', $order->id)->lockForUpdate()->first();
+
+        if (! $order || $order->status !== 'delivered') {
+            throw ValidationException::withMessages([
+                'order' => 'İade talebi yalnızca teslim edilmiş siparişler için oluşturulabilir.',
+            ]);
+        }
+
+        $order->update(['status' => 'return_requested']);
+
+        return $order;
+    }
+
+    /**
+     * Satıcı iadeyi onaylar: stok geri alınır, cari bakiye düzeltilir, para iadesi kaydedilir.
+     */
+    public function approveReturn(Order $order, int $companyId): Order
+    {
+        return DB::transaction(function () use ($order, $companyId) {
+            $order = Order::where('company_id', $companyId)->where('id', $order->id)->lockForUpdate()->first();
+
+            if (! $order || $order->status !== 'return_requested') {
+                throw ValidationException::withMessages([
+                    'order' => 'Yalnızca iade talebinde olan siparişler onaylanabilir.',
+                ]);
+            }
+
+            // Faturalı ise stokları geri al ve cari bakiyeyi düzelt (iptal ile aynı mantık)
+            if ($order->invoice_id) {
+                $order->load('invoice.items');
+                foreach ($order->invoice->items as $item) {
+                    if ($item->product_id) {
+                        Product::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
+                    }
+                }
+                $order->contact->decrement('balance', $order->invoice->total);
+            }
+
+            // Varyant stoklarını geri al
+            foreach ($order->items as $item) {
+                if (! empty($item['variant_id'])) {
+                    ProductVariant::where('id', $item['variant_id'])->increment('stock_quantity', (int) $item['quantity']);
+                }
+            }
+
+            $order->update(['status' => 'returned']);
+
+            return $order;
         });
     }
 

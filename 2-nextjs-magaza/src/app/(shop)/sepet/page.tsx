@@ -26,7 +26,7 @@ export default function SepetSayfasi() {
           <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
               {ogeler.map((o) => (
-                <div key={o.id} className="flex items-center gap-5">
+                <div key={`${o.id}-${o.varyantId ?? 0}`} className="flex items-center gap-5">
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center bg-[#f4f4f4]">
                     {o.gorsel ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -39,15 +39,16 @@ export default function SepetSayfasi() {
                     <Link href={`/urun/${o.id}`} className="text-[15px] font-semibold hover:underline underline-offset-4">
                       {o.ad}
                     </Link>
+                    {o.secenek && <span className="ml-2 rounded-full bg-black/5 px-2 py-0.5 text-[11px] font-bold text-black/60">{o.secenek}</span>}
                     <p className="mt-1 text-sm text-black/50 tabular-nums">{fmt(o.fiyat)} ₺ / {o.birim ?? "adet"}</p>
                   </div>
                   <div className="flex h-10 items-center border border-black/20">
-                    <button type="button" onClick={() => adetGuncelle(o.id, o.adet - 1)} className="h-full w-9 font-bold text-black/60 hover:text-black">−</button>
+                    <button type="button" onClick={() => adetGuncelle(o.id, o.adet - 1, o.varyantId)} className="h-full w-9 font-bold text-black/60 hover:text-black">−</button>
                     <span className="w-10 text-center text-sm font-bold tabular-nums">{o.adet}</span>
-                    <button type="button" onClick={() => adetGuncelle(o.id, o.adet + 1)} className="h-full w-9 font-bold text-black/60 hover:text-black">+</button>
+                    <button type="button" onClick={() => adetGuncelle(o.id, o.adet + 1, o.varyantId)} className="h-full w-9 font-bold text-black/60 hover:text-black">+</button>
                   </div>
                   <div className="w-24 text-right text-[15px] font-bold tabular-nums">{fmt(o.fiyat * o.adet)} ₺</div>
-                  <button type="button" onClick={() => cikar(o.id)} aria-label="Kaldır" className="text-xs font-semibold text-black/30 hover:text-red-600">
+                  <button type="button" onClick={() => cikar(o.id, o.varyantId)} aria-label="Kaldır" className="text-xs font-semibold text-black/30 hover:text-red-600">
                     Kaldır
                   </button>
                 </div>

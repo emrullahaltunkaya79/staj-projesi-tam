@@ -28,7 +28,17 @@
                 @if (! empty($product['barcode']))<span class="font-mono">Barkod: {{ $product['barcode'] }}</span>@endif
             </div>
 
-            <div class="mt-5 text-4xl font-black tabular-nums text-slate-900">{{ $fmt($product['sale_price'] ?? 0) }}</div>
+            @php
+                $urunIndirim = (int) ($product['discount_percent'] ?? 0);
+                $urunNet = $product['final_price'] ?? ($product['sale_price'] ?? 0);
+            @endphp
+            <div class="mt-5 flex flex-wrap items-baseline gap-3">
+                <span class="text-4xl font-black tabular-nums {{ $urunIndirim > 0 ? 'text-rose-600' : 'text-slate-900' }}">{{ $fmt($urunNet) }}</span>
+                @if ($urunIndirim > 0)
+                    <span class="text-lg tabular-nums text-slate-400 line-through">{{ $fmt($product['sale_price']) }}</span>
+                    <span class="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">%{{ $urunIndirim }} indirim</span>
+                @endif
+            </div>
 
             <div class="mt-4 flex items-center gap-2">
                 @if (($product['available_quantity'] ?? 0) > 0)
@@ -44,7 +54,7 @@
             @livewire('add-to-cart', [
                 'productId' => $product['id'],
                 'name' => $product['name'],
-                'price' => (float) ($product['sale_price'] ?? 0),
+                'price' => (float) ($product['final_price'] ?? $product['sale_price'] ?? 0),
                 'available' => (int) ($product['available_quantity'] ?? 0),
                 'image' => $product['image_url'] ?? null,
                 'unit' => $product['unit'] ?? 'adet',

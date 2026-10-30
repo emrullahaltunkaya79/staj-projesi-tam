@@ -28,21 +28,32 @@ export function UrunDetayOzellikleri({
     available_quantity: number;
     in_stock: boolean;
     image_url: string | null;
+    image_count?: number;
+    variants?: { id: number; name: string; stock_quantity: number; in_stock: boolean }[];
   };
 }) {
   const [secimler, setSecimler] = useState<Record<string, string>>({});
+  const [seciliVaryantId, setSeciliVaryantId] = useState<number | null>(null);
   const indirim = urun.discount_percent ?? 0;
   const netFiyat = indirim > 0 ? indirimliFiyat(urun) : urun.sale_price;
+
+  const gercekVaryantlar = urun.variants ?? [];
+  const seciliVaryant = gercekVaryantlar.find((v) => v.id === seciliVaryantId) ?? null;
   const varyasyonlar = urunVaryasyonlari(urun.name);
   const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
-  const tumSecildi = varyasyonlar.every((v) => secimler[v.ad]);
+  const tumSecildi = gercekVaryantlar.length > 0
+    ? seciliVaryant !== null
+    : varyasyonlar.every((v) => secimler[v.ad]);
 
   return (
     <>
       {/* Görsel galerisi */}
       <div className="relative">
-        <GorselGaleri anaGorsel={imgUrl(urun.id, urun.image_url)} urunAd={urun.name} />
+        <GorselGaleri
+          urunAd={urun.name}
+          gorseller={Array.from({ length: Math.max(1, urun.image_count ?? 1) }, (_, i) => `/api/img/${urun.id}?v=${i}`)}
+        />
         <div className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-2 shadow backdrop-blur">
           <KalpButonu
             urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
@@ -84,8 +95,44 @@ export function UrunDetayOzellikleri({
           <StokAciliyet musaitAdet={urun.available_quantity} urunId={urun.id} />
         )}
 
-        {/* Varyasyon seçici */}
-        {varyasyonlar.length > 0 && (
+        {/* Gerçek varyasyon seçici (DB stoklu) */}
+        {gercekVaryantlar.length > 0 && (
+          <div className="mt-6">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">
+              Seçenek <span className="text-red-400">*</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {gercekVaryantlar.map((v) => {
+                const aktif = seciliVaryantId === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    disabled={!v.in_stock}
+                    onClick={() => setSeciliVaryantId(v.id)}
+                    className={`min-w-[64px] rounded-xl border-2 px-4 py-2 text-sm font-bold transition ${
+                      aktif
+                        ? "border-black bg-black text-white"
+                        : v.in_stock
+                          ? "border-black/10 bg-white text-black/60 hover:border-black/30"
+                          : "cursor-not-allowed border-black/5 bg-black/5 text-black/25 line-through"
+                    }`}
+                    title={v.in_stock ? `Stokta ${v.stock_quantity} adet` : "Tükendi"}
+                  >
+                    {v.name}
+                    {v.in_stock && <span className={`ml-1.5 text-[10px] ${aktif ? "text-white/70" : "text-black/30"}`}>{v.stock_quantity}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {!tumSecildi && (
+              <p className="mt-2 text-xs font-bold text-amber-500">Devam etmek için bir seçenek seçiniz</p>
+            )}
+          </div>
+        )}
+
+        {/* Demo varyasyon seçici (DB varyantı olmayanlar için) */}
+        {gercekVaryantlar.length === 0 && varyasyonlar.length > 0 && (
           <div className="mt-6">
             <VaryasyonSecici
               varyasyonlar={varyasyonlar}
@@ -104,12 +151,15 @@ export function UrunDetayOzellikleri({
         <div className="mt-8">
           {tumSecildi ? (
             <SepeteEkleButonu
-              urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), birim: urun.unit }}
-              musait={urun.available_quantity}
+              urun={{
+                id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), birim: urun.unit,
+                ...(seciliVaryant ? { secenek: seciliVaryant.name, varyantId: seciliVaryant.id } : {}),
+              }}
+              musait={gercekVaryantlar.length > 0 ? (seciliVaryant?.stock_quantity ?? 0) : urun.available_quantity}
             />
           ) : (
             <button disabled className="h-12 w-full max-w-xs cursor-not-allowed bg-black/10 text-sm font-bold text-black/30">
-              Önce {varyasyonlar.filter((v) => !secimler[v.ad]).map((v) => v.ad).join(" ve ")} seçiniz
+              Önce {gercekVaryantlar.length > 0 ? "bir seçenek" : varyasyonlar.filter((v) => !secimler[v.ad]).map((v) => v.ad).join(" ve ")} seçiniz
             </button>
           )}
         </div>

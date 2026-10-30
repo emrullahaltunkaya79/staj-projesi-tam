@@ -74,6 +74,8 @@ class Order extends Model
             'preparing' => 'Hazırlanıyor',
             'shipped' => 'Kargolandı',
             'delivered' => 'Teslim Edildi',
+            'return_requested' => 'İade Talebi',
+            'returned' => 'İade Edildi (Para İadesi)',
             'cancelled' => 'İptal',
             default => $this->status,
         };
@@ -85,6 +87,8 @@ class Order extends Model
             'pending' => 'badge-amber',
             'paid', 'delivered' => 'badge-green',
             'preparing', 'shipped' => 'badge-indigo',
+            'return_requested' => 'badge-amber',
+            'returned' => 'badge-purple',
             'cancelled' => 'badge-red',
             default => 'badge-slate',
         };

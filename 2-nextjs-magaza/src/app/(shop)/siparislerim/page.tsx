@@ -21,6 +21,8 @@ const DURUM: Record<string, string> = {
   preparing: "Hazırlanıyor",
   shipped: "Kargoda",
   delivered: "Teslim",
+  return_requested: "İade Talebi",
+  returned: "İade Edildi",
   cancelled: "İptal",
 };
 

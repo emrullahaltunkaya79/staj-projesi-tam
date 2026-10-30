@@ -114,6 +114,11 @@ class Product extends Model
         return $primary?->dataUri();
     }
 
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('name');
+    }
+
     public function warehouses()
     {
         return $this->belongsToMany(Warehouse::class, 'product_warehouse')

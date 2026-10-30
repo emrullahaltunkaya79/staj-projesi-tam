@@ -35,6 +35,7 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         // Ürün kataloğu
         Route::get('/products', [ApiController::class, 'products'])->name('api.products');
         Route::get('/products/{id}', [ApiController::class, 'productShow'])->whereNumber('id')->name('api.products.show');
+        Route::get('/products/{id}/image/{index}', [ApiController::class, 'productImage'])->whereNumber('id')->whereNumber('index')->name('api.products.image');
 
         // Ürün CRUD (satıcı paneli) + görsel + yorumlar
         Route::post('/products', [ProductApiController::class, 'store'])->name('api.products.store');
@@ -63,6 +64,9 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         Route::get('/orders/{orderNo}', [ApiController::class, 'orderShow'])->name('api.orders.show');
         Route::post('/orders/{orderNo}/pay', [ApiController::class, 'pay'])->name('api.orders.pay');
         Route::post('/orders/{orderNo}/cancel', [ApiController::class, 'cancel'])->name('api.orders.cancel');
+        Route::post('/orders/{orderNo}/return-request', [ApiController::class, 'requestReturn'])->name('api.orders.return-request');
+        Route::get('/orders/{orderNo}/invoice.pdf', [ApiController::class, 'invoicePdf'])->name('api.orders.invoice-pdf');
+        Route::post('/orders/{orderNo}/return-approve', [ApiController::class, 'approveReturn'])->name('api.orders.return-approve');
         Route::post('/orders/{orderNo}/shipping', [ApiController::class, 'updateShipping'])->name('api.orders.shipping');
 
         // Aktif token listesi (yönetim)

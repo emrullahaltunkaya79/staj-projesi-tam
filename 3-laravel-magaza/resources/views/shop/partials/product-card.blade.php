@@ -1,8 +1,9 @@
 @php
     $musait = (int) ($p['available_quantity'] ?? 0);
     $puanDeger = $puan($p['id']);
-    // İndirim oranı: alış-satış farkına göre (%15-25 bandında gerçekçi gösterim)
-    $indirim = isset($p['purchase_price']) ? 0 : 0;
+    // Gerçek ürün bazlı indirim (arka ofis discount_percent)
+    $indirim = (int) ($p['discount_percent'] ?? 0);
+    $netFiyat = $p['final_price'] ?? $p['sale_price'];
 @endphp
 <div class="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-3 transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl">
     @if ($puanDeger >= 4.8 && $musait > 0)
@@ -42,9 +43,10 @@
 
         <div class="mt-auto pt-2.5">
             <div class="flex items-end gap-2">
-                <span class="text-[19px] font-black leading-none tabular-nums text-slate-900">{{ $fmt($p['sale_price']) }}</span>
-                @if ($puanDeger >= 4.8)
-                    <span class="mb-0.5 rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-black text-rose-600">%{{ 15 + ((int) $p['id'] % 10) }} indirim</span>
+                <span class="text-[19px] font-black leading-none tabular-nums {{ $indirim > 0 ? 'text-rose-600' : 'text-slate-900' }}">{{ $fmt($netFiyat) }}</span>
+                @if ($indirim > 0)
+                    <span class="mb-0.5 text-[11px] font-medium tabular-nums text-slate-400 line-through">{{ $fmt($p['sale_price']) }}</span>
+                    <span class="mb-0.5 rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-black text-rose-600">%{{ $indirim }} indirim</span>
                 @endif
             </div>
             <div class="mt-0.5 text-[10px] text-slate-400">KDV dahil · {{ $musait > 0 ? $musait.' adet müsait' : 'stokta yok' }}</div>

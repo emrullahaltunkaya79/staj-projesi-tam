@@ -21,6 +21,7 @@ export type Urun = {
   available_quantity: number;
   in_stock: boolean;
   image_url: string | null;
+  image_count?: number;
 };
 
 /** İndirim uygulanmış nihai fiyat (API final_price vermezse kendisi hesaplar). */
@@ -96,7 +97,7 @@ export async function siparisOlustur(veri: {
   email: string;
   address: string;
   taxRate: number;
-  items: { product_id: number; quantity: number }[];
+  items: { product_id: number; quantity: number; variant_id?: number }[];
   externalRef: string;
 }): Promise<{ orderNo: string; message: string }> {
   const musteri = await istek("/customers", {

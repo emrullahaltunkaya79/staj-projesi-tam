@@ -17,9 +17,10 @@ export async function POST(request: NextRequest) {
       email: String(govde.email),
       address: String(govde.address),
       taxRate: Number(govde.taxRate ?? 20),
-      items: (govde.items as { product_id: number; quantity: number }[]).map((i) => ({
+      items: (govde.items as { product_id: number; quantity: number; variant_id?: number }[]).map((i) => ({
         product_id: Number(i.product_id),
         quantity: Number(i.quantity),
+        ...(i.variant_id ? { variant_id: Number(i.variant_id) } : {}),
       })),
       externalRef: String(govde.externalRef ?? `NEXT-${Date.now()}`),
     });

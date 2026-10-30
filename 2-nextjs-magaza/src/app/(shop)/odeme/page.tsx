@@ -97,7 +97,7 @@ export default function OdemeSayfasi() {
           email,
           address,
           taxRate: Number(taxRate),
-          items: ogeler.map((o) => ({ product_id: o.id, quantity: o.adet })),
+          items: ogeler.map((o) => ({ product_id: o.id, quantity: o.adet, ...(o.varyantId ? { variant_id: o.varyantId } : {}) })),
           externalRef: `NEXT-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
         }),
       });

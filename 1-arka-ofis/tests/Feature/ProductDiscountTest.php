@@ -89,4 +89,53 @@ class ProductDiscountTest extends TestCase
             'discount_percent' => 95,
         ], ['Authorization' => "Bearer {$token}"])->assertUnprocessable();
     }
+
+    public function test_varyantli_siparis_varyant_stogunu_duser(): void
+    {
+        $token = $this->tokenAl();
+        $company = Company::first();
+
+        $urun = Product::create([
+            'company_id' => $company->id,
+            'name' => 'Varyantlı Ürün',
+            'unit' => 'adet',
+            'purchase_price' => 30,
+            'sale_price' => 100,
+            'stock_quantity' => 10,
+        ]);
+        $varyant = \App\Models\ProductVariant::create([
+            'company_id' => $company->id,
+            'product_id' => $urun->id,
+            'name' => 'Siyah',
+            'stock_quantity' => 5,
+        ]);
+
+        $musteri = Contact::create([
+            'company_id' => $company->id,
+            'type' => 'musteri',
+            'name' => 'Varyant Müşteri',
+            'email' => 'varyant@ornek.com',
+        ]);
+
+        $yanit = $this->postJson('/api/v1/orders', [
+            'contact_id' => $musteri->id,
+            'tax_rate' => 0,
+            'items' => [
+                ['product_id' => $urun->id, 'quantity' => 2, 'variant_id' => $varyant->id],
+            ],
+        ], ['Authorization' => "Bearer {$token}"]);
+
+        $yanit->assertCreated();
+        $this->assertSame('Varyantlı Ürün (Siyah)', $yanit->json('data.items.0.product_name'));
+        $this->assertSame(3, (int) \App\Models\ProductVariant::find($varyant->id)->stock_quantity);
+
+        // Varyant stoğu yetmezse reddedilir
+        $this->postJson('/api/v1/orders', [
+            'contact_id' => $musteri->id,
+            'tax_rate' => 0,
+            'items' => [
+                ['product_id' => $urun->id, 'quantity' => 99, 'variant_id' => $varyant->id],
+            ],
+        ], ['Authorization' => "Bearer {$token}"])->assertUnprocessable();
+    }
 }

@@ -9,6 +9,7 @@ import { favori } from "./FavoriProvider";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { dil } from "./DilProvider";
 import { LiveChat } from "./LiveChat";
+import { CerezOnayi } from "./CerezOnayi";
 import { AuthModal } from "./AuthModal";
 
 /**
@@ -150,7 +151,16 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col gap-2">
                 <span>⛓️ CSPR ile kripto ödeme</span>
                 <span>🔒 HMAC imzalı güvenli API</span>
-                <span>↩️ 14 gün koşulsuz iade</span>
+                <a href="/sozlesme/mesafeli-satis" className="hover:text-black transition">↩️ 14 gün koşulsuz iade — Mesafeli Satış Sözleşmesi</a>
+              </div>
+            </div>
+            <div className="flex-1 min-w-[160px]">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Yasal</div>
+              <div className="flex flex-col gap-2">
+                <a href="/sozlesme/mesafeli-satis" className="hover:text-black transition">Mesafeli Satış Sözleşmesi</a>
+                <a href="/sozlesme/uyelik" className="hover:text-black transition">Üyelik Sözleşmesi</a>
+                <a href="/gizlilik" className="hover:text-black transition">KVKK Aydınlatma Metni</a>
+                <a href="/cerez-politikasi" className="hover:text-black transition">Çerez Politikası</a>
               </div>
             </div>
           </div>
@@ -160,6 +170,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+
+      <CerezOnayi />
     </div>
   );
 }

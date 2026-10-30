@@ -3,22 +3,24 @@ import { NextRequest, NextResponse } from "next/server";
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
 
-// Basit in-memory cache (dev'de yeterli)
-const cache = new Map<number, { data: Buffer; type: string }>();
+// Basit in-memory cache (dev'de yeterli) — ürün:indeks bazlı
+const cache = new Map<string, { data: Buffer; type: string }>();
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: { params: Promise<{ id: string }> },
 ) {
   const { id } = await ctx.params;
   const productId = Number(id);
+  // v=0 ana görsel, v=1.. ikincil görseller (galeri)
+  const v = Number(request.nextUrl.searchParams.get("v") ?? "0") || 0;
 
   if (Number.isNaN(productId)) {
     return NextResponse.json({ hata: "Geçersiz ID" }, { status: 400 });
   }
 
-  // Cache'den döner
-  const cached = cache.get(productId);
+  const anahtar = `${productId}:${v}`;
+  const cached = cache.get(anahtar);
   if (cached) {
     return new NextResponse(new Uint8Array(cached.data), {
       headers: {
@@ -29,40 +31,29 @@ export async function GET(
   }
 
   try {
-    const r = await fetch(`${BASE}/products/${productId}`, {
-      headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json" },
+    const r = await fetch(`${BASE}/products/${productId}/image/${v}`, {
+      headers: { Authorization: `Bearer ${TOKEN}`, Accept: "image/*" },
     });
 
     if (!r.ok) {
-      return NextResponse.json({ hata: "Ürün bulunamadı" }, { status: 404 });
+      // Ana görsel yoksa 1x1 şeffaf piksel; ikincil görsellerde 404
+      if (v === 0) {
+        const empty = Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+          "base64",
+        );
+        return new NextResponse(new Uint8Array(empty), {
+          headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" },
+        });
+      }
+      return NextResponse.json({ hata: "Görsel bulunamadı" }, { status: 404 });
     }
 
-    const d = await r.json();
-    const dataUri: string = d.data?.image_url ?? "";
+    const type = r.headers.get("content-type") ?? "image/jpeg";
+    const data = Buffer.from(await r.arrayBuffer());
 
-    if (!dataUri.startsWith("data:")) {
-      // Görsel yok — 1x1 şeffaf piktel
-      const empty = Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
-        "base64",
-      );
-      return new NextResponse(new Uint8Array(empty), {
-        headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" },
-      });
-    }
-
-    // data:image/png;base64,xxxx → binary
-    const match = dataUri.match(/^data:(image\/[^;]+);base64,(.*)$/);
-    if (!match) {
-      return NextResponse.json({ hata: "Geçersiz görsel" }, { status: 500 });
-    }
-
-    const type = match[1];
-    const data = Buffer.from(match[2], "base64");
-
-    // Cache'e yaz (maks 100 görsel)
-    if (cache.size > 100) cache.clear();
-    cache.set(productId, { data, type });
+    if (cache.size > 150) cache.clear();
+    cache.set(anahtar, { data, type });
 
     return new NextResponse(new Uint8Array(data), {
       headers: {
@@ -71,6 +62,6 @@ export async function GET(
       },
     });
   } catch {
-    return NextResponse.json({ hata: "Görsel alınamadı" }, { status: 502 });
+    return NextResponse.json({ hata: "Görsel alınamadı." }, { status: 502 });
   }
 }
