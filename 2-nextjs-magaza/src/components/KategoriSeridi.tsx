@@ -21,11 +21,11 @@ export function KategoriSeridi({ kategoriler }: { kategoriler: { ad: string; say
   if (kategoriler.length === 0) return null;
 
   return (
-    <section className="px-5 pb-14 pt-16 sm:px-10">
+    <section className="px-5 pb-10 pt-10 sm:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-5 flex items-end justify-between border-b border-black/20 pb-3">
           <div className="flex items-baseline gap-3">
-            <h2 className="text-[28px] font-black leading-none tracking-[-0.02em] sm:text-[36px]">Kategoriler</h2>
+            <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Kategoriler</h2>
             <span className="text-[13px] font-medium text-black/30">{kategoriler.length} bölüm</span>
           </div>
           <span className="hidden items-center gap-1 text-[11px] font-bold text-black/30 sm:flex">

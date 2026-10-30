@@ -14,10 +14,10 @@ export function UrunKarti({ urun }: { urun: Urun }) {
   return (
     <div className="group relative">
       <Link href={`/urun/${urun.id}`} className="block">
-        <div className="relative flex aspect-[4/5] items-center justify-center overflow-hidden bg-[#f4f4f4] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.015]">
+        <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#f4f4f4] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.015]">
           {urun.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imgUrl(urun.id, urun.image_url)} alt={urun.name} loading="lazy" className="h-full w-full object-contain p-8" />
+            <img src={imgUrl(urun.id, urun.image_url)} alt={urun.name} loading="lazy" className="h-full w-full object-contain p-4" />
           ) : (
             <span className="text-5xl font-black text-black/10">{urun.name.slice(0, 1)}</span>
           )}
@@ -43,9 +43,9 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             </span>
           )}
       </div>
-      <div className="mt-4 flex items-baseline justify-between gap-2">
+      <div className="mt-2 flex items-baseline justify-between gap-2">
         <div className="min-w-0">
-            <h3 className="text-[15px] font-semibold text-black">{urun.name}</h3>
+            <h3 className="text-[12.5px] font-semibold leading-tight text-black">{urun.name}</h3>
             {urun.rating_avg != null && (
               <span className="mt-1 flex items-center gap-1 text-[11px] font-bold text-amber-500">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
@@ -55,7 +55,7 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             )}
           </div>
         <div className="flex shrink-0 flex-col items-end">
-          <span className="text-[15px] font-bold tabular-nums text-red-600">{fmt(fiyat)} ₺</span>
+          <span className="text-[13px] font-bold tabular-nums text-red-600">{fmt(fiyat)} ₺</span>
           {indirim > 0 && (
             <span className="text-xs tabular-nums text-black/40 line-through">{fmt(urun.sale_price)} ₺</span>
           )}
