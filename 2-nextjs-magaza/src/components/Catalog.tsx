@@ -13,7 +13,7 @@ export function UrunKarti({ urun }: { urun: Urun }) {
   const fiyat = indirim > 0 ? indirimliFiyat(urun) : urun.sale_price;
 
   return (
-    <div className="group relative">
+    <div className="group relative flex flex-col">
       <Link href={`/urun/${urun.id}`} className="block">
         <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#f4f4f4] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.015]">
           {urun.image_url ? (
@@ -49,14 +49,18 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             {urun.brand && (
               <span className="mb-0.5 block text-[10px] font-black uppercase tracking-widest text-black/45">{urun.brand}</span>
             )}
-            <h3 className="text-[12.5px] font-semibold leading-tight text-black">{urun.name}</h3>
-            {urun.rating_avg != null && (
-              <span className="mt-1 flex items-center gap-1 text-[11px] font-bold text-amber-500">
-                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                {urun.rating_avg}
-                <span className="font-medium text-black/35">({urun.review_count ?? 0})</span>
-              </span>
-            )}
+            <h3 className="line-clamp-2 min-h-[32px] text-[12.5px] font-semibold leading-tight text-black">{urun.name}</h3>
+            <span className="mt-1 flex h-4 items-center gap-1 text-[11px] font-bold text-amber-500">
+              {urun.rating_avg != null ? (
+                <>
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  {urun.rating_avg}
+                  <span className="font-medium text-black/35">({urun.review_count ?? 0})</span>
+                </>
+              ) : (
+                <span className="text-transparent">—</span>
+              )}
+            </span>
           </div>
         <div className="flex shrink-0 flex-col items-end">
           <span className="text-[15px] font-black tabular-nums text-black sm:text-[17px]">{fmt(fiyat)} ₺</span>
@@ -66,10 +70,12 @@ export function UrunKarti({ urun }: { urun: Urun }) {
         </div>
       </div>
       </Link>
-      <KartaEkleButonu
-        urun={{ id: urun.id, ad: urun.name, fiyat, gorsel: imgUrl(urun.id, urun.image_url) }}
-        musait={urun.in_stock ? urun.available_quantity : 0}
-      />
+      <div className="mt-auto">
+        <KartaEkleButonu
+          urun={{ id: urun.id, ad: urun.name, fiyat, gorsel: imgUrl(urun.id, urun.image_url) }}
+          musait={urun.in_stock ? urun.available_quantity : 0}
+        />
+      </div>
       <div className="absolute right-3 top-3 z-10">
         <KalpButonu
           urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
