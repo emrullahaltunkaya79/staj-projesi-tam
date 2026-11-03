@@ -17,7 +17,7 @@ export function GununFirsati({ urun }: { urun: Urun }) {
     <section className="px-5 pb-4 pt-6 sm:px-10">
       <div
         className="mx-auto max-w-7xl overflow-hidden rounded-2xl"
-        style={{ background: "linear-gradient(100deg, var(--marka) 0%, #1a1a2e 85%)" }}
+        style={{ background: "linear-gradient(100deg, var(--marka) 0%, #334155 85%)" }}
       >
         <div className="flex flex-col items-center gap-6 p-5 sm:flex-row sm:p-6">
           {/* Görsel */}

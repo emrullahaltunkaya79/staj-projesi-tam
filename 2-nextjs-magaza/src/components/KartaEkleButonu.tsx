@@ -30,7 +30,7 @@ export function KartaEkleButonu({ urun, musait }: { urun: Omit<SepetOgesi, "adet
         setTimeout(() => setEklendi(false), 1500);
       }}
       className={`mt-2 flex h-8 w-full items-center justify-center gap-1.5 rounded-full text-[11px] font-bold text-white transition active:scale-[0.97] ${
-        eklendi ? "bg-black/80" : "bg-[#2bb673] hover:bg-[#24a062]"
+        eklendi ? "bg-black/80" : "bg-[var(--marka)] hover:opacity-90"
       }`}
     >
       <ShoppingCart className="h-3 w-3" />

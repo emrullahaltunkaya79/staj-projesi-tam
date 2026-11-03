@@ -67,7 +67,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-white text-black antialiased">
       {bannerAcik && (
-        <div className="relative bg-[#1a1a2e] px-3 py-1 text-center">
+        <div className="relative bg-[#334155] px-3 py-1 text-center">
           <p className="text-[11px] font-medium text-white/85 sm:text-xs">
             İlk siparişine <strong className="font-black text-white">%15 indirim</strong> — Kupon:{" "}
             <code className="rounded bg-white/15 px-1.5 py-px font-mono text-[10px] font-bold text-white">ILKSIPARIS</code>
@@ -260,7 +260,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
 
       <div className="page-enter flex-1">{children}</div>
 
-      <footer className="mt-4 bg-[#1a1a2e] px-5 py-10 text-white sm:px-10">
+      <footer className="mt-4 bg-[#334155] px-5 py-10 text-white sm:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-wrap gap-8 text-xs text-white/65">
             <div className="flex-1 min-w-[160px]">

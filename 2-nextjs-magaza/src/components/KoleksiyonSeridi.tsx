@@ -43,20 +43,20 @@ export function KoleksiyonSeridi({
               key={href}
               href={href}
               className={`group flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
-                kirmizi ? "hover:border-red-600" : "hover:border-[var(--marka)]"
+                kirmizi ? "hover:border-orange-400" : "hover:border-[var(--marka)]"
               }`}
             >
               <span
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
                   kirmizi
-                    ? "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white"
+                    ? "bg-orange-50 text-orange-600 group-hover:bg-orange-500 group-hover:text-white"
                     : "bg-black/[.04] text-black/70 group-hover:bg-[var(--marka)] group-hover:text-white"
                 }`}
               >
                 <Ikon className="h-5 w-5" />
               </span>
               <span className="min-w-0">
-                <span className={`block truncate text-[13px] font-bold ${kirmizi ? "text-red-600" : "text-black/75"}`}>{baslik}</span>
+                <span className={`block truncate text-[13px] font-bold ${kirmizi ? "text-orange-600" : "text-black/75"}`}>{baslik}</span>
                 <span className="block truncate text-[11px] font-medium text-black/35">{not}</span>
               </span>
               <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-black/20 transition group-hover:translate-x-0.5 group-hover:text-[var(--marka)]" />

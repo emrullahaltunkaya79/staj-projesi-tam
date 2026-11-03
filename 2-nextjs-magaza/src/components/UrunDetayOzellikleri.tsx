@@ -81,7 +81,7 @@ export function UrunDetayOzellikleri({
         </p>
 
         <div className="mt-8 flex flex-wrap items-baseline gap-3">
-          <span className="text-3xl font-black tabular-nums text-red-600">{fmt(netFiyat)} ₺</span>
+          <span className="text-3xl font-black tabular-nums text-black">{fmt(netFiyat)} ₺</span>
           {indirim > 0 && (
             <>
               <span className="text-lg tabular-nums text-black/40 line-through">{fmt(urun.sale_price)} ₺</span>

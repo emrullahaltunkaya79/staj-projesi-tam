@@ -22,18 +22,18 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
     <section className="px-5 pb-8 pt-6 sm:px-10">
       <div className="mx-auto max-w-7xl">
         {/* Başlık satırı */}
-        <div className="mb-4 flex items-center justify-between gap-3 border-b-2 border-red-600 pb-3">
+        <div className="mb-4 flex items-center justify-between gap-3 border-b border-orange-300 pb-3">
           <div className="flex min-w-0 items-center gap-3">
-            <h2 className="flex items-center gap-2 text-[16px] font-black uppercase tracking-wide text-red-600 sm:text-[18px]">
-              <Zap className="h-5 w-5 shrink-0 fill-red-600" />
+            <h2 className="flex items-center gap-2 text-[16px] font-black uppercase tracking-wide text-orange-600 sm:text-[18px]">
+              <Zap className="h-5 w-5 shrink-0 fill-orange-500" />
               Flaş İndirimler
             </h2>
             {aciklama && <span className="truncate text-[13px] font-medium text-black/40">{aciklama}</span>}
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <span className="flex items-center gap-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-bold text-red-600">
+            <span className="flex items-center gap-1.5 rounded-lg bg-orange-50 px-2.5 py-1.5 text-[11px] font-bold text-orange-600">
               Bugün bitiyor
-              <span className="rounded bg-red-600 px-1.5 py-0.5 font-mono text-[11px] font-black tracking-wider text-white">
+              <span className="rounded bg-orange-500 px-1.5 py-0.5 font-mono text-[11px] font-black tracking-wider text-white">
                 <GeriSayim kompakt />
               </span>
             </span>
@@ -115,9 +115,9 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
                   {u.in_stock && (
                     <>
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/10">
-                        <div className="h-full rounded-full bg-red-600" style={{ width: `${kalanOran}%` }} />
+                        <div className="h-full rounded-full bg-orange-400" style={{ width: `${kalanOran}%` }} />
                       </div>
-                      <p className="mb-1.5 mt-1 text-[10px] font-bold text-red-600">Son {u.available_quantity} adet!</p>
+                      <p className="mb-1.5 mt-1 text-[10px] font-bold text-orange-600">Son {u.available_quantity} adet!</p>
                     </>
                   )}
                   <KartaEkleButonu
