@@ -5,6 +5,7 @@ import { MarkaSeridi } from "@/components/MarkaSeridi";
 import { KoleksiyonSeridi } from "@/components/KoleksiyonSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
+import { FlasSeridi } from "@/components/FlasSeridi";
 import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { GununFirsati } from "@/components/GununFirsati";
 import { YorumVitrini } from "@/components/YorumVitrini";
@@ -110,14 +111,9 @@ export default async function Home() {
 
       {/* 1. Kampanya vitrini — geri sayımlı flaş indirimler */}
       {!hata && flasUrunler.length > 0 && (
-        <VitrinSeridi
-          baslik="Flaş İndirimler"
-          ikon={Zap}
-          tur="flas"
+        <FlasSeridi
           urunler={flasUrunler}
-          geriSayim
           aciklama={`%${Math.max(...flasUrunler.map((u) => u.discount_percent ?? 0))}'e kadar`}
-          tumunuGor="/flas-indirimler"
         />
       )}
 
