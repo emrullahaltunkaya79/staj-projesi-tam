@@ -15,11 +15,18 @@
 }
 
 /* Dark mode CSS değişkenleri */
-.dark {
-  --marka: #4b5563; /* koyu temada antrasit butonlar görünür kalsın */
+html.dark {
+  --marka: #4b5563; /* antrasit: koyu temada gri ton (spesifiklik: :root'u yener) */
   --background: #0f0f23;
   --foreground: #e2e8f0;
 }
+
+/* Her renk temasinin koyu mod varyanti — butonlar koyu zeminde kaybolmasin */
+.dark[data-tema="siyah"] { --marka: #4b5563; }
+.dark[data-tema="lacivert"] { --marka: #3b82f6; }
+.dark[data-tema="yesil"] { --marka: #10b981; }
+.dark[data-tema="bordo"] { --marka: #f43f5e; }
+.dark[data-tema="indigo"] { --marka: #818cf8; }
 
 body {
   background: var(--background);

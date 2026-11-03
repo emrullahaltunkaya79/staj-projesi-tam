@@ -115,7 +115,7 @@ export function LiveChat() {
                 }`}
               >
                 {m.metin}
-                <span className={`mt-1 block text-[9px] ${m.kimden === "ben" ? "text-indigo-200" : "text-slate-300"}`}>
+                <span suppressHydrationWarning className={`mt-1 block text-[9px] ${m.kimden === "ben" ? "text-indigo-200" : "text-slate-300"}`}>
                   {m.saat}
                 </span>
               </div>
