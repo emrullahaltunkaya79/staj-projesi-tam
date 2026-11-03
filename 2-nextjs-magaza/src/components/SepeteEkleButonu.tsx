@@ -38,6 +38,7 @@ export function SepeteEkleButonu({ urun, musait }: { urun: Omit<SepetOgesi, "ade
 
       <button
         type="button"
+        data-testid="ana-sepete-ekle"
         onClick={ekleVeBildir}
         className="h-12 min-w-[180px] rounded-full bg-[var(--marka)] px-8 text-sm font-bold text-white transition hover:opacity-90 active:scale-95"
       >

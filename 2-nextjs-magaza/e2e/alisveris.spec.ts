@@ -31,7 +31,7 @@ test.describe("Alışveriş hunisi", () => {
     await page.goto("/urun/6");
     await page.waitForLoadState("domcontentloaded");
 
-    const ekle = page.getByRole("button", { name: "Sepete Ekle" });
+    const ekle = page.getByTestId("ana-sepete-ekle");
     await ekle.waitFor({ state: "visible", timeout: 20_000 });
     await ekle.click();
     await expect(page.getByRole("button", { name: "✓ Sepete Eklendi" })).toBeVisible();
