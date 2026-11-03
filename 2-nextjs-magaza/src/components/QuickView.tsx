@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { X, Loader2, Minus, Plus } from "lucide-react";
 import { sepet, type SepetOgesi } from "./CartProvider";
@@ -48,6 +49,11 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
   const [varyantId, setVaryantId] = useState<number | null>(null);
   const [eklendi, setEklendi] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(true);
+  const [govde, setGovde] = useState<HTMLElement | null>(null);
+
+  // Ürün kartı hover'da transform alır; fixed modal kart DOM'unda kalırsa
+  // o kutuya bağıl konumlanıp kırpar. Portal ile body'ye taşınır.
+  useEffect(() => setGovde(document.body), []);
 
   // Modal açılınca ürün özetini çek
   useEffect(() => {
@@ -61,7 +67,13 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
 
   const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
   const seciliVaryant = ozet?.variants?.find((v) => v.id === varyantId) ?? null;
-  const stok = ozet ? (ozet.variants?.length ? (seciliVaryant?.stock_quantity ?? 0) : ozet.available_quantity) : 0;
+  // Varyant seçilmeden önce 0 yerine toplam varyant stoğu gösterilir
+  const toplamVaryantStogu = ozet?.variants?.reduce((t, v) => t + v.stock_quantity, 0) ?? 0;
+  const stok = ozet
+    ? ozet.variants?.length
+      ? seciliVaryant?.stock_quantity ?? toplamVaryantStogu
+      : ozet.available_quantity
+    : 0;
   const fiyat = ozet ? (ozet.final_price ?? ozet.sale_price) : 0;
 
   const sepeteEkle = (e: React.MouseEvent) => {
@@ -79,7 +91,9 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
     setTimeout(() => setEklendi(false), 1600);
   };
 
-  return (
+  if (!govde) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" role="dialog" aria-label="Hızlı bakış">
       <div onClick={kapat} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <button type="button" onClick={kapat} aria-label="Kapat"
@@ -174,6 +188,7 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    govde,
   );
 }
