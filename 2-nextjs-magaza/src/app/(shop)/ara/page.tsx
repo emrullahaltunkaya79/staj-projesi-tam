@@ -11,7 +11,7 @@ export default async function AraSayfasi({ searchParams }: { searchParams: Promi
   const tumu = await urunler();
   const sonuc = terim
     ? tumu.filter((u) =>
-        [u.name, u.code, u.barcode, u.category]
+        [u.name, u.code, u.barcode, u.category, u.brand]
           .filter(Boolean)
           .some((f) => (f as string).toLocaleLowerCase("tr").includes(terim)),
       )

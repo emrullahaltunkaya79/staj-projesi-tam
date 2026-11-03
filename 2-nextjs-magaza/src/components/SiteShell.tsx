@@ -191,7 +191,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 <a href="/cok-satanlar" className="hover:text-black transition">★ En Çok Satanlar</a>
                 <a href="/son-kalan" className="hover:text-black transition">📏 Son Kalan Ölçüler</a>
                 <a href="/son-firsat" className="hover:text-black transition">⏳ Son Fırsat</a>
-                <a href="/sezon" className="hover:text-black transition">🍂 Sezon Ürünleri</a>
+                <a href="/sezon" className="hover:text-black transition">🗓️ Sezon Ürünleri</a>
                 <a href="/sepet" className="hover:text-black transition">Sepetim</a>
                 <a href="/siparislerim" className="hover:text-black transition">Siparişlerim</a>
               </div>
