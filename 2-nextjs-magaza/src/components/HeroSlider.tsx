@@ -8,7 +8,6 @@ const SLIDLAR = [
     alt: "ILKSIPARIS kodu ile 200₺ üzeri siparişlerde",
     cta: "Alışverişe Başla",
     link: "/kategori/Elektronik",
-    gradient: "from-indigo-600 via-purple-600 to-pink-600",
     emoji: "🎁",
   },
   {
@@ -16,7 +15,6 @@ const SLIDLAR = [
     alt: "Kripto ödeme + otomatik fatura + aynı gün kargo",
     cta: "Nasıl Çalışır?",
     link: "/sss",
-    gradient: "from-cyan-500 via-blue-600 to-indigo-700",
     emoji: "⛓️",
   },
   {
@@ -24,7 +22,6 @@ const SLIDLAR = [
     alt: "Tüm Türkiye'ye hızlı teslimat + 14 gün koşulsuz iade",
     cta: "Ürünlere Göz At",
     link: "/kategori/Spor%20%26%20Outdoor",
-    gradient: "from-emerald-500 via-teal-600 to-cyan-700",
     emoji: "🚚",
   },
 ];
@@ -54,7 +51,8 @@ export function HeroSlider() {
         {SLIDLAR.map((s, i) => (
           <div
             key={i}
-            className={`relative flex min-w-full items-center gap-4 bg-gradient-to-r ${s.gradient} px-4 py-3.5 sm:px-6 sm:py-4`}
+            className="relative flex min-w-full items-center gap-4 px-4 py-3.5 sm:px-6 sm:py-4"
+            style={{ background: "linear-gradient(100deg, var(--marka) 0%, #1a1a2e 85%)" }}
           >
             <div className="pointer-events-none absolute -right-6 -top-10 h-28 w-28 rounded-full bg-white/10" />
             <div className="pointer-events-none absolute -bottom-10 left-1/3 h-20 w-20 rounded-full bg-white/5" />
