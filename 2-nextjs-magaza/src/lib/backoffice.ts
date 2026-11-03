@@ -13,6 +13,7 @@ export type Urun = {
   name: string;
   brand?: string | null;
   model?: string | null;
+  specs?: { k: string; v: string }[] | null;
   category: string | null;
   unit: string;
   sale_price: number;

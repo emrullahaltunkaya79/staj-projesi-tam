@@ -18,6 +18,7 @@ export function UrunDetayOzellikleri({
     name: string;
     brand?: string | null;
     model?: string | null;
+    specs?: { k: string; v: string }[] | null;
     code: string | null;
     barcode: string | null;
     category: string | null;
@@ -155,6 +156,24 @@ export function UrunDetayOzellikleri({
                 Devam etmek için {varyasyonlar.filter((v) => !secimler[v.ad]).map((v) => v.ad).join(" ve ")} seçiniz
               </p>
             )}
+          </div>
+        )}
+
+        {/* Teknik özellikler */}
+        {urun.specs && urun.specs.length > 0 && (
+          <div className="mt-10">
+            <div className="flex items-baseline justify-between border-b-2 border-black pb-2">
+              <h2 className="text-base font-black uppercase tracking-wide">Teknik Özellikler</h2>
+              <span className="text-[11px] font-medium text-black/35">{urun.specs.length} madde</span>
+            </div>
+            <dl className="divide-y divide-black/10 border-b border-black/10">
+              {urun.specs.map((s, i) => (
+                <div key={i} className="grid grid-cols-[110px_1fr] gap-3 py-2.5 text-[13px] sm:grid-cols-[150px_1fr]">
+                  <dt className="font-bold text-black/45">{s.k}</dt>
+                  <dd className="font-medium text-black/85">{s.v}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         )}
 
