@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
+import { urunler } from "@/lib/backoffice";
 
 const BASE_URL = "http://127.0.0.1:3001";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const statikSayfalar = [
     { url: "/", priority: 1, changeFrequency: "daily" as const },
     { url: "/flas-indirimler", priority: 0.9, changeFrequency: "daily" as const },
@@ -28,7 +29,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "daily" as const,
   }));
 
-  return [...statikSayfalar, ...kategoriler].map((s) => ({
+  // En çok ürünü olan 30 markanın sayfası
+  let markaSayfalari: MetadataRoute.Sitemap = [];
+  try {
+    const tumu = await urunler();
+    const sayilar = tumu.reduce<Record<string, number>>((m, u) => {
+      if (u.brand) m[u.brand] = (m[u.brand] ?? 0) + 1;
+      return m;
+    }, {});
+    markaSayfalari = Object.entries(sayilar)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 30)
+      .map(([marka]) => ({
+        url: `${BASE_URL}/marka/${encodeURIComponent(marka)}`,
+        priority: 0.6,
+        changeFrequency: "weekly" as const,
+      }));
+  } catch {}
+
+  return [...statikSayfalar, ...kategoriler, ...markaSayfalari].map((s) => ({
     url: s.url.startsWith("http") ? s.url : `${BASE_URL}${s.url}`,
     priority: s.priority,
     changeFrequency: s.changeFrequency,

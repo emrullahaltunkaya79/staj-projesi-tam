@@ -15,6 +15,7 @@ import { TemaSecici } from "./TemaSecici";
 import { KaydirmaYardimcisi } from "./KaydirmaYardimcisi";
 import { LogoIshari } from "./Logo";
 import { AuthModal } from "./AuthModal";
+import { BultenFormu } from "./BultenFormu";
 
 /**
  * Tüm mağaza sayfalarını saran kabuk: duyuru bandı + header + kategori menüsü + alt bilgi.
@@ -204,6 +205,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <div className="flex-[2] min-w-[220px]">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Kampanyalardan Haberdar Ol</div>
+              <div className="mb-5 max-w-[280px]"><BultenFormu /></div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Bilgi</div>
               <div className="flex flex-col gap-2">
                 <span>⛓️ CSPR ile kripto ödeme</span>

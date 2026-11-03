@@ -32,6 +32,25 @@ export default function Siparislerim() {
   const [siparisler, setSiparisler] = useState<SiparisOzeti[] | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
+  const [iptalEdilen, setIptalEdilen] = useState<string | null>(null);
+  const [iptalMesaj, setIptalMesaj] = useState<string | null>(null);
+
+  const siparisiIptalEt = async (no: string) => {
+    if (!window.confirm(`${no} numaralı siparişi iptal etmek istediğinize emin misiniz?`)) return;
+    setIptalEdilen(no);
+    setIptalMesaj(null);
+    try {
+      const yanit = await fetch(`/api/orders/${no}/cancel`, { method: "POST" });
+      const sonuc = await yanit.json();
+      if (!yanit.ok) throw new Error(sonuc.hata ?? "Sipariş iptal edilemedi.");
+      setIptalMesaj(`${no} iptal edildi — rezerve stoklar serbest bırakıldı.`);
+      await siparisleriGetir(girisYapmis && kullanici?.email ? kullanici.email : email);
+    } catch (err) {
+      setIptalMesaj(err instanceof Error ? err.message : "Sipariş iptal edilemedi.");
+    } finally {
+      setIptalEdilen(null);
+    }
+  };
 
   const siparisleriGetir = async (eposta: string) => {
     setYukleniyor(true);
@@ -102,6 +121,11 @@ export default function Siparislerim() {
         )}
 
         {hata && <p className="mt-5 text-sm font-medium text-red-600">{hata}</p>}
+        {iptalMesaj && (
+          <p className={`mt-5 text-sm font-bold ${iptalMesaj.includes("iptal edildi") ? "text-emerald-600" : "text-red-600"}`}>
+            {iptalMesaj}
+          </p>
+        )}
 
         {siparisler && siparisler.length === 0 && (
           <div className="mt-12 border-t border-black/15 pt-10 text-center">
@@ -117,22 +141,34 @@ export default function Siparislerim() {
         {siparisler && siparisler.length > 0 && (
           <div className="mt-10 divide-y divide-black/10 border-y border-black/15">
             {siparisler.map((s) => (
-              <Link key={s.order_no} href={`/siparis/${s.order_no}`} className="group flex items-center gap-5 py-5">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-mono text-sm font-bold">{s.order_no}</span>
-                    <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-[11px] font-bold text-black/70">
-                      {s.status_label ?? DURUM[s.status] ?? s.status}
-                    </span>
-                    {s.invoice_no && <span className="text-[11px] text-black/40">Fatura: {s.invoice_no}</span>}
+              <div key={s.order_no} className="group flex items-center gap-5 py-5">
+                <Link href={`/siparis/${s.order_no}`} className="group/link flex min-w-0 flex-1 items-center gap-5">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="font-mono text-sm font-bold">{s.order_no}</span>
+                      <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-[11px] font-bold text-black/70">
+                        {s.status_label ?? DURUM[s.status] ?? s.status}
+                      </span>
+                      {s.invoice_no && <span className="text-[11px] text-black/40">Fatura: {s.invoice_no}</span>}
+                    </div>
+                    <p className="mt-1 text-xs text-black/40">
+                      {new Date(s.created_at).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs text-black/40">
-                    {new Date(s.created_at).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}
-                  </p>
-                </div>
-                <span className="text-base font-black tabular-nums">{fmt(s.total)} ₺</span>
-                <span className="text-black/25 transition group-hover:translate-x-1 group-hover:text-black">→</span>
-              </Link>
+                  <span className="text-base font-black tabular-nums">{fmt(s.total)} ₺</span>
+                  <span className="text-black/25 transition group-hover/link:translate-x-1 group-hover/link:text-black">→</span>
+                </Link>
+                {["pending", "paid"].includes(s.status) && (
+                  <button
+                    type="button"
+                    onClick={() => siparisiIptalEt(s.order_no)}
+                    disabled={iptalEdilen === s.order_no}
+                    className="shrink-0 rounded-full border border-red-200 px-3.5 py-1.5 text-[11px] font-bold text-red-600 transition hover:border-red-600 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    {iptalEdilen === s.order_no ? "İptal ediliyor…" : "İptal Et"}
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}

@@ -91,6 +91,16 @@ export async function urun(id: number): Promise<Urun | null> {
   }
 }
 
+/** "Bu ürünü alanlar şunu da aldı" — gerçek fatura satırlarından ortak satın alma önerisi. */
+export async function ayniAldilar(id: number): Promise<Urun[]> {
+  try {
+    const sonuc = await istek(`/products/${id}/also-bought`);
+    return (sonuc.data ?? []).map(gorselProxy);
+  } catch {
+    return [];
+  }
+}
+
 export async function siparis(orderNo: string): Promise<Siparis | null> {
   try {
     const sonuc = await istek(`/orders/${orderNo}`);

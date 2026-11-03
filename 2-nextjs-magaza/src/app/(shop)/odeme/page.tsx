@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { sepet } from "@/components/CartProvider";
@@ -17,6 +17,34 @@ export default function OdemeSayfasi() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [kayitliAdresler, setKayitliAdresler] = useState<{ ad: string; metin: string }[]>([]);
+  const [adresAdi, setAdresAdi] = useState("");
+  const [adresKaydetAcik, setAdresKaydetAcik] = useState(false);
+
+  // Girişli kullanıcıya ait kayıtlı adresleri yükle
+  useEffect(() => {
+    try {
+      const ham = localStorage.getItem("hba-adresler");
+      if (ham) setKayitliAdresler(JSON.parse(ham));
+    } catch {}
+  }, []);
+
+  const adresKaydet = () => {
+    const metin = address.trim();
+    const ad = adresAdi.trim() || `Adres ${kayitliAdresler.length + 1}`;
+    if (metin.length < 10) return;
+    const yeniListe = [...kayitliAdresler.filter((a) => a.metin !== metin), { ad, metin }];
+    setKayitliAdresler(yeniListe);
+    try { localStorage.setItem("hba-adresler", JSON.stringify(yeniListe)); } catch {}
+    setAdresAdi("");
+    setAdresKaydetAcik(false);
+  };
+
+  const adresSil = (metin: string) => {
+    const yeniListe = kayitliAdresler.filter((a) => a.metin !== metin);
+    setKayitliAdresler(yeniListe);
+    try { localStorage.setItem("hba-adresler", JSON.stringify(yeniListe)); } catch {}
+  };
   const [taxRate, setTaxRate] = useState("20");
   const [gonderiliyor, setGonderiliyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
@@ -138,6 +166,39 @@ export default function OdemeSayfasi() {
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/50">Teslim Adresi *</label>
                 <textarea required minLength={10} rows={3} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Mahalle, cadde, no, ilçe / il"
                           className="w-full border border-black/20 bg-white px-4 py-3 text-sm focus:border-black focus:outline-none" />
+                {kayitliAdresler.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {kayitliAdresler.map((a) => (
+                      <span key={a.metin} className="flex items-center overflow-hidden rounded-full border border-black/15 text-[11px] font-bold">
+                        <button type="button" onClick={() => setAddress(a.metin)} title={a.metin}
+                                className="bg-black/5 px-2.5 py-1 text-black/60 transition hover:bg-[var(--marka)] hover:text-white">
+                          📍 {a.ad}
+                        </button>
+                        <button type="button" onClick={() => adresSil(a.metin)} aria-label={`${a.ad} adresini sil`}
+                                className="px-2 py-1 text-black/30 transition hover:bg-red-50 hover:text-red-600">✕</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {adresKaydetAcik ? (
+                  <div className="mt-2 flex gap-2">
+                    <input value={adresAdi} onChange={(e) => setAdresAdi(e.target.value)} placeholder="Adres adı (ör. Ev, Ofis)"
+                           className="h-9 flex-1 border border-black/15 bg-white px-3 text-[12px] focus:border-black focus:outline-none" />
+                    <button type="button" onClick={adresKaydet}
+                            className="h-9 shrink-0 rounded-full bg-black px-4 text-[11px] font-bold text-white transition hover:bg-black/80">
+                      Kaydet
+                    </button>
+                    <button type="button" onClick={() => setAdresKaydetAcik(false)}
+                            className="h-9 shrink-0 px-2 text-[11px] font-bold text-black/40 transition hover:text-black">Vazgeç</button>
+                  </div>
+                ) : (
+                  address.trim().length >= 10 && (
+                    <button type="button" onClick={() => setAdresKaydetAcik(true)}
+                            className="mt-2 text-[11px] font-bold text-black/40 underline underline-offset-2 transition hover:text-black">
+                      + Bu adresi kayıtlı adreslerime ekle
+                    </button>
+                  )
+                )}
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/50">KDV Oranı</label>

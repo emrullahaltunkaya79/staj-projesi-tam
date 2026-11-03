@@ -10,7 +10,6 @@ export async function POST(_request: NextRequest, ctx: { params: Promise<{ no: s
     const yanit = await fetch(`${BASE}/orders/${no}/cancel`, {
       method: "POST",
       headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ reason: "müşteri talebi (web)" }),
     });
 
     const sonuc = await yanit.json().catch(() => ({}));
@@ -19,7 +18,7 @@ export async function POST(_request: NextRequest, ctx: { params: Promise<{ no: s
     return NextResponse.json({ message: sonuc.message ?? "Sipariş iptal edildi." });
   } catch (e) {
     return NextResponse.json(
-      { hata: e instanceof Error ? e.message : "İptal edilemedi." },
+      { hata: e instanceof Error ? e.message : "Sipariş iptal edilemedi." },
       { status: 502 },
     );
   }

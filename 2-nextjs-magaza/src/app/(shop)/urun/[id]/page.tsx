@@ -1,4 +1,6 @@
-import { urun, urunler } from "@/lib/backoffice";
+import { urun, urunler, ayniAldilar } from "@/lib/backoffice";
+import { Users } from "lucide-react";
+import { VitrinSeridi } from "@/components/VitrinSeridi";
 import { SepeteEkleButonu } from "@/components/SepeteEkleButonu";
 import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { UrunKarti } from "@/components/Catalog";
@@ -36,6 +38,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
   const benzerler = tumUrunler
     .filter((x) => x.category === u.category && x.id !== u.id)
     .slice(0, 6);
+  const ortakSatinAlmalar = await ayniAldilar(u.id);
 
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10"><div className="mx-auto max-w-7xl">
@@ -83,6 +86,17 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
       </div>
       {/* Gerçek değerlendirmeler */}
       <Yorumlar urunId={u.id} />
+
+      {/* Bu ürünü alanlar şunu da aldı — gerçek fatura satırlarından */}
+      {ortakSatinAlmalar.length > 0 && (
+        <VitrinSeridi
+          baslik="Bu ürünü alanlar şunu da aldı"
+          ikon={Users}
+          tur="sezon"
+          urunler={ortakSatinAlmalar}
+          aciklama="Gerçek satış verilerinden"
+        />
+      )}
 
       {/* Benzer ürünler */}
       {benzerler.length > 0 && (

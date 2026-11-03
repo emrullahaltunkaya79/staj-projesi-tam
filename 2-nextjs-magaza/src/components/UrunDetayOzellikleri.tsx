@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BellRing } from "lucide-react";
 import { KalpButonu } from "./KalpButonu";
 import { GorselGaleri } from "./GorselGaleri";
 import { StokAciliyet } from "./StokAciliyet";
@@ -102,6 +103,8 @@ export function UrunDetayOzellikleri({
           )}
         </p>
 
+        {!urun.in_stock && <StokBildirimi urunId={urun.id} />}
+
         {/* Stok aciliyet */}
         {urun.in_stock && urun.available_quantity <= 5 && (
           <StokAciliyet musaitAdet={urun.available_quantity} urunId={urun.id} />
@@ -195,5 +198,61 @@ export function UrunDetayOzellikleri({
         </div>
       </div>
     </>
+  );
+}
+
+/** Tükenen üründe e-posta ile stok bildirimi kaydı. */
+function StokBildirimi({ urunId }: { urunId: number }) {
+  const [eposta, setEposta] = useState("");
+  const [durum, setDurum] = useState<"hazir" | "gonderiliyor" | "tamam" | "hata">("hazir");
+  const [mesaj, setMesaj] = useState("");
+
+  const gonder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDurum("gonderiliyor");
+    try {
+      const yanit = await fetch("/api/stock-alert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: eposta, product_id: urunId }),
+      });
+      const sonuc = await yanit.json();
+      if (!yanit.ok) throw new Error(sonuc.hata ?? "Kayıt oluşturulamadı.");
+      setMesaj(sonuc.message ?? "Kaydınız alındı.");
+      setDurum("tamam");
+    } catch (err) {
+      setMesaj(err instanceof Error ? err.message : "Kayıt oluşturulamadı.");
+      setDurum("hata");
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-2xl border border-black/10 bg-black/[.03] p-4">
+      <p className="flex items-center gap-2 text-[13px] font-bold text-black">
+        <BellRing className="h-4 w-4 text-[var(--marka)]" /> Stok gelince haber ver
+      </p>
+      {durum === "tamam" ? (
+        <p className="mt-2 text-[12px] font-medium text-emerald-600">{mesaj}</p>
+      ) : (
+        <form onSubmit={gonder} className="mt-2.5 flex gap-2">
+          <input
+            type="email"
+            required
+            value={eposta}
+            onChange={(e) => setEposta(e.target.value)}
+            placeholder="e-posta adresiniz"
+            className="h-10 flex-1 border border-black/15 bg-white px-3 text-[13px] focus:border-black focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={durum === "gonderiliyor"}
+            className="h-10 shrink-0 rounded-full bg-[var(--marka)] px-4 text-[12px] font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+          >
+            {durum === "gonderiliyor" ? "…" : "Haberdar Et"}
+          </button>
+        </form>
+      )}
+      {durum === "hata" && <p className="mt-1.5 text-[12px] font-medium text-red-600">{mesaj}</p>}
+    </div>
   );
 }
