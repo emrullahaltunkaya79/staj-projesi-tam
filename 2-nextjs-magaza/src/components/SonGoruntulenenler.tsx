@@ -8,18 +8,23 @@ const ANAHTAR = "hba-son-goruntulenen";
 type Kayit = { id: number; ad: string; fiyat: number; gorsel: string | null };
 
 /** Ürün detayı altında "Yakında İnceledikleriniz" şeridi; ziyaretleri localStorage'a yazar. */
-export function SonGoruntulenenler({ suAnki }: { suAnki: Kayit }) {
+/** suAnki verilirse ziyaret kaydeder ve onu hariç tutar; verilmezse (ana sayfa) sadece geçmişi okur. */
+export function SonGoruntulenenler({ suAnki }: { suAnki?: Kayit }) {
   const [liste, setListe] = useState<Kayit[]>([]);
 
   useEffect(() => {
     try {
       const kayitli: Kayit[] = JSON.parse(localStorage.getItem(ANAHTAR) ?? "[]");
-      const guncel = [suAnki, ...kayitli.filter((k) => k.id !== suAnki.id)].slice(0, 8);
-      localStorage.setItem(ANAHTAR, JSON.stringify(guncel));
-      setListe(guncel.slice(1)); // mevcut ürünü gösterme
+      if (suAnki) {
+        const guncel = [suAnki, ...kayitli.filter((k) => k.id !== suAnki.id)].slice(0, 8);
+        localStorage.setItem(ANAHTAR, JSON.stringify(guncel));
+        setListe(guncel.slice(1)); // mevcut ürünü gösterme
+      } else {
+        setListe(kayitli.slice(0, 8));
+      }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [suAnki.id]);
+  }, [suAnki?.id]);
 
   if (liste.length === 0) return null;
 

@@ -73,6 +73,19 @@ export function VitrinSeridi({
           {urunler.map((u) => (
             <div key={u.id} className="w-[196px] shrink-0 snap-start sm:w-[220px]">
               <UrunKarti urun={u} />
+              {tur === "flas" && u.in_stock && (
+                <div className="mt-1.5">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/10">
+                    <div
+                      className="h-full rounded-full bg-red-600"
+                      style={{ width: `${Math.max(8, Math.min(100, Math.round((u.available_quantity / Math.max(u.stock_quantity, 1)) * 100)))}%` }}
+                    />
+                  </div>
+                  <p className="mt-1 text-[10px] font-bold text-red-600">
+                    Son {u.available_quantity} adet!
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>

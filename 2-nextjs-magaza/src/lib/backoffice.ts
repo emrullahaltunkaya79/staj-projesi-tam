@@ -91,6 +91,25 @@ export async function urun(id: number): Promise<Urun | null> {
   }
 }
 
+export type Yorum = {
+  rating: number;
+  comment: string;
+  user_name: string;
+  created_at: string;
+  product_id: number;
+  product_name: string;
+};
+
+/** Ana sayfa sosyal kanıt vitrini — son onaylı yüksek puanlı yorumlar. */
+export async function sonYorumlar(): Promise<Yorum[]> {
+  try {
+    const sonuc = await istek("/reviews/latest");
+    return (sonuc.data ?? []) as Yorum[];
+  } catch {
+    return [];
+  }
+}
+
 /** "Bu ürünü alanlar şunu da aldı" — gerçek fatura satırlarından ortak satın alma önerisi. */
 export async function ayniAldilar(id: number): Promise<Urun[]> {
   try {

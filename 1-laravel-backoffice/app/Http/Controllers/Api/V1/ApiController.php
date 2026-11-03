@@ -628,6 +628,31 @@ class ApiController extends Controller
     }
 
     /**
+     * Ana sayfa sosyal kanıt vitrini — son onaylı yüksek puanlı yorumlar.
+     * GET /api/v1/reviews/latest
+     */
+    public function latestReviews(): JsonResponse
+    {
+        $yorumlar = \DB::table('product_reviews')
+            ->join('products', 'products.id', '=', 'product_reviews.product_id')
+            ->where('product_reviews.is_approved', true)
+            ->where('product_reviews.rating', '>=', 4)
+            ->whereNotNull('product_reviews.comment')
+            ->orderByDesc('product_reviews.created_at')
+            ->limit(8)
+            ->get([
+                'product_reviews.rating',
+                'product_reviews.comment',
+                'product_reviews.user_name',
+                'product_reviews.created_at',
+                'product_reviews.product_id',
+                'products.name as product_name',
+            ]);
+
+        return response()->json(['data' => $yorumlar]);
+    }
+
+    /**
      * E-bülten aboneliği.
      * POST /api/v1/newsletter  { email }
      */

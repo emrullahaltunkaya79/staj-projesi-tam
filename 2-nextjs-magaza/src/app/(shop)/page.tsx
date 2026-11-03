@@ -1,11 +1,15 @@
-import { Zap, Star, Leaf, Sun, Snowflake, Flower2, type LucideIcon } from "lucide-react";
+import { Zap, Star, Leaf, Sun, Snowflake, Flower2, Sparkles, type LucideIcon } from "lucide-react";
 import Hero from "@/components/Hero";
 import { KategoriSeridi } from "@/components/KategoriSeridi";
 import { MarkaSeridi } from "@/components/MarkaSeridi";
 import { KoleksiyonSeridi } from "@/components/KoleksiyonSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
-import { urunler, indirimliFiyat, type Urun } from "@/lib/backoffice";
+import { GuvenKartlari } from "@/components/GuvenKartlari";
+import { GununFirsati } from "@/components/GununFirsati";
+import { YorumVitrini } from "@/components/YorumVitrini";
+import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
+import { urunler, indirimliFiyat, sonYorumlar, type Urun } from "@/lib/backoffice";
 import { sezonUrunleri, mevsimBul, MEVSIMLER, type Mevsim } from "@/lib/sezonlar";
 import { outletUrunler, sonKalanUrunler, sonFirsatUrunler } from "@/lib/koleksiyonlar";
 
@@ -48,6 +52,16 @@ export default async function Home() {
   const sonKalanSayisi = sonKalanUrunler(tumu).length;
   const sonFirsatSayisi = sonFirsatUrunler(tumu).length;
 
+  // Günün Fırsatı: stok azalmış, indirimi yüksek ürün (yoksa en yüksek indirimli)
+  const gununFirsatiUrun =
+    tumu
+      .filter((u) => u.in_stock && (u.discount_percent ?? 0) >= 20 && u.available_quantity <= 10)
+      .sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0))[0] ?? flasUrunler[0];
+
+  // Yeni Gelenler: en son eklenen ürünler
+  const yeniGelenler = [...tumu].sort((a, b) => b.id - a.id).slice(0, 12);
+  const yorumlar = await sonYorumlar();
+
   // Markalar: ürün sayısına göre en çok ürünü olanlar önde (şeritte ilk 20)
   const markaSayilari = tumu.reduce<Record<string, number>>((m, u) => {
     if (u.brand) m[u.brand] = (m[u.brand] ?? 0) + 1;
@@ -73,6 +87,18 @@ export default async function Home() {
   return (
     <div>
       <Hero />
+
+      {/* Güven şeridi — hızlı teslimat / güvenli ödeme / iade */ }
+      {!hata && (
+        <section className="px-5 pt-5 sm:px-10">
+          <div className="mx-auto max-w-7xl">
+            <GuvenKartlari kompakt />
+          </div>
+        </section>
+      )}
+
+      {/* Günün Fırsatı — tek büyük fırsat bloğu */}
+      {!hata && gununFirsatiUrun && <GununFirsati urun={gununFirsatiUrun} />}
 
       {/* 1. Kampanya vitrini — geri sayımlı flaş indirimler */}
       {!hata && flasUrunler.length > 0 && (
@@ -124,6 +150,20 @@ export default async function Home() {
         />
       )}
 
+      {/* Yeni Gelenler */}
+      {!hata && yeniGelenler.length > 0 && (
+        <VitrinSeridi
+          baslik="Yeni Gelenler"
+          ikon={Sparkles}
+          tur="sezon"
+          urunler={yeniGelenler}
+          aciklama="Kataloğa en son eklenenler"
+        />
+      )}
+
+      {/* Müşteriler Ne Diyor — onaylı gerçek yorumlar */}
+      {!hata && <YorumVitrini yorumlar={yorumlar} />}
+
       {/* 5. Sezon önerileri */}
       {!hata && sezonUrunleri12.length > 0 && (
         <VitrinSeridi
@@ -138,6 +178,9 @@ export default async function Home() {
 
       {/* 6. Markalar — keşfin kapanışı */}
       {!hata && <MarkaSeridi markalar={tumMarkalar.slice(0, 20)} />}
+
+      {/* Son baktıklarınız */}
+      <SonGoruntulenenler />
 
       {/* 7. Tam katalog — temiz grid (filtreler kategori/kampanya sayfalarında) */}
       {hata ? (

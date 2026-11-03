@@ -37,6 +37,9 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const { dark: karanlik, degistir: karanlikDegistir } = karanlikModKullan();
   const [authModalAcik, setAuthModalAcik] = useState(false);
   const [menuAcik, setMenuAcik] = useState(false);
+  const [aramaOdak, setAramaOdak] = useState(false);
+
+  const POPULER_ARAMALAR = ["Kulaklık", "Projeksiyon", "Akıllı Saat", "Drone", "Klavye", "Hoparlör"];
 
   const ara = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,13 +72,33 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             <span className="mt-0.5 block text-center text-[11px] font-medium tracking-wide text-indigo-200/70 sm:text-xs">Teknoloji & Ofis — her şey tek yerde</span>
           </a>
 
-          <form onSubmit={ara} className="order-3 flex h-10 w-full max-w-md items-center overflow-hidden rounded-lg border border-white/20 bg-white/10 backdrop-blur sm:order-2 sm:w-auto sm:flex-1">
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ürün ara…"
-                   className="h-full flex-1 bg-transparent px-4 text-sm text-white placeholder-white/40 focus:outline-none" />
-            <button type="submit" aria-label="Ara" className="flex h-full w-10 items-center justify-center border-l border-white/10 text-white/60 transition bg-[var(--marka)] hover:opacity-90 hover:text-white">
-              <Search className="h-4 w-4" />
-            </button>
-          </form>
+          <div className="relative order-3 w-full max-w-md sm:order-2 sm:w-auto sm:flex-1"
+               onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setAramaOdak(false); }}>
+            <form onSubmit={ara} className="flex h-10 w-full items-center overflow-hidden rounded-lg border border-white/20 bg-white/10 backdrop-blur">
+              <input value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setAramaOdak(true)} placeholder="Ürün ara…"
+                     className="h-full flex-1 bg-transparent px-4 text-sm text-white placeholder-white/40 focus:outline-none" />
+              <button type="submit" aria-label="Ara" className="flex h-full w-10 items-center justify-center border-l border-white/10 text-white/60 transition bg-[var(--marka)] hover:opacity-90 hover:text-white">
+                <Search className="h-4 w-4" />
+              </button>
+            </form>
+            {aramaOdak && (
+              <div className="absolute left-0 right-0 top-11 z-50 rounded-xl border border-black/10 bg-white p-3 shadow-2xl">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Popüler Aramalar</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {POPULER_ARAMALAR.map((terim) => (
+                    <button
+                      key={terim}
+                      type="button"
+                      onMouseDown={() => { setAramaOdak(false); router.push(`/ara?q=${encodeURIComponent(terim)}`); }}
+                      className="rounded-full border border-black/10 px-3 py-1.5 text-[11px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white"
+                    >
+                      {terim}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="order-2 flex items-center gap-4 sm:order-3">
             {/* Dil değiştirici */}
@@ -225,7 +248,29 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-black/5 pt-6 text-xs text-black/30">
-            <span>© {new Date().getFullYear()} HepsiBirarada. Tüm hakları saklıdır.</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {[
+                  ["IG", "Instagram"],
+                  ["X", "X (Twitter)"],
+                  ["YT", "YouTube"],
+                  ["f", "Facebook"],
+                ].map(([kisa, ad]) => (
+                  <a key={ad} href="#" aria-label={ad} title={ad}
+                     className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 text-[11px] font-black text-black/40 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white">
+                    {kisa}
+                  </a>
+                ))}
+              </div>
+              <span className="hidden sm:inline">© {new Date().getFullYear()} HepsiBirarada</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {["VISA", "Mastercard", "Troy", "⛓️ CSPR"].map((odeme) => (
+                <span key={odeme} className="rounded-md border border-black/10 px-2 py-1 text-[10px] font-black tracking-wide text-black/40">
+                  {odeme}
+                </span>
+              ))}
+            </div>
             <span>Stok & sipariş: <strong className="font-semibold text-black/50">Ön Muhasebe API</strong> ile gerçek zamanlı.</span>
           </div>
         </div>

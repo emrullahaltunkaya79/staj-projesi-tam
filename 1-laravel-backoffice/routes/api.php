@@ -71,6 +71,7 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
 
         // Satış odaklı öneriler + müşteri bildirim kayıtları
         Route::get('/products/{id}/also-bought', [ApiController::class, 'alsoBought'])->whereNumber('id')->name('api.products.also-bought');
+        Route::get('/reviews/latest', [ApiController::class, 'latestReviews'])->name('api.reviews.latest');
         Route::post('/stock-alerts', [ApiController::class, 'stockAlert'])->name('api.stock-alerts');
         Route::post('/newsletter', [ApiController::class, 'newsletterSubscribe'])->name('api.newsletter');
 
