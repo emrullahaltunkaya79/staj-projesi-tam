@@ -7,7 +7,8 @@ import { test, expect } from "@playwright/test";
 test.describe("Alışveriş hunisi", () => {
   test("ana sayfa ürün kartları ve indirim rozetleri", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("a[href^='/urun/']")).toHaveCount(74, { timeout: 30_000 });
+    const kartSayisi = await page.locator("a[href^='/urun/']").count();
+    expect(kartSayisi).toBeGreaterThanOrEqual(140);
     // 22 indirimli üründen en az bir rozet ana sayfada görünmeli
     await page.waitForTimeout(1500);
     const rozet = page.locator("span", { hasText: /%\d+ İndirim/ }).first();
@@ -20,7 +21,7 @@ test.describe("Alışveriş hunisi", () => {
     await expect(page.locator("p", { hasText: /için \d+ sonuç/ })).toBeVisible({ timeout: 20_000 });
     const kartlar = await page.locator("a[href^='/urun/']").count();
     expect(kartlar).toBeGreaterThan(0);
-    expect(kartlar).toBeLessThan(74);
+    expect(kartlar).toBeLessThan(140);
   });
 
   test("ürün detayı → sepete ekle → sepet → sipariş oluştur", async ({ page }) => {

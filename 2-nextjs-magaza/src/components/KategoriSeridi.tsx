@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  Laptop, Cpu, Home, Sparkles, NotebookPen, Music, Briefcase, Gamepad2, Dumbbell, LayoutGrid, ChevronRight,
+  Laptop, Cpu, Home, Sparkles, NotebookPen, Music, Briefcase, Gamepad2, Dumbbell, LayoutGrid, ChevronRight, Camera, Clapperboard, HeartPulse,
   type LucideIcon,
 } from "lucide-react";
 
@@ -14,6 +14,9 @@ const IKONLAR: Record<string, LucideIcon> = {
   "Ofis": Briefcase,
   "Oyun & Eğlence": Gamepad2,
   "Spor & Outdoor": Dumbbell,
+  "Fotoğraf & Kamera": Camera,
+  "Ev Sineması": Clapperboard,
+  "Wellness & Sağlık": HeartPulse,
 };
 
 /** Ana sayfa kategori vitrini — tek satırda yatay kaydırmalı kartlar, ikon solda. */

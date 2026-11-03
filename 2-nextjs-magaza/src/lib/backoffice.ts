@@ -48,7 +48,8 @@ export type Siparis = {
 
 /** Base64 data URI'ler sayfa boyutunu ~24MB'a çıkarıyordu; görsel /api/img/{id} proxy'sinden akar. */
 function gorselProxy(p: Urun): Urun {
-  return p.image_url?.startsWith("data:") ? { ...p, image_url: `/api/img/${p.id}` } : p;
+  // API artık base64 yerine 'ok' işareti döner — görsel proxy URL'sine çevrilir
+  return p.image_url ? { ...p, image_url: `/api/img/${p.id}` } : p;
 }
 
 async function istek(path: string, init?: RequestInit) {
