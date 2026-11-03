@@ -5,6 +5,7 @@ import { Palette } from "lucide-react";
 
 const ANAHTAR = "hba-tema";
 const TEMALAR: { id: string; ad: string; renk: string }[] = [
+  { id: "", ad: "HepsiBirarada (Turuncu)", renk: "#ff6000" },
   { id: "siyah", ad: "Siyah (Klasik)", renk: "#111111" },
   { id: "lacivert", ad: "Lacivert", renk: "#1e3a8a" },
   { id: "yesil", ad: "Yeşil", renk: "#065f46" },
@@ -14,7 +15,7 @@ const TEMALAR: { id: string; ad: string; renk: string }[] = [
 
 /** Marka rengi seçici — html'e tema sınıfı koyar, CSS değişkenleri devralır. */
 export function TemaSecici() {
-  const [aktif, setAktif] = useState("siyah");
+  const [aktif, setAktif] = useState("");
   const [acik, setAcik] = useState(false);
 
   useEffect(() => {
@@ -29,8 +30,12 @@ export function TemaSecici() {
 
   const sec = (id: string) => {
     setAktif(id);
-    document.documentElement.dataset.tema = id;
-    try { localStorage.setItem(ANAHTAR, id); } catch {}
+    if (id) document.documentElement.dataset.tema = id;
+    else delete document.documentElement.dataset.tema;
+    try {
+      if (id) localStorage.setItem(ANAHTAR, id);
+      else localStorage.removeItem(ANAHTAR);
+    } catch {}
     setAcik(false);
   };
 

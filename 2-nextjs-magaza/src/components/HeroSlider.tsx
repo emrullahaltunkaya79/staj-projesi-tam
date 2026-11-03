@@ -51,12 +51,12 @@ export function HeroSlider() {
         {SLIDLAR.map((s, i) => (
           <div
             key={i}
-            className="relative flex min-w-full items-center gap-4 px-4 py-3.5 sm:px-6 sm:py-4"
+            className="relative flex min-w-full flex-col items-start gap-3 px-5 py-6 sm:flex-row sm:items-center sm:gap-5 sm:px-8 sm:py-9"
             style={{ background: "linear-gradient(100deg, var(--marka) 0%, #1a1a2e 85%)" }}
           >
             <div className="pointer-events-none absolute -right-6 -top-10 h-28 w-28 rounded-full bg-white/10" />
             <div className="pointer-events-none absolute -bottom-10 left-1/3 h-20 w-20 rounded-full bg-white/5" />
-            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15 text-lg backdrop-blur">
+            <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl backdrop-blur">
               {s.emoji}
             </span>
             <div className="relative min-w-0 flex-1">

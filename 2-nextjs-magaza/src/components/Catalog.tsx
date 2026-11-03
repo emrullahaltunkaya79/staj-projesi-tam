@@ -5,6 +5,7 @@ import Link from "next/link";
 import { KalpButonu } from "./KalpButonu";
 import { QuickViewButonu } from "./QuickView";
 import { Star } from "lucide-react";
+import { KartaEkleButonu } from "./KartaEkleButonu";
 
 export function UrunKarti({ urun }: { urun: Urun }) {
   const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
@@ -58,13 +59,17 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             )}
           </div>
         <div className="flex shrink-0 flex-col items-end">
-          <span className="text-[13px] font-bold tabular-nums text-red-600">{fmt(fiyat)} ₺</span>
+          <span className="text-[15px] font-black tabular-nums text-black sm:text-[17px]">{fmt(fiyat)} ₺</span>
           {indirim > 0 && (
             <span className="text-xs tabular-nums text-black/40 line-through">{fmt(urun.sale_price)} ₺</span>
           )}
         </div>
       </div>
       </Link>
+      <KartaEkleButonu
+        urun={{ id: urun.id, ad: urun.name, fiyat, gorsel: imgUrl(urun.id, urun.image_url) }}
+        musait={urun.in_stock ? urun.available_quantity : 0}
+      />
       <div className="absolute right-3 top-3 z-10">
         <KalpButonu
           urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}

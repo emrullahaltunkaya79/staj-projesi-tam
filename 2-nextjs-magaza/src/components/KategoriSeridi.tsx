@@ -38,7 +38,7 @@ export function KategoriSeridi({
   if (kategoriler.length === 0) return null;
 
   return (
-    <section className="px-5 pb-10 pt-10 sm:px-10">
+    <section id="kategoriler" className="px-5 pb-10 pt-10 sm:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-5 flex items-end justify-between border-b-2 border-black pb-3">
           <div className="flex items-center gap-3">
@@ -53,7 +53,7 @@ export function KategoriSeridi({
           </span>
         </div>
 
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
           {kategoriler.map(({ ad, sayi }) => {
             const Ikon = IKONLAR[ad] ?? LayoutGrid;
             const kategoriMarkalari = markalar[ad] ?? [];
@@ -61,19 +61,17 @@ export function KategoriSeridi({
             return (
               <div
                 key={ad}
-                className={`group flex shrink-0 snap-start flex-col rounded-2xl border border-black/10 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--marka)] hover:shadow-lg ${
-                  kartAcik ? "w-[280px]" : "min-w-[190px]"
+                className={`group flex flex-col rounded-2xl border border-black/10 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--marka)] hover:shadow-lg ${
+                  kartAcik ? "sm:col-span-2 lg:col-span-4" : ""
                 }`}
               >
-                <div className="flex items-center gap-3.5 px-4 py-3.5">
-                  <Link href={`/kategori/${encodeURIComponent(ad)}`} className="flex min-w-0 flex-1 items-center gap-3.5">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-black/[.04] text-black/70 transition-colors group-hover:bg-[var(--marka)] group-hover:text-white">
-                      <Ikon className="h-5.5 w-5.5" />
+                <div className="flex flex-col items-center gap-2 px-2 py-4 text-center">
+                  <Link href={`/kategori/${encodeURIComponent(ad)}`} className="flex flex-col items-center gap-2">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black/[.04] text-black/70 transition-colors group-hover:bg-[var(--marka)] group-hover:text-white">
+                      <Ikon className="h-7 w-7" />
                     </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-[13px] font-bold text-black/75 transition-colors group-hover:text-black">{ad}</span>
-                      <span className="block text-[11px] font-medium text-black/35">{sayi} ürün</span>
-                    </span>
+                    <span className="text-[12.5px] font-bold leading-tight text-black/75 transition-colors group-hover:text-black">{ad}</span>
+                    <span className="text-[11px] font-medium text-black/35">{sayi} ürün</span>
                   </Link>
                   {kategoriMarkalari.length > 0 && (
                     <button
@@ -82,18 +80,19 @@ export function KategoriSeridi({
                       aria-label={`${ad} markaları`}
                       aria-expanded={kartAcik}
                       title={`${ad} markaları (${kategoriMarkalari.length})`}
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-black/30 transition hover:bg-black/5 hover:text-black ${
+                      className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-black/35 transition hover:bg-black/5 hover:text-black ${
                         kartAcik ? "bg-[var(--marka)] text-white hover:bg-[var(--marka)] hover:text-white" : ""
                       }`}
                     >
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${kartAcik ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`h-3 w-3 transition-transform duration-300 ${kartAcik ? "rotate-180" : ""}`} />
+                      {kategoriMarkalari.length} marka
                     </button>
                   )}
                 </div>
                 {kartAcik && (
                   <div className="border-t border-black/10 px-3 py-2.5">
                     <p className="mb-1.5 text-[9.5px] font-black uppercase tracking-widest text-black/35">Markalar</p>
-                    <div className="flex max-h-[132px] flex-wrap gap-1 overflow-y-auto [scrollbar-width:thin]">
+                    <div className="flex max-h-[120px] flex-wrap gap-1 overflow-y-auto [scrollbar-width:thin]">
                       {kategoriMarkalari.map((m) => (
                         <Link
                           key={m.ad}

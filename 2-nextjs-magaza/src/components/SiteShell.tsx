@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, LogOut, ChevronDown, Heart, Globe, Moon, Sun } from "lucide-react";
+import { Search, ShoppingCart, User, LogOut, ChevronDown, Heart, Globe, Moon, Sun, Menu } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { auth } from "./AuthProvider";
 import { favori } from "./FavoriProvider";
@@ -82,19 +82,22 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <header className="sticky top-0 z-40 border-b-2 border-black bg-[#1a1a2e] px-5 pb-4 pt-5 shadow-lg shadow-black/20 sm:px-10">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-4">
-          <a href="/" className="leading-none">
-            <span className="flex items-center gap-2 text-[28px] font-black tracking-[-0.04em] text-white sm:text-[36px]"><LogoIshari boyut={30} />HepsiBirarada<span className="text-indigo-400">.</span></span>
-            <span className="mt-0.5 block text-center text-[11px] font-medium tracking-wide text-indigo-200/70 sm:text-xs">Teknoloji & Ofis — her şey tek yerde</span>
+      <header className="sticky top-0 z-40 border-b border-black/10 bg-white px-5 pb-3 pt-4 shadow-sm sm:px-10">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-3">
+          <a href="/" className="flex items-center gap-2.5 leading-none">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--marka)] text-[17px] font-black text-white">hb</span>
+            <span>
+              <span className="block text-[24px] font-black tracking-[-0.03em] text-black sm:text-[30px]">HepsiBirarada<span className="text-[var(--marka)]">.</span></span>
+              <span className="block text-[10.5px] font-medium tracking-wide text-black/45">Teknoloji & Ofis — her şey tek yerde</span>
+            </span>
           </a>
 
           <div className="relative order-3 w-full max-w-md sm:order-2 sm:w-auto sm:flex-1"
                onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setAramaOdak(false); }}>
-            <form onSubmit={ara} className="flex h-10 w-full items-center overflow-hidden rounded-lg border border-white/20 bg-white/10 backdrop-blur">
+            <form onSubmit={ara} className="flex h-10 w-full items-center overflow-hidden rounded-lg border border-black/15 bg-[#f8f8f8]">
               <input value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setAramaOdak(true)} placeholder="Ürün ara…"
-                     className="h-full flex-1 bg-transparent px-4 text-sm text-white placeholder-white/40 focus:outline-none" />
-              <button type="submit" aria-label="Ara" className="flex h-full w-10 items-center justify-center border-l border-white/10 text-white/60 transition bg-[var(--marka)] hover:opacity-90 hover:text-white">
+                     className="h-full flex-1 bg-transparent px-4 text-sm text-black placeholder-black/35 focus:outline-none" />
+              <button type="submit" aria-label="Ara" className="flex h-full w-11 items-center justify-center text-white transition bg-[var(--marka)] hover:opacity-90">
                 <Search className="h-4 w-4" />
               </button>
             </form>
@@ -123,13 +126,13 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={() => dilDegistir(aktifDil === "tr" ? "en" : "tr")}
               title={aktifDil === "tr" ? "Switch to English" : "Türkçe'ye geç"}
-              className="flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-black text-white/80 backdrop-blur transition hover:border-white/40"
+              className="flex items-center gap-1 rounded-full border border-black/15 bg-white px-3 py-1.5 text-[11px] font-black text-black/60 transition hover:border-black/40"
             >
               <Globe className="h-3 w-3" />
               {aktifDil === "tr" ? "EN" : "TR"}
             </button>
             <a href="/favoriler" aria-label="Favoriler"
-               className="relative flex items-center gap-1.5 text-white/70 transition hover:text-white">
+               className="relative flex items-center gap-1.5 text-black/55 transition hover:text-[var(--marka)]">
               <Heart className="h-5 w-5" strokeWidth={1.8} />
               {favoriSayi > 0 && (
                 <span className="text-xs font-bold tabular-nums">{favoriSayi}</span>
@@ -146,8 +149,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             {girisYapmis && kullanici ? (
               <div className="relative">
                 <button type="button" onClick={() => setMenuAcik(!menuAcik)}
-                        className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white backdrop-blur transition hover:border-white/40">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--marka)] text-xs font-black">
+                        className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-sm text-black transition hover:border-black/40">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--marka)] text-xs font-black text-white">
                     {kullanici.name.charAt(0).toUpperCase()}
                   </span>
                   <span className="hidden max-w-[100px] truncate font-bold sm:block">{kullanici.name.split(" ")[0]}</span>
@@ -185,7 +188,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               </div>
             ) : (
               <button type="button" onClick={() => setAuthModalAcik(true)}
-                      className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[13px] font-bold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/20">
+                      className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2 text-[13px] font-bold text-black/70 transition hover:border-black/40 hover:text-black">
                 <User className="h-3.5 w-3.5" />
                 Giriş Yap
               </button>
@@ -198,22 +201,26 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <nav
         aria-label="Kategoriler ve kampanyalar"
         onMouseLeave={() => setMegaAcik(null)}
-        className="relative border-b border-white/10 bg-[#1a1a2e] px-5 sm:px-10"
+        className="relative border-b border-black/10 bg-white px-5 sm:px-10"
       >
         <div className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]">
-          <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-white transition hover:bg-white/10">Tüm Ürünler</a>
-          <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-amber-400 transition hover:bg-white/10">⚡ Flaş İndirimler</a>
-          <a href="/outlet" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Outlet</a>
-          <a href="/cok-satanlar" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">★ Çok Satanlar</a>
-          <a href="/son-firsat" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Son Fırsat</a>
-          <a href="/son-kalan" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Son Kalan</a>
-          <a href="/sezon" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Sezon</a>
-          <span className="mx-2 h-4 w-px shrink-0 bg-white/15" aria-hidden />
+          <a href="#kategoriler" className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black uppercase tracking-wide text-black transition hover:bg-black/5">
+            <Menu className="h-3.5 w-3.5 text-[var(--marka)]" /> Tüm Kategoriler
+          </a>
+          <span className="mx-1.5 h-4 w-px shrink-0 bg-black/10" aria-hidden />
+          <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-black transition hover:bg-black/5">Tüm Ürünler</a>
+          <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-[var(--marka)] transition hover:bg-orange-50">⚡ Flaş İndirimler</a>
+          <a href="/outlet" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Outlet</a>
+          <a href="/cok-satanlar" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">★ Çok Satanlar</a>
+          <a href="/son-firsat" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Son Fırsat</a>
+          <a href="/son-kalan" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Son Kalan</a>
+          <a href="/sezon" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Sezon</a>
+          <span className="mx-2 h-4 w-px shrink-0 bg-black/10" aria-hidden />
           {KATEGORI_LINKLERI.map((k) => (
             <a key={k} href={`/kategori/${encodeURIComponent(k)}`}
                onMouseEnter={() => megaAc(k)}
-               className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold transition hover:bg-white/10 hover:text-white ${
-                 megaAcik === k ? "bg-white/10 text-white" : "text-white/75"
+               className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold transition hover:bg-black/5 hover:text-[var(--marka)] ${
+                 megaAcik === k ? "bg-black/5 text-[var(--marka)]" : "text-black/60"
                }`}>
               {k}
             </a>
@@ -253,51 +260,51 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
 
       <div className="page-enter flex-1">{children}</div>
 
-      <footer className="border-t border-black/10 px-5 py-10 sm:px-10">
+      <footer className="mt-4 bg-[#1a1a2e] px-5 py-10 text-white sm:px-10">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap gap-8 text-xs text-black/50">
+          <div className="flex flex-wrap gap-8 text-xs text-white/65">
             <div className="flex-1 min-w-[160px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Mağaza</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Mağaza</div>
               <div className="flex flex-col gap-2">
-                <a href="/" className="hover:text-black transition">Tüm Ürünler</a>
-                <a href="/flas-indirimler" className="font-bold text-red-600 transition hover:text-red-700">⚡ Flaş İndirimler</a>
-                <a href="/outlet" className="font-bold text-red-600 transition hover:text-red-700">🏭 Outlet</a>
-                <a href="/cok-satanlar" className="hover:text-black transition">★ En Çok Satanlar</a>
-                <a href="/son-kalan" className="hover:text-black transition">📏 Son Kalan Ölçüler</a>
-                <a href="/son-firsat" className="hover:text-black transition">⏳ Son Fırsat</a>
-                <a href="/sezon" className="hover:text-black transition">🗓️ Sezon Ürünleri</a>
-                <a href="/sepet" className="hover:text-black transition">Sepetim</a>
-                <a href="/siparislerim" className="hover:text-black transition">Siparişlerim</a>
+                <a href="/" className="hover:text-white transition">Tüm Ürünler</a>
+                <a href="/flas-indirimler" className="font-bold text-[#ffb14d] transition hover:text-[#ffc47a]">⚡ Flaş İndirimler</a>
+                <a href="/outlet" className="font-bold text-[#ffb14d] transition hover:text-[#ffc47a]">🏭 Outlet</a>
+                <a href="/cok-satanlar" className="hover:text-white transition">★ En Çok Satanlar</a>
+                <a href="/son-kalan" className="hover:text-white transition">📏 Son Kalan Ölçüler</a>
+                <a href="/son-firsat" className="hover:text-white transition">⏳ Son Fırsat</a>
+                <a href="/sezon" className="hover:text-white transition">🗓️ Sezon Ürünleri</a>
+                <a href="/sepet" className="hover:text-white transition">Sepetim</a>
+                <a href="/siparislerim" className="hover:text-white transition">Siparişlerim</a>
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Kurumsal</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Kurumsal</div>
               <div className="flex flex-col gap-2">
-                <a href="/hakkinda" className="hover:text-black transition">Hakkında</a>
-                <a href="/iletisim" className="hover:text-black transition">İletişim</a>
+                <a href="/hakkinda" className="hover:text-white transition">Hakkında</a>
+                <a href="/iletisim" className="hover:text-white transition">İletişim</a>
               </div>
             </div>
             <div className="flex-[2] min-w-[220px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Kampanyalardan Haberdar Ol</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Kampanyalardan Haberdar Ol</div>
               <div className="mb-5 max-w-[280px]"><BultenFormu /></div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Bilgi</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Bilgi</div>
               <div className="flex flex-col gap-2">
                 <span>⛓️ CSPR ile kripto ödeme</span>
                 <span>🔒 HMAC imzalı güvenli API</span>
-                <a href="/sozlesme/mesafeli-satis" className="hover:text-black transition">↩️ 14 gün koşulsuz iade — Mesafeli Satış Sözleşmesi</a>
+                <a href="/sozlesme/mesafeli-satis" className="hover:text-white transition">↩️ 14 gün koşulsuz iade — Mesafeli Satış Sözleşmesi</a>
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-3">Yasal</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Yasal</div>
               <div className="flex flex-col gap-2">
-                <a href="/sozlesme/mesafeli-satis" className="hover:text-black transition">Mesafeli Satış Sözleşmesi</a>
-                <a href="/sozlesme/uyelik" className="hover:text-black transition">Üyelik Sözleşmesi</a>
-                <a href="/gizlilik" className="hover:text-black transition">KVKK Aydınlatma Metni</a>
-                <a href="/cerez-politikasi" className="hover:text-black transition">Çerez Politikası</a>
+                <a href="/sozlesme/mesafeli-satis" className="hover:text-white transition">Mesafeli Satış Sözleşmesi</a>
+                <a href="/sozlesme/uyelik" className="hover:text-white transition">Üyelik Sözleşmesi</a>
+                <a href="/gizlilik" className="hover:text-white transition">KVKK Aydınlatma Metni</a>
+                <a href="/cerez-politikasi" className="hover:text-white transition">Çerez Politikası</a>
               </div>
             </div>
           </div>
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-black/5 pt-6 text-xs text-black/30">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/40">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 {[
@@ -307,7 +314,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                   ["f", "Facebook"],
                 ].map(([kisa, ad]) => (
                   <a key={ad} href="#" aria-label={ad} title={ad}
-                     className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 text-[11px] font-black text-black/40 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white">
+                     className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-[11px] font-black text-white/50 transition hover:border-white hover:bg-white/10 hover:text-white">
                     {kisa}
                   </a>
                 ))}
@@ -316,12 +323,12 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {["VISA", "Mastercard", "Troy", "⛓️ CSPR"].map((odeme) => (
-                <span key={odeme} className="rounded-md border border-black/10 px-2 py-1 text-[10px] font-black tracking-wide text-black/40">
+                <span key={odeme} className="rounded-md border border-white/15 px-2 py-1 text-[10px] font-black tracking-wide text-white/50">
                   {odeme}
                 </span>
               ))}
             </div>
-            <span>Stok & sipariş: <strong className="font-semibold text-black/50">Ön Muhasebe API</strong> ile gerçek zamanlı.</span>
+            <span>Stok & sipariş: <strong className="font-semibold text-white/70">Ön Muhasebe API</strong> ile gerçek zamanlı.</span>
           </div>
         </div>
       </footer>
