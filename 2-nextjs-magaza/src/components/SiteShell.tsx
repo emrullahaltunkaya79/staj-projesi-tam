@@ -38,8 +38,25 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [authModalAcik, setAuthModalAcik] = useState(false);
   const [menuAcik, setMenuAcik] = useState(false);
   const [aramaOdak, setAramaOdak] = useState(false);
+  const [megaAcik, setMegaAcik] = useState<string | null>(null);
+  const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[] }> | null>(null);
 
   const POPULER_ARAMALAR = ["Kulaklık", "Projeksiyon", "Akıllı Saat", "Drone", "Klavye", "Hoparlör"];
+
+  // Mega menü verisi ilk hover'da bir kez yüklenir
+  const menuGetir = () => {
+    if (menuVerisi) return;
+    fetch("/api/menu")
+      .then((r) => r.json())
+      .then((d) => setMenuVerisi(d.data ?? {}))
+      .catch(() => {});
+  };
+
+  const megaAc = (ad: string) => {
+    if (!window.matchMedia("(min-width: 1024px)").matches) return; // yalnızca masaüstü
+    menuGetir();
+    setMegaAcik(ad);
+  };
 
   const ara = (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,7 +195,11 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Alt menü çubuğu — kampanyalar + kategoriler (her sayfada) */}
-      <nav aria-label="Kategoriler ve kampanyalar" className="border-b border-white/10 bg-[#1a1a2e] px-5 sm:px-10">
+      <nav
+        aria-label="Kategoriler ve kampanyalar"
+        onMouseLeave={() => setMegaAcik(null)}
+        className="relative border-b border-white/10 bg-[#1a1a2e] px-5 sm:px-10"
+      >
         <div className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]">
           <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-white transition hover:bg-white/10">Tüm Ürünler</a>
           <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-amber-400 transition hover:bg-white/10">⚡ Flaş İndirimler</a>
@@ -190,11 +211,40 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           <span className="mx-2 h-4 w-px shrink-0 bg-white/15" aria-hidden />
           {KATEGORI_LINKLERI.map((k) => (
             <a key={k} href={`/kategori/${encodeURIComponent(k)}`}
-               className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">
+               onMouseEnter={() => megaAc(k)}
+               className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold transition hover:bg-white/10 hover:text-white ${
+                 megaAcik === k ? "bg-white/10 text-white" : "text-white/75"
+               }`}>
               {k}
             </a>
           ))}
         </div>
+
+        {/* Mega menü paneli — hover edilen kategorinin markaları */}
+        {megaAcik && menuVerisi?.[megaAcik] && (
+          <div className="absolute inset-x-0 top-full z-50 hidden lg:block">
+            <div className="mx-auto max-w-7xl rounded-b-2xl border-x border-b border-black/10 bg-white p-5 shadow-2xl">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-baseline gap-3">
+                  <h3 className="text-[15px] font-black uppercase tracking-wide text-black">{megaAcik}</h3>
+                  <span className="text-[12px] font-medium text-black/35">{menuVerisi[megaAcik].urun} ürün · {menuVerisi[megaAcik].markalar.length} marka</span>
+                </div>
+                <a href={`/kategori/${encodeURIComponent(megaAcik)}`} className="text-[12px] font-bold text-[var(--marka)] hover:underline">
+                  Kategoriyi gör →
+                </a>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {menuVerisi[megaAcik].markalar.map((m) => (
+                  <a key={m.ad} href={`/marka/${encodeURIComponent(m.ad)}`}
+                     className="flex items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-[11.5px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white">
+                    {m.ad}
+                    <span className="text-black/30">{m.sayi}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       <AuthModal acik={authModalAcik} kapat={() => setAuthModalAcik(false)} />

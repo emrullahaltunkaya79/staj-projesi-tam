@@ -9,6 +9,7 @@ import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { GununFirsati } from "@/components/GununFirsati";
 import { YorumVitrini } from "@/components/YorumVitrini";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
+import { KargoTakip } from "@/components/KargoTakip";
 import { urunler, indirimliFiyat, sonYorumlar, type Urun } from "@/lib/backoffice";
 import { sezonUrunleri, mevsimBul, MEVSIMLER, type Mevsim } from "@/lib/sezonlar";
 import { outletUrunler, sonKalanUrunler, sonFirsatUrunler } from "@/lib/koleksiyonlar";
@@ -99,6 +100,13 @@ export default async function Home() {
 
       {/* Günün Fırsatı — tek büyük fırsat bloğu */}
       {!hata && gununFirsatiUrun && <GununFirsati urun={gununFirsatiUrun} />}
+
+      {/* Kargo takip widget'ı */}
+      <section className="px-5 pt-3 sm:px-10">
+        <div className="mx-auto max-w-7xl">
+          <KargoTakip />
+        </div>
+      </section>
 
       {/* 1. Kampanya vitrini — geri sayımlı flaş indirimler */}
       {!hata && flasUrunler.length > 0 && (
