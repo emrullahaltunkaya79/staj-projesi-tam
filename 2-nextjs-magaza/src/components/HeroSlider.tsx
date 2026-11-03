@@ -40,7 +40,7 @@ export function HeroSlider() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl"
+      className="relative flex h-full items-center overflow-hidden rounded-xl"
       onMouseEnter={() => setDuraklat(true)}
       onMouseLeave={() => setDuraklat(false)}
     >
