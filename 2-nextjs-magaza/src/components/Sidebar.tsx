@@ -9,6 +9,7 @@ import { urunRenkleri, urunBoyutlari, facetSecenekleri, RENKLER } from "@/lib/fa
 import { useMemo } from "react";
 
 export type Filtreler = {
+  marka: string | null;
   minFiyat: string;
   maxFiyat: string;
   sadeceStok: boolean;
@@ -17,10 +18,11 @@ export type Filtreler = {
   boyutlar: string[];
 };
 
-export const bosFiltreler: Filtreler = { minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [] };
+export const bosFiltreler: Filtreler = { marka: null, minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [] };
 
 export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
   let sonuc = urunler;
+  if (f.marka) sonuc = sonuc.filter((u) => u.brand === f.marka);
   if (f.minFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) >= Number(f.minFiyat));
   if (f.maxFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) <= Number(f.maxFiyat));
   if (f.sadeceStok) sonuc = sonuc.filter((u) => u.in_stock);
@@ -118,7 +120,36 @@ export function Sidebar({
     [urunler],
   );
 
+  // Kategori -> marka listesi (accordion alt satırları için)
+  const kategoriMarkalari = useMemo(() => {
+    const harita = new Map<string, Map<string, number>>();
+    for (const u of urunler) {
+      const kategori = u.category ?? "Diğer";
+      if (!u.brand) continue;
+      if (!harita.has(kategori)) harita.set(kategori, new Map());
+      const ic = harita.get(kategori)!;
+      ic.set(u.brand, (ic.get(u.brand) ?? 0) + 1);
+    }
+    const sonuc = new Map<string, { ad: string; sayi: number }[]>();
+    for (const [k, ic] of harita) {
+      sonuc.set(
+        k,
+        [...ic.entries()]
+          .map(([ad, sayi]) => ({ ad, sayi }))
+          .sort((a, b) => b.sayi - a.sayi || a.ad.localeCompare(b.ad, "tr")),
+      );
+    }
+    return sonuc;
+  }, [urunler]);
+
+  // Kart式 accordion durumu: belirtilmemişse yalnızca aktif kategori açıktır
+  const [ozelAcik, setOzelAcik] = useState<Record<string, boolean>>({});
+  const kategoriAcikMi = (ad: string) => ozelAcik[ad] ?? aktifKategori === ad;
+  const kategoriToggle = (ad: string) =>
+    setOzelAcik((o) => ({ ...o, [ad]: !(o[ad] ?? aktifKategori === ad) }));
+
   const aktifFiltreSayisi =
+    (filtreler.marka ? 1 : 0) +
     (filtreler.minFiyat ? 1 : 0) + (filtreler.maxFiyat ? 1 : 0) + (filtreler.sadeceStok ? 1 : 0) +
     filtreler.renkler.length + filtreler.boyutlar.length;
 
@@ -139,23 +170,81 @@ export function Sidebar({
       </div>
 
       <Grup baslik="Kategoriler">
+        {filtreler.marka && (
+          <button
+            type="button"
+            onClick={() => degistir({ marka: null })}
+            className="mb-2 flex w-full items-center justify-between rounded-lg bg-[var(--marka)] px-2.5 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90"
+          >
+            <span className="truncate">Marka: {filtreler.marka}</span>
+            <X className="h-3.5 w-3.5 shrink-0" />
+          </button>
+        )}
         <div className="space-y-1 pt-1">
-          {kategoriler.map((k) => (
-            <Link
-              key={k.ad}
-              href={aktifKategori === k.ad ? "/" : `/kategori/${encodeURIComponent(k.ad)}`}
-              className={`flex items-center justify-between rounded-lg px-3 py-2 text-[13px] font-medium transition ${
-                aktifKategori === k.ad
-                  ? "bg-[var(--marka)] text-white shadow-sm"
-                  : "text-black/60 hover:bg-black/5 hover:text-black"
-              }`}
-            >
-              {k.ad}
-              <span className={`text-[11px] tabular-nums ${aktifKategori === k.ad ? "text-white/60" : "text-black/30"}`}>
-                {k.sayi}
-              </span>
-            </Link>
-          ))}
+          {kategoriler.map((k) => {
+            const markalar = kategoriMarkalari.get(k.ad) ?? [];
+            const acik = kategoriAcikMi(k.ad);
+            return (
+              <div key={k.ad}>
+                <div
+                  className={`flex items-center rounded-lg transition ${
+                    aktifKategori === k.ad
+                      ? "bg-[var(--marka)] text-white shadow-sm"
+                      : "text-black/60 hover:bg-black/5 hover:text-black"
+                  }`}
+                >
+                  <Link
+                    href={aktifKategori === k.ad ? "/" : `/kategori/${encodeURIComponent(k.ad)}`}
+                    className="min-w-0 flex-1 truncate px-3 py-2 text-[13px] font-medium"
+                  >
+                    {k.ad}
+                  </Link>
+                  {markalar.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => kategoriToggle(k.ad)}
+                      aria-label={`${k.ad} markaları`}
+                      title={`${k.ad} markaları (${markalar.length})`}
+                      className={`flex h-8 w-7 shrink-0 items-center justify-center transition ${
+                        aktifKategori === k.ad ? "text-white/60 hover:text-white" : "text-black/30 hover:text-black"
+                      }`}
+                    >
+                      <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${acik ? "rotate-180" : ""}`} />
+                    </button>
+                  )}
+                  <span
+                    className={`pr-3 text-[11px] tabular-nums ${aktifKategori === k.ad ? "text-white/60" : "text-black/30"}`}
+                  >
+                    {k.sayi}
+                  </span>
+                </div>
+                {acik && markalar.length > 0 && (
+                  <div className="ml-3 space-y-0.5 border-l border-black/10 pb-1 pl-2 pt-0.5">
+                    {markalar.map((m) => {
+                      const secili = filtreler.marka === m.ad;
+                      return (
+                        <button
+                          key={m.ad}
+                          type="button"
+                          onClick={() => degistir({ marka: secili ? null : m.ad })}
+                          className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition ${
+                            secili
+                              ? "bg-[var(--marka)] text-white"
+                              : "text-black/55 hover:bg-black/5 hover:text-black"
+                          }`}
+                        >
+                          <span className="truncate">{m.ad}</span>
+                          <span className={`shrink-0 text-[10.5px] tabular-nums ${secili ? "text-white/60" : "text-black/30"}`}>
+                            {m.sayi}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </Grup>
 

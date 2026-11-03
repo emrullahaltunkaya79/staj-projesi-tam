@@ -11,10 +11,12 @@ export function KatalogIcerik({
   tumUrunler,
   kategori,
   baslik,
+  marka = null,
 }: {
   tumUrunler: Urun[];
   kategori: string | null;
   baslik: string;
+  marka?: string | null;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -31,10 +33,10 @@ export function KatalogIcerik({
     return [...m.entries()].map(([ad, sayi]) => ({ ad, sayi }));
   }, [tumUrunler]);
 
-  const sonuc = useMemo(
-    () => urunFiltrele(tumUrunler, kategori, filtreler, sirala),
-    [tumUrunler, kategori, filtreler, sirala],
-  );
+  const sonuc = useMemo(() => {
+    const liste = marka ? tumUrunler.filter((u) => u.brand === marka) : tumUrunler;
+    return urunFiltrele(liste, kategori, filtreler, sirala);
+  }, [tumUrunler, kategori, marka, filtreler, sirala]);
 
   const secenekler: [string, string][] = [
     ["", "Önerilen"],

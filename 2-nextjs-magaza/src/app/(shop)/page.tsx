@@ -1,6 +1,7 @@
 import { Zap, Star, Leaf, Sun, Snowflake, Flower2, type LucideIcon } from "lucide-react";
 import Hero from "@/components/Hero";
 import { KategoriSeridi } from "@/components/KategoriSeridi";
+import { MarkaSeridi } from "@/components/MarkaSeridi";
 import { KoleksiyonSeridi } from "@/components/KoleksiyonSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
@@ -47,9 +48,33 @@ export default async function Home() {
   const sonKalanSayisi = sonKalanUrunler(tumu).length;
   const sonFirsatSayisi = sonFirsatUrunler(tumu).length;
 
+  // Markalar: ürün sayısına göre en çok ürünü olanlar önde (şeritte ilk 20)
+  const markaSayilari = tumu.reduce<Record<string, number>>((m, u) => {
+    if (u.brand) m[u.brand] = (m[u.brand] ?? 0) + 1;
+    return m;
+  }, {});
+  const tumMarkalar = Object.entries(markaSayilari)
+    .map(([ad, sayi]) => ({ ad, sayi }))
+    .sort((a, b) => b.sayi - a.sayi || a.ad.localeCompare(b.ad, "tr"));
+
+  // Kategori kartlarındaki açılır marka listeleri
+  const kategoriMarkalari: Record<string, { ad: string; sayi: number }[]> = {};
+  for (const u of tumu) {
+    if (!u.category || !u.brand) continue;
+    (kategoriMarkalari[u.category] ??= []);
+    const mevcut = kategoriMarkalari[u.category].find((m) => m.ad === u.brand);
+    if (mevcut) mevcut.sayi += 1;
+    else kategoriMarkalari[u.category].push({ ad: u.brand, sayi: 1 });
+  }
+  for (const liste of Object.values(kategoriMarkalari)) {
+    liste.sort((a, b) => b.sayi - a.sayi || a.ad.localeCompare(b.ad, "tr"));
+  }
+
   return (
     <div>
       <Hero />
+
+      {!hata && <MarkaSeridi markalar={tumMarkalar.slice(0, 20)} />}
 
       {!hata && flasUrunler.length > 0 && (
         <VitrinSeridi
@@ -64,8 +89,8 @@ export default async function Home() {
       )}
 
       {!hata && (
-        <KategoriSeridi
-          kategoriler={Object.entries(
+        <KategoriSeridi kategoriler={
+          Object.entries(
             tumu.reduce<Record<string, number>>((m, u) => {
               const ad = u.category ?? "Diğer";
               m[ad] = (m[ad] ?? 0) + 1;
@@ -73,8 +98,8 @@ export default async function Home() {
             }, {}),
           )
             .sort((a, b) => a[0].localeCompare(b[0], "tr"))
-            .map(([ad, sayi]) => ({ ad, sayi }))}
-        />
+            .map(([ad, sayi]) => ({ ad, sayi }))
+        } markalar={kategoriMarkalari} />
       )}
 
       {!hata && (
