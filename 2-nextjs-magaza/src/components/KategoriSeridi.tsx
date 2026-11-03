@@ -40,10 +40,13 @@ export function KategoriSeridi({
   return (
     <section className="px-5 pb-10 pt-10 sm:px-10">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-5 flex items-end justify-between border-b border-black/20 pb-3">
-          <div className="flex items-baseline gap-3">
-            <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Kategoriler</h2>
-            <span className="text-[13px] font-medium text-black/30">{kategoriler.length} bölüm</span>
+        <div className="mb-5 flex items-end justify-between border-b-2 border-black pb-3">
+          <div className="flex items-center gap-3">
+            <span className="h-6 w-1.5 shrink-0 rounded-full bg-[var(--marka)]" aria-hidden />
+            <h2 className="text-[19px] font-black uppercase tracking-wide text-black sm:text-[22px]">Kategoriler</h2>
+            <span className="rounded-full border border-[var(--marka)] px-2.5 py-0.5 text-[11px] font-bold tabular-nums text-[var(--marka)]">
+              {kategoriler.length} bölüm
+            </span>
           </div>
           <span className="hidden items-center gap-1 text-[11px] font-bold text-black/30 sm:flex">
             ok işaretiyle markaları görün <ChevronDown className="h-3.5 w-3.5" />
