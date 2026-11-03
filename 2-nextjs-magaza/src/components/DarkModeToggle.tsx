@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
-export function DarkModeToggle() {
+/** Karanlık mod durumu — header butonu ve kullanıcı menüsündeki anahtar paylaşır. */
+export function karanlikModKullan() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
@@ -20,6 +21,12 @@ export function DarkModeToggle() {
     document.documentElement.classList.toggle("dark", yeni);
     localStorage.setItem("hba-dark", String(yeni));
   };
+
+  return { dark, degistir };
+}
+
+export function DarkModeToggle() {
+  const { dark, degistir } = karanlikModKullan();
 
   return (
     <button

@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, LogOut, ChevronDown, Heart, Globe } from "lucide-react";
+import { Search, ShoppingCart, User, LogOut, ChevronDown, Heart, Globe, Moon, Sun } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { auth } from "./AuthProvider";
 import { favori } from "./FavoriProvider";
-import { DarkModeToggle } from "./DarkModeToggle";
+import { DarkModeToggle, karanlikModKullan } from "./DarkModeToggle";
 import { dil } from "./DilProvider";
 import { LiveChat } from "./LiveChat";
 import { CerezOnayi } from "./CerezOnayi";
@@ -27,6 +27,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const { kullanici, girisYapmis, cikis } = auth();
   const { sayi: favoriSayi } = favori();
   const { dil: aktifDil, dilDegistir, cevir } = dil();
+  const { dark: karanlik, degistir: karanlikDegistir } = karanlikModKullan();
   const [authModalAcik, setAuthModalAcik] = useState(false);
   const [menuAcik, setMenuAcik] = useState(false);
 
@@ -70,40 +71,6 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           </form>
 
           <div className="order-2 flex items-center gap-4 sm:order-3">
-            {girisYapmis && kullanici ? (
-              <div className="relative">
-                <button type="button" onClick={() => setMenuAcik(!menuAcik)}
-                        className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white backdrop-blur transition hover:border-white/40">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-black">
-                    {kullanici.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="hidden max-w-[100px] truncate font-bold sm:block">{kullanici.name.split(" ")[0]}</span>
-                  <ChevronDown className={`h-3.5 w-3.5 text-white/50 transition-transform ${menuAcik ? "rotate-180" : ""}`} />
-                </button>
-                {menuAcik && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-black/10 bg-white shadow-xl">
-                    <div className="border-b border-black/10 px-4 py-3">
-                      <p className="text-sm font-bold text-black">{kullanici.name}</p>
-                      <p className="text-xs text-black/40">{kullanici.email}</p>
-                    </div>
-                    <a href="/siparislerim" onClick={() => setMenuAcik(false)}
-                       className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
-                      <ShoppingCart className="h-4 w-4" /> Siparişlerim
-                    </a>
-                    <button type="button" onClick={() => { cikis(); setMenuAcik(false); }}
-                            className="flex w-full items-center gap-3 border-t border-black/10 px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50">
-                      <LogOut className="h-4 w-4" /> Çıkış Yap
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button type="button" onClick={() => setAuthModalAcik(true)}
-                      className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[13px] font-bold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/20">
-                <User className="h-3.5 w-3.5" />
-                Giriş Yap
-              </button>
-            )}
             {/* Dil değiştirici */}
             <button
               type="button"
@@ -126,7 +93,56 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <span className="text-sm font-bold tabular-nums">{toplamAdet}</span>
             </a>
             <TemaSecici />
-            <DarkModeToggle />
+            {/* Giriş yapılmamışken karanlık mod butonu header'da kalır; giriş sonrası menü içine taşınır */}
+            {!girisYapmis && <DarkModeToggle />}
+
+            {girisYapmis && kullanici ? (
+              <div className="relative">
+                <button type="button" onClick={() => setMenuAcik(!menuAcik)}
+                        className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white backdrop-blur transition hover:border-white/40">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-black">
+                    {kullanici.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="hidden max-w-[100px] truncate font-bold sm:block">{kullanici.name.split(" ")[0]}</span>
+                  <ChevronDown className={`h-3.5 w-3.5 text-white/50 transition-transform ${menuAcik ? "rotate-180" : ""}`} />
+                </button>
+                {menuAcik && (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-black/10 bg-white shadow-xl">
+                    <div className="border-b border-black/10 px-4 py-3">
+                      <p className="text-sm font-bold text-black">{kullanici.name}</p>
+                      <p className="text-xs text-black/40">{kullanici.email}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={karanlikDegistir}
+                      className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5"
+                    >
+                      <span className="flex items-center gap-3">
+                        {karanlik ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        Karanlık Mod
+                      </span>
+                      <span className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${karanlik ? "bg-[var(--marka)]" : "bg-black/10"}`}>
+                        <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-gray-100 shadow transition-all ${karanlik ? "left-[18px]" : "left-0.5"}`} />
+                      </span>
+                    </button>
+                    <a href="/siparislerim" onClick={() => setMenuAcik(false)}
+                       className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
+                      <ShoppingCart className="h-4 w-4" /> Siparişlerim
+                    </a>
+                    <button type="button" onClick={() => { cikis(); setMenuAcik(false); }}
+                            className="flex w-full items-center gap-3 border-t border-black/10 px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50">
+                      <LogOut className="h-4 w-4" /> Çıkış Yap
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button type="button" onClick={() => setAuthModalAcik(true)}
+                      className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[13px] font-bold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/20">
+                <User className="h-3.5 w-3.5" />
+                Giriş Yap
+              </button>
+            )}
           </div>
         </div>
       </header>
