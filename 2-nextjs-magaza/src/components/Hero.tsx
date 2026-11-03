@@ -10,23 +10,28 @@ export default function Hero() {
           <HeroSlider />
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          {/* Kampanya tile'ı — sayfadaki tek sıcak vurgu */}
           <Link
             href="/outlet"
             className="group flex flex-col justify-between rounded-xl p-4 text-white transition hover:opacity-95"
-            style={{ background: "linear-gradient(120deg, var(--marka) 0%, #374151 100%)" }}
+            style={{ background: "linear-gradient(120deg, #f97316 0%, #c2410c 100%)" }}
           >
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-80">Outlet Kampanyası</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Outlet Kampanyası</p>
             <p className="mt-1 text-lg font-black leading-tight">%40'a kadar indirim</p>
-            <p className="mt-0.5 text-xs opacity-80">Seçili ürünlerde →</p>
+            <p className="mt-0.5 text-xs font-bold text-white/85">
+              Seçili ürünlerde <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </p>
           </Link>
+          {/* Minimal bilgi kartı */}
           <Link
             href="/sss"
-            className="group flex flex-col justify-between rounded-xl p-4 text-white transition hover:opacity-95"
-            style={{ background: "linear-gradient(120deg, #475569 0%, #334155 100%)" }}
+            className="group flex flex-col justify-between rounded-xl border border-black/10 bg-white p-4 transition hover:border-black/25"
           >
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-80">⛓️ Kripto ile Ödeme</p>
-            <p className="mt-1 text-lg font-black leading-tight">CSPR ile Öde, Anında Onayla</p>
-            <p className="mt-0.5 text-xs opacity-80">Otomatik fatura + aynı gün kargo →</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-black/40">⛓️ Kripto ile Ödeme</p>
+            <p className="mt-1 text-lg font-black leading-tight text-black">CSPR ile Öde</p>
+            <p className="mt-0.5 text-xs font-bold text-black/45">
+              Anında onay + otomatik fatura <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </p>
           </Link>
         </div>
       </div>
