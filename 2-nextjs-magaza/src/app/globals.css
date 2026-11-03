@@ -55,6 +55,56 @@ body {
 
 .dark .hover\:bg-black:hover { background-color: #cbd5e1 !important; }
 
+
+/* ==== Dark mod eksik tamamlamalar — görünmeyen yazı düzeltmeleri ==== */
+
+/* Kullanılmayan opaklık kademesi olan siyah metin tonları */
+.dark .text-black\/75 { color: #a8b3c5 !important; }
+.dark .text-black\/65 { color: #9aa5b8 !important; }
+.dark .text-black\/55 { color: #8a95a8 !important; }
+.dark .text-black\/45 { color: #6b7689 !important; }
+.dark .text-black\/35 { color: #525d70 !important; }
+.dark .text-black\/25 { color: #3d485c !important; }
+
+/* Yarı saydam beyaz zeminler koyulaşsın (üzerine dönülen açık metin okunsun) */
+.dark .bg-white\/95 { background-color: rgba(22, 33, 62, 0.95) !important; }
+.dark .bg-white\/90 { background-color: rgba(22, 33, 62, 0.9) !important; }
+.dark .bg-white\/80 { background-color: rgba(22, 33, 62, 0.8) !important; }
+.dark .bg-white\/70 { background-color: rgba(22, 33, 62, 0.7) !important; }
+.dark .bg-white\/50 { background-color: rgba(22, 33, 62, 0.5) !important; }
+
+/* bg-black butonlar açık renge dönüyor — üzerindeki beyaz yazı da koyulaşsın */
+.dark .bg-black.text-white { color: #0f0f23 !important; }
+
+/* Sarı duyuru çubuğu: zemin sarı kalır, metin siyah kalmalı (küçük kapsül hariç) */
+.dark .bg-yellow-400 { color: #000 !important; }
+.dark .bg-yellow-400 .text-black { color: #000 !important; }
+.dark .bg-yellow-400 .text-black\/30 { color: rgba(0, 0, 0, 0.35) !important; }
+.dark .bg-yellow-400 .bg-black { background-color: #000 !important; color: #facc15 !important; }
+
+/* Koyu zeminde soluklaşan vurgu renkleri */
+.dark .text-red-600 { color: #f87171 !important; }
+.dark .text-red-700 { color: #fca5a5 !important; }
+.dark .text-red-500 { color: #f87171 !important; }
+.dark .text-emerald-600 { color: #34d399 !important; }
+.dark .text-emerald-900 { color: #6ee7b7 !important; }
+
+/* Kategori kartı ikon zemini ve nötr zeminler */
+.dark .bg-black\/\[\.04\] { background-color: rgba(255, 255, 255, 0.07) !important; }
+.dark .bg-black\/\[\.05\] { background-color: rgba(255, 255, 255, 0.08) !important; }
+.dark .bg-neutral-50 { background-color: #16213e !important; }
+.dark .bg-neutral-100 { background-color: #1a2440 !important; }
+.dark .border-black\/5 { border-color: #1e293b !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .border-slate-200 { border-color: #1e293b !important; }
+.dark .bg-slate-200 { background-color: #1e293b !important; }
+
+/* Açık pastel bilgi çipleri koyu modda hafif koyulaşsın, metni açık kalsın */
+.dark .bg-red-50 { background-color: rgba(127, 29, 29, 0.25) !important; }
+.dark .bg-emerald-50 { background-color: rgba(6, 78, 59, 0.25) !important; }
+.dark .bg-amber-50 { background-color: rgba(120, 53, 15, 0.25) !important; }
+.dark .bg-indigo-50 { background-color: rgba(49, 46, 129, 0.3) !important; }
+
 /* Dark mode kart efektleri */
 .dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
 .dark .shadow-lg { box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important; }
