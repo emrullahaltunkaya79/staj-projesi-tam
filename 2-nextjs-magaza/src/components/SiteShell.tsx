@@ -17,8 +17,14 @@ import { LogoIshari } from "./Logo";
 import { AuthModal } from "./AuthModal";
 
 /**
- * Tüm mağaza sayfalarını saran kabuk: duyuru bandı + header + arama + alt bilgi.
+ * Tüm mağaza sayfalarını saran kabuk: duyuru bandı + header + kategori menüsü + alt bilgi.
  */
+const KATEGORI_LINKLERI = [
+  "Bilgisayar", "Elektronik", "Ev & Yaşam", "Kişisel Bakım", "Kırtasiye",
+  "Müzik", "Ofis", "Oyun & Eğlence", "Spor & Outdoor", "Fotoğraf & Kamera",
+  "Ev Sineması", "Wellness & Sağlık",
+];
+
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   const { toplamAdet } = sepet();
   const router = useRouter();
@@ -146,6 +152,26 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
+
+      {/* Alt menü çubuğu — kampanyalar + kategoriler (her sayfada) */}
+      <nav aria-label="Kategoriler ve kampanyalar" className="border-b border-white/10 bg-[#1a1a2e] px-5 sm:px-10">
+        <div className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]">
+          <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-white transition hover:bg-white/10">Tüm Ürünler</a>
+          <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-amber-400 transition hover:bg-white/10">⚡ Flaş İndirimler</a>
+          <a href="/outlet" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Outlet</a>
+          <a href="/cok-satanlar" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">★ Çok Satanlar</a>
+          <a href="/son-firsat" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Son Fırsat</a>
+          <a href="/son-kalan" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Son Kalan</a>
+          <a href="/sezon" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">Sezon</a>
+          <span className="mx-2 h-4 w-px shrink-0 bg-white/15" aria-hidden />
+          {KATEGORI_LINKLERI.map((k) => (
+            <a key={k} href={`/kategori/${encodeURIComponent(k)}`}
+               className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-white/75 transition hover:bg-white/10 hover:text-white">
+              {k}
+            </a>
+          ))}
+        </div>
+      </nav>
 
       <AuthModal acik={authModalAcik} kapat={() => setAuthModalAcik(false)} />
       <KaydirmaYardimcisi />

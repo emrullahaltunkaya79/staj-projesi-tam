@@ -12,11 +12,13 @@ export function KatalogIcerik({
   kategori,
   baslik,
   marka = null,
+  sidebar = true,
 }: {
   tumUrunler: Urun[];
   kategori: string | null;
   baslik: string;
   marka?: string | null;
+  sidebar?: boolean;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -72,20 +74,37 @@ export function KatalogIcerik({
           </div>
         </div>
 
-        {/* Sidebar + grid */}
-        <div className="mt-6 flex flex-wrap gap-4 lg:flex-nowrap lg:gap-8">
-          <Sidebar
-            kategoriler={kategoriler}
-            aktifKategori={kategori}
-            filtreler={filtreler}
-            onFiltreDegistir={setFiltreler}
-            onTemizle={() => setFiltreler(bosFiltreler)}
-            toplamUrun={sonuc.length}
-            urunler={kategori ? tumUrunler.filter((u) => u.category === kategori) : tumUrunler}
-          />
+        {/* Grid — sidebar'lı (katalog sayfaları) veya tam genişlik (ana sayfa) */}
+        {sidebar ? (
+          <div className="mt-6 flex flex-wrap gap-4 lg:flex-nowrap lg:gap-8">
+            <Sidebar
+              kategoriler={kategoriler}
+              aktifKategori={kategori}
+              filtreler={filtreler}
+              onFiltreDegistir={setFiltreler}
+              onTemizle={() => setFiltreler(bosFiltreler)}
+              toplamUrun={sonuc.length}
+              urunler={kategori ? tumUrunler.filter((u) => u.category === kategori) : tumUrunler}
+            />
 
-          <div className="min-w-0 flex-1">
-
+            <div className="min-w-0 flex-1">
+              {sonuc.length === 0 ? (
+                <div className="py-20 text-center">
+                  <p className="text-sm text-black/50">Bu filtrelerle ürün bulunamadı.</p>
+                  <button type="button" onClick={() => setFiltreler(bosFiltreler)}
+                          className="mt-3 text-sm font-bold underline underline-offset-4">Filtreleri temizle</button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
+                  {sonuc.map((u) => (
+                    <UrunKarti key={u.id} urun={u} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6">
             {sonuc.length === 0 ? (
               <div className="py-20 text-center">
                 <p className="text-sm text-black/50">Bu filtrelerle ürün bulunamadı.</p>
@@ -93,14 +112,14 @@ export function KatalogIcerik({
                         className="mt-3 text-sm font-bold underline underline-offset-4">Filtreleri temizle</button>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-7">
                 {sonuc.map((u) => (
                   <UrunKarti key={u.id} urun={u} />
                 ))}
               </div>
             )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

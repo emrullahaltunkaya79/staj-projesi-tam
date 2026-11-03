@@ -74,8 +74,7 @@ export default async function Home() {
     <div>
       <Hero />
 
-      {!hata && <MarkaSeridi markalar={tumMarkalar.slice(0, 20)} />}
-
+      {/* 1. Kampanya vitrini — geri sayımlı flaş indirimler */}
       {!hata && flasUrunler.length > 0 && (
         <VitrinSeridi
           baslik="Flaş İndirimler"
@@ -88,6 +87,17 @@ export default async function Home() {
         />
       )}
 
+      {/* 2. Kampanya kısayol kutuları */}
+      {!hata && (
+        <KoleksiyonSeridi
+          outletSayisi={outletSayisi}
+          sonKalanSayisi={sonKalanSayisi}
+          sonFirsatSayisi={sonFirsatSayisi}
+          sezonSayisi={sezonHepsi.length}
+        />
+      )}
+
+      {/* 3. Kategori vitrini (kartlarda açılır markalar) */}
       {!hata && (
         <KategoriSeridi kategoriler={
           Object.entries(
@@ -102,15 +112,7 @@ export default async function Home() {
         } markalar={kategoriMarkalari} />
       )}
 
-      {!hata && (
-        <KoleksiyonSeridi
-          outletSayisi={outletSayisi}
-          sonKalanSayisi={sonKalanSayisi}
-          sonFirsatSayisi={sonFirsatSayisi}
-          sezonSayisi={sezonHepsi.length}
-        />
-      )}
-
+      {/* 4. Güven verisi: çok satanlar */}
       {!hata && cokSatanlar.length > 0 && (
         <VitrinSeridi
           baslik="En Çok Satanlar"
@@ -122,6 +124,7 @@ export default async function Home() {
         />
       )}
 
+      {/* 5. Sezon önerileri */}
       {!hata && sezonUrunleri12.length > 0 && (
         <VitrinSeridi
           baslik={`${MEVSIMLER[mevsim].ad} Önerileri`}
@@ -133,6 +136,10 @@ export default async function Home() {
         />
       )}
 
+      {/* 6. Markalar — keşfin kapanışı */}
+      {!hata && <MarkaSeridi markalar={tumMarkalar.slice(0, 20)} />}
+
+      {/* 7. Tam katalog — temiz grid (filtreler kategori/kampanya sayfalarında) */}
       {hata ? (
         <div className="px-5 pb-20 sm:px-10">
           <div className="mx-auto max-w-7xl border-b border-black/20 pb-5">
@@ -141,7 +148,7 @@ export default async function Home() {
           <p className="mt-8 text-sm text-black/50">{hata}</p>
         </div>
       ) : (
-        <KatalogIcerik tumUrunler={tumu} kategori={null} baslik="Tüm Ürünler" />
+        <KatalogIcerik tumUrunler={tumu} kategori={null} baslik="Tüm Ürünler" sidebar={false} />
       )}
     </div>
   );
