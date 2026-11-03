@@ -32,7 +32,7 @@ export function SonGoruntulenenler({ suAnki }: { suAnki?: Kayit }) {
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-4 sm:px-10">
       <div className="border-t border-black/10 pt-8">
         <h2 className="text-lg font-black tracking-tight">Yakında İnceledikleriniz</h2>
-        <div className="mt-5 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]">
+        <div className="mt-5 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {liste.map((k) => (
             <Link
               key={k.id}

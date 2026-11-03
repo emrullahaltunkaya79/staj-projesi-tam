@@ -40,7 +40,7 @@ export function KategoriSeridi({
   return (
     <section id="kategoriler" className="px-5 pb-10 pt-10 sm:px-10">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-5 flex items-end justify-between border-b-2 border-black pb-3">
+        <div className="mb-5 flex items-end justify-between border-b border-black/15 pb-3">
           <div className="flex items-center gap-3">
             <span className="h-6 w-1.5 shrink-0 rounded-full bg-[var(--marka)]" aria-hidden />
             <h2 className="text-[19px] font-black uppercase tracking-wide text-black sm:text-[22px]">Kategoriler</h2>

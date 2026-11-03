@@ -81,7 +81,7 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
                       <span className="flex h-full items-center justify-center text-5xl font-black text-black/10">{u.name.charAt(0)}</span>
                     )}
                     {indirim > 0 && (
-                      <span className="absolute left-2.5 top-2.5 rounded-md bg-[var(--marka)] px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+                      <span className="absolute left-2.5 top-2.5 rounded-md bg-white/95 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-orange-600 shadow-sm">
                         %{indirim} indirim
                       </span>
                     )}

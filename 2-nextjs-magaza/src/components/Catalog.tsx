@@ -23,12 +23,12 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             <span className="text-5xl font-black text-black/10">{urun.name.slice(0, 1)}</span>
           )}
           {(indirim > 0 || urun.is_bestseller) && (
-            <span className={`absolute left-3 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white ${indirim > 0 ? "top-3 bg-red-600" : "top-3 bg-amber-700"}`}>
+            <span className={`absolute left-3 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${indirim > 0 ? "top-3 bg-white/95 text-orange-600 shadow-sm" : "top-3 bg-white/95 text-amber-600 shadow-sm"}`}>
               {indirim > 0 ? `%${indirim} İndirim` : "★ Çok Satan"}
             </span>
           )}
           {indirim > 0 && urun.is_bestseller && (
-            <span className="absolute left-3 top-11 bg-amber-700 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+            <span className="absolute left-3 top-11 bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-amber-600 shadow-sm">
               ★ Çok Satan
             </span>
           )}
@@ -39,7 +39,7 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             </span>
           )}
           {urun.in_stock && urun.available_quantity <= 5 && (
-            <span className={`absolute bg-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white ${indirim > 0 ? "left-3 top-11" : "left-3 top-3"}`}>
+            <span className={`absolute bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-orange-600 shadow-sm ${indirim > 0 ? "left-3 top-11" : "left-3 top-3"}`}>
               Son {urun.available_quantity} adet
             </span>
           )}

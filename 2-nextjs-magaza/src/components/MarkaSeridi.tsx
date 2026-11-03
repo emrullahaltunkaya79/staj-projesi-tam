@@ -11,7 +11,7 @@ export function MarkaSeridi({ markalar }: { markalar: { ad: string; sayi: number
           <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Markalar</h2>
           <span className="text-[13px] font-medium text-black/30">{markalar.length} marka</span>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1.5 [scrollbar-width:thin]">
+        <div className="flex gap-2 overflow-x-auto pb-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {markalar.map((m) => (
             <Link
               key={m.ad}

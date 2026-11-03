@@ -20,7 +20,7 @@ export function YorumVitrini({ yorumlar }: { yorumlar: Yorum[] }) {
           <span className="shrink-0 text-[13px] font-medium text-black/30">{yorumlar.length} yorum</span>
         </div>
 
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
+        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {yorumlar.map((y, i) => (
             <div
               key={`${y.product_id}-${i}`}

@@ -69,7 +69,7 @@ export function VitrinSeridi({
           </div>
         </div>
 
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
+        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {urunler.map((u) => (
             <div key={u.id} className="w-[196px] shrink-0 snap-start sm:w-[220px]">
               <UrunKarti urun={u} />
