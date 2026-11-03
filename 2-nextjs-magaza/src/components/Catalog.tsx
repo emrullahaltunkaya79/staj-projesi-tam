@@ -45,6 +45,9 @@ export function UrunKarti({ urun }: { urun: Urun }) {
       </div>
       <div className="mt-2 flex items-baseline justify-between gap-2">
         <div className="min-w-0">
+            {urun.brand && (
+              <span className="mb-0.5 block text-[9.5px] font-black uppercase tracking-widest text-black/35">{urun.brand}</span>
+            )}
             <h3 className="text-[12.5px] font-semibold leading-tight text-black">{urun.name}</h3>
             {urun.rating_avg != null && (
               <span className="mt-1 flex items-center gap-1 text-[11px] font-bold text-amber-500">

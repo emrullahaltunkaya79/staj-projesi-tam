@@ -11,6 +11,8 @@ export type Urun = {
   code: string | null;
   barcode: string | null;
   name: string;
+  brand?: string | null;
+  model?: string | null;
   category: string | null;
   unit: string;
   sale_price: number;

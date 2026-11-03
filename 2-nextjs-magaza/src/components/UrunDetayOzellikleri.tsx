@@ -16,6 +16,8 @@ export function UrunDetayOzellikleri({
   urun: {
     id: number;
     name: string;
+    brand?: string | null;
+    model?: string | null;
     code: string | null;
     barcode: string | null;
     category: string | null;
@@ -67,6 +69,11 @@ export function UrunDetayOzellikleri({
       <div className="flex flex-col">
         <h1 className="text-4xl font-black leading-tight tracking-[-0.02em] sm:text-5xl">{urun.name}</h1>
         <p className="mt-3 text-sm text-black/50">
+          {(urun.brand || urun.model) && (
+            <span className="mr-2 font-black uppercase tracking-widest text-[var(--marka)]">
+              {urun.brand}{urun.brand && urun.model ? " · " : ""}{urun.model}
+            </span>
+          )}
           {urun.code ? `Kod: ${urun.code}` : ""}
           {urun.barcode ? ` · Barkod: ${urun.barcode}` : ""}
         </p>

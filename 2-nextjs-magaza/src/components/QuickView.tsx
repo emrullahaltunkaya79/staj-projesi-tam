@@ -9,6 +9,8 @@ import { sepeteUcur } from "@/lib/sepetFx";
 type Ozet = {
   id: number;
   name: string;
+  brand?: string | null;
+  model?: string | null;
   category: string | null;
   sale_price: number;
   discount_percent?: number | null;
@@ -104,7 +106,10 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
               {ozet.category && (
                 <span className="text-[10px] font-bold uppercase tracking-widest text-black/35">{ozet.category}</span>
               )}
-              <h2 className="mt-1 text-xl font-black leading-tight">{ozet.name}</h2>
+              {ozet.brand && (
+                <span className="mt-1 block text-[10px] font-black uppercase tracking-widest text-[var(--marka)]">{ozet.brand}</span>
+              )}
+              <h2 className="mt-0.5 text-xl font-black leading-tight">{ozet.name}</h2>
 
               <div className="mt-4 flex flex-wrap items-baseline gap-2">
                 <span className="text-2xl font-black tabular-nums text-[var(--marka)]">{fmt(fiyat)} ₺</span>

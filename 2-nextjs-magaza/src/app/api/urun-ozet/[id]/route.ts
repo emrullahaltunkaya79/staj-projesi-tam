@@ -21,6 +21,8 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ id: st
     const ozet = {
       id: d.id,
       name: d.name,
+      brand: d.brand ?? null,
+      model: d.model ?? null,
       category: d.category,
       sale_price: d.sale_price,
       discount_percent: d.discount_percent ?? null,
