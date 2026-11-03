@@ -35,7 +35,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
   const tumUrunler = await urunler();
   const benzerler = tumUrunler
     .filter((x) => x.category === u.category && x.id !== u.id)
-    .slice(0, 3);
+    .slice(0, 6);
 
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10"><div className="mx-auto max-w-7xl">
@@ -86,12 +86,13 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
 
       {/* Benzer ürünler */}
       {benzerler.length > 0 && (
-        <section className="px-5 pb-24 pt-16 sm:px-10">
+        <section className="px-5 pb-24 pt-10 sm:px-10">
           <div className="mx-auto max-w-7xl">
-            <div className="flex items-end justify-between border-b border-black/20 pb-5">
-              <h2 className="text-[32px] font-black leading-none tracking-[-0.03em] sm:text-[48px]">Bunları da beğenebilirsiniz</h2>
+            <div className="flex items-baseline gap-3 border-b border-black/20 pb-3">
+              <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Bunları da beğenebilirsiniz</h2>
+              <span className="text-[13px] font-medium text-black/30">{benzerler.length} ürün</span>
             </div>
-            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
               {benzerler.map((b) => (
                 <UrunKarti key={b.id} urun={b} />
               ))}
