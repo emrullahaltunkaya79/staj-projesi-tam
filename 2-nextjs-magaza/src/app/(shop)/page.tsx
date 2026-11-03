@@ -5,7 +5,6 @@ import { MarkaSeridi } from "@/components/MarkaSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
 import { FlasSeridi } from "@/components/FlasSeridi";
-import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { GununFirsati } from "@/components/GununFirsati";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
 import { KargoTakip } from "@/components/KargoTakip";
@@ -67,15 +66,6 @@ export default async function Home() {
   return (
     <div>
       <Hero />
-
-      {/* Güven şeridi — hızlı teslimat / güvenli ödeme / iade */ }
-      {!hata && (
-        <section className="px-5 pt-5 sm:px-10">
-          <div className="mx-auto max-w-7xl">
-            <GuvenKartlari kompakt />
-          </div>
-        </section>
-      )}
 
       {/* Günün Fırsatı — tek büyük fırsat bloğu */}
       {!hata && gununFirsatiUrun && <GununFirsati urun={gununFirsatiUrun} />}
