@@ -59,7 +59,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-4">
           <a href="/" className="leading-none">
             <span className="flex items-center gap-2 text-[28px] font-black tracking-[-0.04em] text-white sm:text-[36px]"><LogoIshari boyut={30} />HepsiBirarada<span className="text-indigo-400">.</span></span>
-            <span className="mt-0.5 block text-[11px] font-medium tracking-wide text-indigo-200/70 sm:text-xs">Teknoloji & Ofis — her şey tek yerde</span>
+            <span className="mt-0.5 block text-center text-[11px] font-medium tracking-wide text-indigo-200/70 sm:text-xs">Teknoloji & Ofis — her şey tek yerde</span>
           </a>
 
           <form onSubmit={ara} className="order-3 flex h-10 w-full max-w-md items-center overflow-hidden rounded-lg border border-white/20 bg-white/10 backdrop-blur sm:order-2 sm:w-auto sm:flex-1">
