@@ -352,13 +352,13 @@ export function Sidebar({
 
   return (
     <>
-      {/* Masaüstü: açılır-kapanır sidebar (sticky yok — sayfa ile birlikte kayar) */}
+      {/* Masaüstü: sticky sidebar — kaydırırken filtreler ekranda kalır */}
       <div
-        className={`hidden h-fit shrink-0 overflow-hidden transition-[width,opacity,margin] duration-300 ease-in-out lg:block ${
+        className={`hidden h-fit shrink-0 overflow-hidden transition-[width,opacity,margin] duration-300 ease-in-out lg:sticky lg:top-36 lg:block lg:self-start ${
           masaustuAcik ? "w-56 opacity-100" : "w-0 -mr-8 opacity-0"
         }`}
       >
-        <div className="w-56">{icerik}</div>
+        <div className="max-h-[calc(100vh-10rem)] w-56 overflow-y-auto [scrollbar-width:thin]">{icerik}</div>
       </div>
 
       {/* Masaüstü: sidebar aç/kapa butonu */}
@@ -366,7 +366,7 @@ export function Sidebar({
         type="button"
         onClick={() => setMasaustuAcik(!masaustuAcik)}
         title={masaustuAcik ? "Filtreleri gizle" : "Filtreleri göster"}
-        className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-black/40 transition-all duration-300 hover:border-black hover:text-black lg:flex ${
+        className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-black/40 transition-all duration-300 hover:border-black hover:text-black lg:sticky lg:top-36 lg:flex lg:self-start ${
           masaustuAcik ? "" : "rotate-180"
         }`}
       >
@@ -393,7 +393,7 @@ export function Sidebar({
           className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 ${mobilAcik ? "opacity-100" : "opacity-0"}`}
         />
         <div
-          className={`absolute inset-y-0 left-0 w-72 bg-white p-5 shadow-2xl transition-transform duration-300 ease-out ${
+          className={`absolute inset-y-0 left-0 w-72 overflow-y-auto bg-white p-5 shadow-2xl transition-transform duration-300 ease-out [scrollbar-width:thin] ${
             mobilAcik ? "translate-x-0" : "-translate-x-full"
           }`}
         >
