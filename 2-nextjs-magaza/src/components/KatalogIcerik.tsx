@@ -79,6 +79,7 @@ export function KatalogIcerik({
             onFiltreDegistir={setFiltreler}
             onTemizle={() => setFiltreler(bosFiltreler)}
             toplamUrun={sonuc.length}
+            urunler={kategori ? tumUrunler.filter((u) => u.category === kategori) : tumUrunler}
           />
 
           <div className="min-w-0 flex-1">

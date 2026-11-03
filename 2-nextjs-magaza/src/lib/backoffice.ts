@@ -25,6 +25,7 @@ export type Urun = {
   rating_avg?: number | null;
   review_count?: number;
   is_bestseller?: boolean;
+  varyant_adlari?: string[];
 };
 
 /** İndirim uygulanmış nihai fiyat (API final_price vermezse kendisi hesaplar). */

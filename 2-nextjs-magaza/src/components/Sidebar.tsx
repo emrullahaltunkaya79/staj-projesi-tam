@@ -5,21 +5,35 @@ import Link from "next/link";
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
+import { urunRenkleri, urunBoyutlari, facetSecenekleri, RENKLER } from "@/lib/facetler";
+import { useMemo } from "react";
 
 export type Filtreler = {
   minFiyat: string;
   maxFiyat: string;
   sadeceStok: boolean;
   kdvDahil: boolean;
+  renkler: string[];
+  boyutlar: string[];
 };
 
-export const bosFiltreler: Filtreler = { minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false };
+export const bosFiltreler: Filtreler = { minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [] };
 
 export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
   let sonuc = urunler;
   if (f.minFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) >= Number(f.minFiyat));
   if (f.maxFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) <= Number(f.maxFiyat));
   if (f.sadeceStok) sonuc = sonuc.filter((u) => u.in_stock);
+  if (f.renkler.length > 0)
+    sonuc = sonuc.filter((u) => {
+      const ur = urunRenkleri(u.name, u.varyant_adlari);
+      return f.renkler.some((r) => ur.includes(r));
+    });
+  if (f.boyutlar.length > 0)
+    sonuc = sonuc.filter((u) => {
+      const ub = urunBoyutlari(u.name);
+      return f.boyutlar.some((b) => ub.includes(b));
+    });
   return sonuc;
 }
 
@@ -77,6 +91,7 @@ export function Sidebar({
   onFiltreDegistir,
   onTemizle,
   toplamUrun,
+  urunler = [],
 }: {
   kategoriler: { ad: string; sayi: number }[];
   aktifKategori: string | null;
@@ -84,6 +99,7 @@ export function Sidebar({
   onFiltreDegistir: (f: Filtreler) => void;
   onTemizle: () => void;
   toplamUrun: number;
+  urunler?: Urun[];
 }) {
   const [mobilAcik, setMobilAcik] = useState(false);
   const [masaustuAcik, setMasaustuAcik] = useState(true);
@@ -93,8 +109,18 @@ export function Sidebar({
     startTransition(() => onFiltreDegistir({ ...filtreler, ...kismi }));
   };
 
+  const renkSecenekleri = useMemo(
+    () => facetSecenekleri(urunler.map((u) => ({ degerler: urunRenkleri(u.name, u.varyant_adlari) })), 12),
+    [urunler],
+  );
+  const boyutSecenekleri = useMemo(
+    () => facetSecenekleri(urunler.map((u) => ({ degerler: urunBoyutlari(u.name) })), 14),
+    [urunler],
+  );
+
   const aktifFiltreSayisi =
-    (filtreler.minFiyat ? 1 : 0) + (filtreler.maxFiyat ? 1 : 0) + (filtreler.sadeceStok ? 1 : 0);
+    (filtreler.minFiyat ? 1 : 0) + (filtreler.maxFiyat ? 1 : 0) + (filtreler.sadeceStok ? 1 : 0) +
+    filtreler.renkler.length + filtreler.boyutlar.length;
 
   const icerik = (
     <div className="flex h-full flex-col">
@@ -152,6 +178,70 @@ export function Sidebar({
           />
         </div>
       </Grup>
+
+      {renkSecenekleri.length > 0 && (
+        <Grup baslik="Renk">
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {renkSecenekleri.map(({ deger, sayi }) => {
+              const secili = filtreler.renkler.includes(deger);
+              const hex = RENKLER.find((r) => r.ad === deger)?.hex ?? "#888";
+              return (
+                <button
+                  key={deger}
+                  type="button"
+                  onClick={() =>
+                    degistir({
+                      renkler: secili
+                        ? filtreler.renkler.filter((r) => r !== deger)
+                        : [...filtreler.renkler, deger],
+                    })
+                  }
+                  title={`${deger} (${sayi})`}
+                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+                    secili ? "border-black bg-black text-white" : "border-black/15 text-black/60 hover:border-black/40"
+                  }`}
+                >
+                  <span
+                    className="h-3 w-3 rounded-full border border-black/20"
+                    style={{ background: hex }}
+                  />
+                  {deger}
+                  <span className={secili ? "text-white/50" : "text-black/30"}>{sayi}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Grup>
+      )}
+
+      {boyutSecenekleri.length > 0 && (
+        <Grup baslik="Boyut / Ölçü">
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {boyutSecenekleri.map(({ deger, sayi }) => {
+              const secili = filtreler.boyutlar.includes(deger);
+              return (
+                <button
+                  key={deger}
+                  type="button"
+                  onClick={() =>
+                    degistir({
+                      boyutlar: secili
+                        ? filtreler.boyutlar.filter((b) => b !== deger)
+                        : [...filtreler.boyutlar, deger],
+                    })
+                  }
+                  className={`rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums transition ${
+                    secili ? "border-black bg-black text-white" : "border-black/15 text-black/60 hover:border-black/40"
+                  }`}
+                >
+                  {deger}
+                  <span className={`ml-1 ${secili ? "text-white/50" : "text-black/30"}`}>{sayi}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Grup>
+      )}
 
       <Grup baslik="Stok Durumu">
         <label className="flex cursor-pointer items-center gap-3 pt-1 text-[13px] text-black/70 transition hover:text-black">
