@@ -123,12 +123,12 @@ export function Sidebar({
     filtreler.renkler.length + filtreler.boyutlar.length;
 
   const icerik = (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between border-b border-black/15 pb-3">
         <span className="flex items-center gap-2 text-[15px] font-black text-black">
           <SlidersHorizontal className="h-4 w-4" /> Filtreler
           {aktifFiltreSayisi > 0 && (
-            <span className="rounded-full bg-black px-2 py-0.5 text-[10px] font-bold text-white">{aktifFiltreSayisi}</span>
+            <span className="rounded-full bg-[var(--marka)] px-2 py-0.5 text-[10px] font-bold text-white">{aktifFiltreSayisi}</span>
           )}
         </span>
         {aktifFiltreSayisi > 0 && (
@@ -146,7 +146,7 @@ export function Sidebar({
               href={aktifKategori === k.ad ? "/" : `/kategori/${encodeURIComponent(k.ad)}`}
               className={`flex items-center justify-between rounded-lg px-3 py-2 text-[13px] font-medium transition ${
                 aktifKategori === k.ad
-                  ? "bg-black text-white"
+                  ? "bg-[var(--marka)] text-white shadow-sm"
                   : "text-black/60 hover:bg-black/5 hover:text-black"
               }`}
             >
@@ -198,7 +198,7 @@ export function Sidebar({
                   }
                   title={`${deger} (${sayi})`}
                   className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
-                    secili ? "border-black bg-black text-white" : "border-black/15 text-black/60 hover:border-black/40"
+                    secili ? "border-[var(--marka)] bg-[var(--marka)] text-white" : "border-black/15 text-black/60 hover:border-black/40"
                   }`}
                 >
                   <span
@@ -231,7 +231,7 @@ export function Sidebar({
                     })
                   }
                   className={`rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums transition ${
-                    secili ? "border-black bg-black text-white" : "border-black/15 text-black/60 hover:border-black/40"
+                    secili ? "border-[var(--marka)] bg-[var(--marka)] text-white" : "border-black/15 text-black/60 hover:border-black/40"
                   }`}
                 >
                   {deger}
