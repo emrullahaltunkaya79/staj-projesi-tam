@@ -1,9 +1,19 @@
-import { Zap, Star } from "lucide-react";
+import { Zap, Star, Leaf, Sun, Snowflake, Flower2, type LucideIcon } from "lucide-react";
 import Hero from "@/components/Hero";
 import { KategoriSeridi } from "@/components/KategoriSeridi";
+import { KoleksiyonSeridi } from "@/components/KoleksiyonSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
 import { urunler, indirimliFiyat, type Urun } from "@/lib/backoffice";
+import { sezonUrunleri, mevsimBul, MEVSIMLER, type Mevsim } from "@/lib/sezonlar";
+import { outletUrunler, sonKalanUrunler, sonFirsatUrunler } from "@/lib/koleksiyonlar";
+
+const MEVSIM_IKONLARI: Record<Mevsim, LucideIcon> = {
+  ilkbahar: Flower2,
+  yaz: Sun,
+  sonbahar: Leaf,
+  kis: Snowflake,
+};
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +36,16 @@ export default async function Home() {
 
   // En Çok Satanlar: arka ofis fatura satırlarından hesaplanan bayrak
   const cokSatanlar = tumu.filter((u) => u.is_bestseller).slice(0, 12);
+
+  // Sezon vitrini: bulunduğun ayın mevsimine göre öneriler
+  const mevsim = mevsimBul();
+  const sezonHepsi = sezonUrunleri(tumu, mevsim);
+  const sezonUrunleri12 = sezonHepsi.slice(0, 12);
+
+  // Koleksiyon sayaçları
+  const outletSayisi = outletUrunler(tumu).length;
+  const sonKalanSayisi = sonKalanUrunler(tumu).length;
+  const sonFirsatSayisi = sonFirsatUrunler(tumu).length;
 
   return (
     <div>
@@ -57,6 +77,15 @@ export default async function Home() {
         />
       )}
 
+      {!hata && (
+        <KoleksiyonSeridi
+          outletSayisi={outletSayisi}
+          sonKalanSayisi={sonKalanSayisi}
+          sonFirsatSayisi={sonFirsatSayisi}
+          sezonSayisi={sezonHepsi.length}
+        />
+      )}
+
       {!hata && cokSatanlar.length > 0 && (
         <VitrinSeridi
           baslik="En Çok Satanlar"
@@ -65,6 +94,17 @@ export default async function Home() {
           urunler={cokSatanlar}
           aciklama="Satış verilerinden"
           tumunuGor="/cok-satanlar"
+        />
+      )}
+
+      {!hata && sezonUrunleri12.length > 0 && (
+        <VitrinSeridi
+          baslik={`${MEVSIMLER[mevsim].ad} Önerileri`}
+          ikon={MEVSIM_IKONLARI[mevsim]}
+          tur="sezon"
+          urunler={sezonUrunleri12}
+          aciklama={MEVSIMLER[mevsim].aciklama}
+          tumunuGor="/sezon"
         />
       )}
 

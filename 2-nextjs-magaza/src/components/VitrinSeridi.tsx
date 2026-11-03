@@ -17,7 +17,7 @@ export function VitrinSeridi({
   baslik: string;
   ikon: LucideIcon;
   urunler: Urun[];
-  tur: "flas" | "cokSatan";
+  tur: "flas" | "cokSatan" | "sezon";
   aciklama?: string;
   geriSayim?: boolean;
   tumunuGor?: string;
@@ -36,7 +36,15 @@ export function VitrinSeridi({
                 kirmizi ? "text-red-600" : ""
               }`}
             >
-              <Ikon className={`h-4.5 w-4.5 shrink-0 ${kirmizi ? "fill-red-600 text-red-600" : "fill-amber-400 text-amber-400"}`} />
+              <Ikon
+                className={`h-4.5 w-4.5 shrink-0 ${
+                  kirmizi
+                    ? "fill-red-600 text-red-600"
+                    : tur === "sezon"
+                      ? "text-[var(--marka)]"
+                      : "fill-amber-400 text-amber-400"
+                }`}
+              />
               {baslik}
             </h2>
             {aciklama && <span className="truncate text-[13px] font-medium text-black/30">{aciklama}</span>}

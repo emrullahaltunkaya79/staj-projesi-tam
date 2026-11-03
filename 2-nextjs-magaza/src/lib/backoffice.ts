@@ -29,6 +29,7 @@ export type Urun = {
   review_count?: number;
   is_bestseller?: boolean;
   varyant_adlari?: string[];
+  varyant_min_stok?: number | null;
 };
 
 /** İndirim uygulanmış nihai fiyat (API final_price vermezse kendisi hesaplar). */

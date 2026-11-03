@@ -161,7 +161,11 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col gap-2">
                 <a href="/" className="hover:text-black transition">Tüm Ürünler</a>
                 <a href="/flas-indirimler" className="font-bold text-red-600 transition hover:text-red-700">⚡ Flaş İndirimler</a>
+                <a href="/outlet" className="font-bold text-red-600 transition hover:text-red-700">🏭 Outlet</a>
                 <a href="/cok-satanlar" className="hover:text-black transition">★ En Çok Satanlar</a>
+                <a href="/son-kalan" className="hover:text-black transition">📏 Son Kalan Ölçüler</a>
+                <a href="/son-firsat" className="hover:text-black transition">⏳ Son Fırsat</a>
+                <a href="/sezon" className="hover:text-black transition">🍂 Sezon Ürünleri</a>
                 <a href="/sepet" className="hover:text-black transition">Sepetim</a>
                 <a href="/siparislerim" className="hover:text-black transition">Siparişlerim</a>
               </div>

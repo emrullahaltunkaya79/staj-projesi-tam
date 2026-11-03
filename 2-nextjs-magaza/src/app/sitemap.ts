@@ -6,7 +6,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const statikSayfalar = [
     { url: "/", priority: 1, changeFrequency: "daily" as const },
     { url: "/flas-indirimler", priority: 0.9, changeFrequency: "daily" as const },
+    { url: "/outlet", priority: 0.8, changeFrequency: "daily" as const },
     { url: "/cok-satanlar", priority: 0.8, changeFrequency: "daily" as const },
+    { url: "/son-kalan", priority: 0.6, changeFrequency: "daily" as const },
+    { url: "/son-firsat", priority: 0.7, changeFrequency: "daily" as const },
+    { url: "/sezon", priority: 0.7, changeFrequency: "weekly" as const },
     { url: "/hakkinda", priority: 0.5, changeFrequency: "monthly" as const },
     { url: "/iletisim", priority: 0.5, changeFrequency: "monthly" as const },
     { url: "/sss", priority: 0.6, changeFrequency: "monthly" as const },
