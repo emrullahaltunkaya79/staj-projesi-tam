@@ -31,20 +31,8 @@ export function VitrinSeridi({
       <div className="mx-auto max-w-7xl">
         <div className="mb-4 flex items-end justify-between gap-3 border-b border-black/20 pb-3">
           <div className="flex min-w-0 items-baseline gap-3">
-            <h2
-              className={`flex items-center gap-2 text-[15px] font-black uppercase tracking-wide sm:text-[17px] ${
-                kirmizi ? "text-red-600" : ""
-              }`}
-            >
-              <Ikon
-                className={`h-4.5 w-4.5 shrink-0 ${
-                  kirmizi
-                    ? "fill-red-600 text-red-600"
-                    : tur === "sezon"
-                      ? "text-[var(--marka)]"
-                      : "fill-amber-400 text-amber-400"
-                }`}
-              />
+            <h2 className="flex items-center gap-2 text-[15px] font-black uppercase tracking-wide sm:text-[17px]">
+              <Ikon className="h-4.5 w-4.5 shrink-0 text-black/40" />
               {baslik}
             </h2>
             {aciklama && <span className="truncate text-[13px] font-medium text-black/30">{aciklama}</span>}
@@ -71,7 +59,7 @@ export function VitrinSeridi({
 
         <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {urunler.map((u) => (
-            <div key={u.id} className="w-[196px] shrink-0 snap-start sm:w-[220px]">
+            <div key={u.id} className="w-[204px] shrink-0 snap-start">
               <UrunKarti urun={u} />
               {tur === "flas" && u.in_stock && (
                 <div className="mt-1.5">

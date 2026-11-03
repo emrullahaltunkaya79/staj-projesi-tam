@@ -1,26 +1,15 @@
-import { Zap, Star, Leaf, Sun, Snowflake, Flower2, Sparkles, type LucideIcon } from "lucide-react";
+import { Star, Sparkles } from "lucide-react";
 import Hero from "@/components/Hero";
 import { KategoriSeridi } from "@/components/KategoriSeridi";
 import { MarkaSeridi } from "@/components/MarkaSeridi";
-import { KoleksiyonSeridi } from "@/components/KoleksiyonSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
 import { FlasSeridi } from "@/components/FlasSeridi";
 import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { GununFirsati } from "@/components/GununFirsati";
-import { YorumVitrini } from "@/components/YorumVitrini";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
 import { KargoTakip } from "@/components/KargoTakip";
-import { urunler, indirimliFiyat, sonYorumlar, type Urun } from "@/lib/backoffice";
-import { sezonUrunleri, mevsimBul, MEVSIMLER, type Mevsim } from "@/lib/sezonlar";
-import { outletUrunler, sonKalanUrunler, sonFirsatUrunler } from "@/lib/koleksiyonlar";
-
-const MEVSIM_IKONLARI: Record<Mevsim, LucideIcon> = {
-  ilkbahar: Flower2,
-  yaz: Sun,
-  sonbahar: Leaf,
-  kis: Snowflake,
-};
+import { urunler, indirimliFiyat, type Urun } from "@/lib/backoffice";
 
 export const dynamic = "force-dynamic";
 
@@ -44,16 +33,6 @@ export default async function Home() {
   // En Çok Satanlar: arka ofis fatura satırlarından hesaplanan bayrak
   const cokSatanlar = tumu.filter((u) => u.is_bestseller).slice(0, 12);
 
-  // Sezon vitrini: bulunduğun ayın mevsimine göre öneriler
-  const mevsim = mevsimBul();
-  const sezonHepsi = sezonUrunleri(tumu, mevsim);
-  const sezonUrunleri12 = sezonHepsi.slice(0, 12);
-
-  // Koleksiyon sayaçları
-  const outletSayisi = outletUrunler(tumu).length;
-  const sonKalanSayisi = sonKalanUrunler(tumu).length;
-  const sonFirsatSayisi = sonFirsatUrunler(tumu).length;
-
   // Günün Fırsatı: stok azalmış, indirimi yüksek ürün (yoksa en yüksek indirimli)
   const gununFirsatiUrun =
     tumu
@@ -62,7 +41,6 @@ export default async function Home() {
 
   // Yeni Gelenler: en son eklenen ürünler
   const yeniGelenler = [...tumu].sort((a, b) => b.id - a.id).slice(0, 12);
-  const yorumlar = await sonYorumlar();
 
   // Markalar: ürün sayısına göre en çok ürünü olanlar önde (şeritte ilk 20)
   const markaSayilari = tumu.reduce<Record<string, number>>((m, u) => {
@@ -117,17 +95,7 @@ export default async function Home() {
         />
       )}
 
-      {/* 2. Kampanya kısayol kutuları */}
-      {!hata && (
-        <KoleksiyonSeridi
-          outletSayisi={outletSayisi}
-          sonKalanSayisi={sonKalanSayisi}
-          sonFirsatSayisi={sonFirsatSayisi}
-          sezonSayisi={sezonHepsi.length}
-        />
-      )}
-
-      {/* 3. Kategori vitrini (kartlarda açılır markalar) */}
+      {/* 2. Kategori vitrini (kartlarda açılır markalar) */}
       {!hata && (
         <KategoriSeridi kategoriler={
           Object.entries(
@@ -165,22 +133,7 @@ export default async function Home() {
         />
       )}
 
-      {/* Müşteriler Ne Diyor — onaylı gerçek yorumlar */}
-      {!hata && <YorumVitrini yorumlar={yorumlar} />}
-
-      {/* 5. Sezon önerileri */}
-      {!hata && sezonUrunleri12.length > 0 && (
-        <VitrinSeridi
-          baslik={`${MEVSIMLER[mevsim].ad} Önerileri`}
-          ikon={MEVSIM_IKONLARI[mevsim]}
-          tur="sezon"
-          urunler={sezonUrunleri12}
-          aciklama={MEVSIMLER[mevsim].aciklama}
-          tumunuGor="/sezon"
-        />
-      )}
-
-      {/* 6. Markalar — keşfin kapanışı */}
+      {/* 4. Markalar — keşfin kapanışı */}
       {!hata && <MarkaSeridi markalar={tumMarkalar.slice(0, 20)} />}
 
       {/* Son baktıklarınız */}

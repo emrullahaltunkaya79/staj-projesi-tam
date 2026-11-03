@@ -34,8 +34,8 @@ export function GununFirsati({ urun }: { urun: Urun }) {
 
           {/* Bilgi */}
           <div className="min-w-0 flex-1 text-white">
-            <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-yellow-400">
-              <Zap className="h-4 w-4 fill-yellow-400" /> Günün Fırsatı
+            <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/80">
+              <Zap className="h-4 w-4 text-white/90" /> Günün Fırsatı
             </p>
             <Link href={`/urun/${urun.id}`} className="mt-1 block truncate text-xl font-black hover:underline sm:text-2xl">
               {urun.name}
@@ -47,7 +47,7 @@ export function GununFirsati({ urun }: { urun: Urun }) {
               {indirim > 0 && (
                 <>
                   <span className="text-base tabular-nums text-white/40 line-through">{fmt(urun.sale_price)} ₺</span>
-                  <span className="rounded-full bg-yellow-400 px-2.5 py-0.5 text-[11px] font-black text-black">%{indirim} indirim</span>
+                  <span className="rounded-full bg-white/95 px-2.5 py-0.5 text-[11px] font-black text-black">%{indirim} indirim</span>
                 </>
               )}
             </div>
@@ -55,7 +55,7 @@ export function GununFirsati({ urun }: { urun: Urun }) {
             {/* Stok çubuğu */}
             <div className="mt-3 max-w-md">
               <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
-                <div className="h-full rounded-full bg-yellow-400" style={{ width: `${kalanOran}%` }} />
+                <div className="h-full rounded-full bg-white/90" style={{ width: `${kalanOran}%` }} />
               </div>
               <p className="mt-1 text-[11px] font-bold text-white/70">
                 {kalanOran < 100

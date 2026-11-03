@@ -5,7 +5,7 @@ export function MarkaSeridi({ markalar }: { markalar: { ad: string; sayi: number
   if (markalar.length === 0) return null;
 
   return (
-    <section className="px-5 pb-4 pt-6 sm:px-10">
+    <section className="px-5 pb-8 pt-6 sm:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-3 flex items-baseline justify-between border-b border-black/20 pb-2.5">
           <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Markalar</h2>
