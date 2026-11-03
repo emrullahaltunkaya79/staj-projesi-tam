@@ -39,18 +39,18 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-white text-black antialiased">
       {bannerAcik && (
-        <div className="relative bg-yellow-400 px-4 py-2.5 text-center">
-          <p className="text-sm font-medium text-black">
+        <div className="relative bg-yellow-400 px-3 py-1 text-center">
+          <p className="text-[11px] font-medium text-black sm:text-xs">
             İlk siparişine <strong className="font-black">%15 indirim</strong> — Kupon:{" "}
-            <code className="rounded bg-black px-2 py-0.5 font-mono text-xs font-bold text-yellow-400">ILKSIPARIS</code>
+            <code className="rounded bg-black px-1.5 py-px font-mono text-[10px] font-bold text-yellow-400">ILKSIPARIS</code>
             <span className="mx-2 text-black/30">·</span>
             2.000 ₺ üzeri ÜCRETSİZ kargo!
+            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-black px-2 py-0.5 align-middle text-[10px] font-bold text-white">
+              ⏳ <GeriSayim />
+            </span>
           </p>
-          <span className="ml-3 hidden items-center gap-1.5 rounded-full bg-black px-3 py-1 text-[11px] font-bold text-white sm:flex">
-            ⏳ Kampanya bitiyor <GeriSayim />
-          </span>
           <button type="button" onClick={() => setBannerAcik(false)} aria-label="Kapat"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-black transition hover:opacity-60">✕</button>
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-black transition hover:opacity-60">✕</button>
         </div>
       )}
 
