@@ -13,7 +13,7 @@ export default function Hero() {
           <Link
             href="/outlet"
             className="group flex flex-col justify-between rounded-xl p-4 text-white transition hover:opacity-95"
-            style={{ background: "linear-gradient(120deg, var(--marka) 0%, #1e40af 100%)" }}
+            style={{ background: "linear-gradient(120deg, var(--marka) 0%, #374151 100%)" }}
           >
             <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-80">Outlet Kampanyası</p>
             <p className="mt-1 text-lg font-black leading-tight">%40'a kadar indirim</p>

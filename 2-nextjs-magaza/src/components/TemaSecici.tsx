@@ -5,7 +5,7 @@ import { Palette } from "lucide-react";
 
 const ANAHTAR = "hba-tema";
 const TEMALAR: { id: string; ad: string; renk: string }[] = [
-  { id: "", ad: "Kök Mavi", renk: "#2563eb" },
+  { id: "", ad: "Antrasit Minimal", renk: "#111827" },
   { id: "siyah", ad: "Siyah (Klasik)", renk: "#111111" },
   { id: "lacivert", ad: "Lacivert", renk: "#1e3a8a" },
   { id: "yesil", ad: "Yeşil", renk: "#065f46" },

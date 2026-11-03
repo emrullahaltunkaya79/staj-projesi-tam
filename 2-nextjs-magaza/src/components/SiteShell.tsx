@@ -209,7 +209,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           </a>
           <span className="mx-1.5 h-4 w-px shrink-0 bg-black/10" aria-hidden />
           <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-black transition hover:bg-black/5">Tüm Ürünler</a>
-          <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-[var(--marka)] transition hover:bg-orange-50">⚡ Flaş İndirimler</a>
+          <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-orange-600 transition hover:bg-orange-50">⚡ Flaş İndirimler</a>
           <a href="/outlet" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Outlet</a>
           <a href="/cok-satanlar" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">★ Çok Satanlar</a>
           <a href="/son-firsat" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Son Fırsat</a>

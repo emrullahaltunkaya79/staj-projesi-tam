@@ -16,6 +16,7 @@
 
 /* Dark mode CSS değişkenleri */
 .dark {
+  --marka: #4b5563; /* koyu temada antrasit butonlar görünür kalsın */
   --background: #0f0f23;
   --foreground: #e2e8f0;
 }
@@ -29,6 +30,7 @@ body {
 
 /* Dark mode mağaza geçişleri */
 .dark .bg-white { background-color: #0f0f23 !important; }
+.dark .bg-\[var\(--marka\)\] { color: #111827 !important; }
 .dark .bg-\[\#f4f4f4\] { background-color: #1a1a2e !important; }
 .dark .bg-\[\#f8f8f8\] { background-color: #16213e !important; }
 .dark .bg-slate-50 { background-color: #0f0f23 !important; }
@@ -106,7 +108,7 @@ body {
 .dark .shadow-lg { box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important; }
 
 /* Marka rengi — TemaSecici html[data-tema] ile değiştirir */
-:root { --marka: #2563eb; } /* kök mavi — klasik e-ticaret */
+:root { --marka: #111827; } /* antrasit minimal */
 [data-tema="siyah"] { --marka: #111827; }
 [data-tema="lacivert"] { --marka: #1e3a8a; }
 [data-tema="yesil"] { --marka: #065f46; }
