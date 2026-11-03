@@ -40,18 +40,18 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-white text-black antialiased">
       {bannerAcik && (
-        <div className="relative bg-yellow-400 px-3 py-1 text-center">
-          <p className="text-[11px] font-medium text-black sm:text-xs">
-            İlk siparişine <strong className="font-black">%15 indirim</strong> — Kupon:{" "}
-            <code className="rounded bg-black px-1.5 py-px font-mono text-[10px] font-bold text-yellow-400">ILKSIPARIS</code>
-            <span className="mx-2 text-black/30">·</span>
+        <div className="relative bg-[#1a1a2e] px-3 py-1 text-center">
+          <p className="text-[11px] font-medium text-white/85 sm:text-xs">
+            İlk siparişine <strong className="font-black text-white">%15 indirim</strong> — Kupon:{" "}
+            <code className="rounded bg-white/15 px-1.5 py-px font-mono text-[10px] font-bold text-white">ILKSIPARIS</code>
+            <span className="mx-2 text-white/25">·</span>
             2.000 ₺ üzeri ÜCRETSİZ kargo!
-            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-black px-2 py-0.5 align-middle text-[10px] font-bold text-white">
+            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 align-middle text-[10px] font-bold text-white">
               ⏳ <GeriSayim />
             </span>
           </p>
           <button type="button" onClick={() => setBannerAcik(false)} aria-label="Kapat"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-black transition hover:opacity-60">✕</button>
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-white/50 transition hover:text-white">✕</button>
         </div>
       )}
 
@@ -65,7 +65,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           <form onSubmit={ara} className="order-3 flex h-10 w-full max-w-md items-center overflow-hidden rounded-lg border border-white/20 bg-white/10 backdrop-blur sm:order-2 sm:w-auto sm:flex-1">
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ürün ara…"
                    className="h-full flex-1 bg-transparent px-4 text-sm text-white placeholder-white/40 focus:outline-none" />
-            <button type="submit" aria-label="Ara" className="flex h-full w-10 items-center justify-center border-l border-white/10 text-white/60 transition bg-indigo-600 hover:bg-indigo-500 hover:text-white">
+            <button type="submit" aria-label="Ara" className="flex h-full w-10 items-center justify-center border-l border-white/10 text-white/60 transition bg-[var(--marka)] hover:opacity-90 hover:text-white">
               <Search className="h-4 w-4" />
             </button>
           </form>
@@ -100,7 +100,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <div className="relative">
                 <button type="button" onClick={() => setMenuAcik(!menuAcik)}
                         className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white backdrop-blur transition hover:border-white/40">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-black">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--marka)] text-xs font-black">
                     {kullanici.name.charAt(0).toUpperCase()}
                   </span>
                   <span className="hidden max-w-[100px] truncate font-bold sm:block">{kullanici.name.split(" ")[0]}</span>

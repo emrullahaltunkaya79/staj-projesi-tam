@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 
 const RENKLER = [
-  "#f43f5e", "#8b5cf6", "#06b6d4", "#10b981",
-  "#f59e0b", "#ec4899", "#6366f1", "#84cc16",
+  "#4f46e5", "#1e3a8a", "#7f1d1d", "#065f46",
+  "#111827", "#64748b", "#312e81", "#0f766e",
 ];
 
 export function Konfeti({ aktif }: { aktif: boolean }) {

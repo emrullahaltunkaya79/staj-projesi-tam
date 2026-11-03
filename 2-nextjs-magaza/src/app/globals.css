@@ -77,10 +77,6 @@ body {
 .dark .bg-black.text-white { color: #0f0f23 !important; }
 
 /* Sarı duyuru çubuğu: zemin sarı kalır, metin siyah kalmalı (küçük kapsül hariç) */
-.dark .bg-yellow-400 { color: #000 !important; }
-.dark .bg-yellow-400 .text-black { color: #000 !important; }
-.dark .bg-yellow-400 .text-black\/30 { color: rgba(0, 0, 0, 0.35) !important; }
-.dark .bg-yellow-400 .bg-black { background-color: #000 !important; color: #facc15 !important; }
 
 /* Koyu zeminde soluklaşan vurgu renkleri */
 .dark .text-red-600 { color: #f87171 !important; }

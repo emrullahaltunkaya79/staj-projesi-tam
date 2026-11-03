@@ -37,7 +37,7 @@ export default async function SaticiRaporlar() {
               </div>
               <div className="h-3 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
+                  className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-indigo-800 transition-all duration-500"
                   style={{ width: `${Math.max((k.stok_degeri / maxDeger) * 100, 3)}%` }}
                 />
               </div>

@@ -30,7 +30,7 @@ export function IadeOnayButonu({ orderNo }: { orderNo: string }) {
   return (
     <div className="flex flex-col items-end gap-1">
       <button type="button" onClick={onayla} disabled={calisiyor}
-              className="h-8 rounded-full bg-amber-500 px-4 text-xs font-bold text-white transition hover:bg-amber-600 active:scale-95 disabled:opacity-50">
+              className="h-8 rounded-full bg-amber-600 px-4 text-xs font-bold text-white transition hover:bg-amber-700 active:scale-95 disabled:opacity-50">
         {calisiyor ? "…" : "İadeyi Onayla"}
       </button>
       {hata && <p className="text-[10px] font-bold text-red-500">{hata}</p>}
