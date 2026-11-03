@@ -90,13 +90,14 @@ export function LiveChat() {
         }`}
       >
         {/* Başlık */}
-        <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3">
+        <div className="flex items-center gap-3 px-4 py-3"
+          style={{ background: "linear-gradient(100deg, var(--marka) 0%, #1a1a2e 90%)" }}>
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur">
             <Bot className="h-5 w-5 text-white" />
           </span>
           <div>
             <p className="text-sm font-bold text-white">HepsiBirarada Destek</p>
-            <p className="flex items-center gap-1 text-[11px] text-indigo-200">
+            <p className="flex items-center gap-1 text-[11px] text-white/70">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Çevrimiçi
             </p>
           </div>
@@ -142,7 +143,7 @@ export function LiveChat() {
                 key={q}
                 type="button"
                 onClick={() => { setYazi(q); }}
-                className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-bold text-slate-500 transition hover:border-indigo-400 hover:text-indigo-600"
+                className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-bold text-slate-500 transition hover:border-[var(--marka)] hover:text-[var(--marka)]"
               >
                 {q}
               </button>
@@ -156,13 +157,13 @@ export function LiveChat() {
             value={yazi}
             onChange={(e) => setYazi(e.target.value)}
             placeholder="Mesajınızı yazın…"
-            className="h-10 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm focus:border-indigo-500 focus:bg-white focus:outline-none"
+            className="h-10 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm focus:border-[var(--marka)] focus:bg-white focus:outline-none"
           />
           <button
             type="submit"
             disabled={!yazi.trim()}
             aria-label="Gönder"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:opacity-30"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--marka)] text-white transition hover:opacity-90 disabled:opacity-30"
           >
             <Send className="h-4 w-4" />
           </button>
