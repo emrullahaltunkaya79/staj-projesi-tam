@@ -8,7 +8,12 @@ test.describe("Alışveriş hunisi", () => {
   test("ana sayfa ürün kartları ve indirim rozetleri", async ({ page }) => {
     await page.goto("/");
     const kartSayisi = await page.locator("a[href^='/urun/']").count();
-    expect(kartSayisi).toBeGreaterThanOrEqual(140);
+    // Katalog sayfalı: ilk yüklemede 24 katalog kartı + şerit kartları
+    expect(kartSayisi).toBeGreaterThanOrEqual(50);
+    // Sayfalama: "Daha fazla göster" kart sayısını artırmalı
+    await page.getByRole("button", { name: /Daha fazla göster/ }).click();
+    const artan = await page.locator("a[href^='/urun/']").count();
+    expect(artan).toBeGreaterThan(kartSayisi);
     // 22 indirimli üründen en az bir rozet ana sayfada görünmeli
     await page.waitForTimeout(1500);
     const rozet = page.locator("span", { hasText: /%\d+ İndirim/ }).first();
