@@ -70,6 +70,7 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         Route::post('/orders/{orderNo}/shipping', [ApiController::class, 'updateShipping'])->name('api.orders.shipping');
 
         // Satış odaklı öneriler + müşteri bildirim kayıtları
+        Route::get('/products/arama', [ApiController::class, 'arama'])->name('api.products.arama');
         Route::get('/products/{id}/also-bought', [ApiController::class, 'alsoBought'])->whereNumber('id')->name('api.products.also-bought');
         Route::get('/reviews/latest', [ApiController::class, 'latestReviews'])->name('api.reviews.latest');
         Route::post('/stock-alerts', [ApiController::class, 'stockAlert'])->name('api.stock-alerts');

@@ -1,42 +1,34 @@
 import Link from "next/link";
 import { BosDurum } from "@/components/BosDurum";
-import { urunler, indirimliFiyat } from "@/lib/backoffice";
+import { urunAra } from "@/lib/backoffice";
 import { UrunKarti } from "@/components/Catalog";
 
 export const dynamic = "force-dynamic";
 
-export default async function AraSayfasi({ searchParams }: { searchParams: Promise<{ q?: string; sirala?: string }> }) {
-  const { q, sirala } = await searchParams;
-  const terim = (q ?? "").trim().toLocaleLowerCase("tr");
+export const metadata = { title: "Arama — HepsiBirarada" };
 
-  const tumu = await urunler();
-  let sonuc = terim
-    ? tumu.filter((u) =>
-        [u.name, u.code, u.barcode, u.category, u.brand]
-          .filter(Boolean)
-          .some((f) => (f as string).toLocaleLowerCase("tr").includes(terim)),
-      )
-    : [];
+const SAYFA_BOYUTU = 24;
+const SIRALALAR: [string, string][] = [
+  ["", "Önerilen"],
+  ["fiyat-artan", "Fiyat ↑"],
+  ["fiyat-azalan", "Fiyat ↓"],
+  ["yeni", "Yeni"],
+];
 
-  // Sıralama
-  switch (sirala) {
-    case "fiyat-artan":
-      sonuc = [...sonuc].sort((a, b) => indirimliFiyat(a) - indirimliFiyat(b));
-      break;
-    case "fiyat-azalan":
-      sonuc = [...sonuc].sort((a, b) => indirimliFiyat(b) - indirimliFiyat(a));
-      break;
-    case "yeni":
-      sonuc = [...sonuc].sort((a, b) => b.id - a.id);
-      break;
-  }
+export default async function AraSayfasi({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; sirala?: string; sayfa?: string }>;
+}) {
+  const { q, sirala, sayfa } = await searchParams;
+  const terim = (q ?? "").trim();
+  const aktifSirala = sirala ?? "";
+  const aktifSayfa = Math.max(1, Number(sayfa) || 1);
 
-  const secenekler: [string, string][] = [
-    ["", "Önerilen"],
-    ["fiyat-artan", "Fiyat ↑"],
-    ["fiyat-azalan", "Fiyat ↓"],
-    ["yeni", "Yeni"],
-  ];
+  const sonuc = terim ? await urunAra(terim, aktifSirala, aktifSayfa, SAYFA_BOYUTU) : { urunler: [], toplam: 0, markalar: [] };
+  const toplamSayfa = Math.max(1, Math.ceil(sonuc.toplam / SAYFA_BOYUTU));
+  const href = (s: string, p: number) =>
+    `/ara?q=${encodeURIComponent(q ?? "")}${s ? `&sirala=${encodeURIComponent(s)}` : ""}${p > 1 ? `&sayfa=${p}` : ""}`;
 
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10">
@@ -44,16 +36,16 @@ export default async function AraSayfasi({ searchParams }: { searchParams: Promi
         <div className="border-b border-black/20 pb-5">
           <h1 className="text-[56px] font-black leading-none tracking-[-0.03em] sm:text-[84px]">Arama</h1>
           <p className="mt-2 text-sm text-black/40">
-            {terim ? `"${terim}" için ${sonuc.length} sonuç` : "Bir arama terimi girin"}
+            {terim ? `"${terim}" için ${sonuc.toplam} sonuç` : "Bir arama terimi girin"}
           </p>
           {terim && (
             <div className="mt-4 flex flex-wrap gap-2">
-              {secenekler.map(([deger, etiket]) => (
+              {SIRALALAR.map(([deger, etiket]) => (
                 <Link
                   key={deger || "onerilen"}
-                  href={`/ara?q=${encodeURIComponent(q ?? "")}${deger ? `&sirala=${deger}` : ""}`}
+                  href={href(deger, 1)}
                   className={`rounded-full px-3 py-1 text-[12px] font-bold transition ${
-                    (sirala ?? "") === deger ? "bg-black text-white" : "text-black/50 hover:text-black"
+                    aktifSirala === deger ? "bg-black text-white" : "text-black/50 hover:text-black"
                   }`}
                 >
                   {etiket}
@@ -63,19 +55,54 @@ export default async function AraSayfasi({ searchParams }: { searchParams: Promi
           )}
         </div>
 
-        {terim && sonuc.length === 0 && (
+        {terim && sonuc.urunler.length === 0 ? (
           <div className="py-20 text-center">
             <BosDurum tur="arama" />
-            <a href="/" className="mt-4 inline-block text-sm font-bold underline underline-offset-4">Tüm ürünlere göz at →</a>
+            <a href="/" className="mt-4 inline-block text-sm font-bold underline underline-offset-4">
+              Tüm ürünlere göz at →
+            </a>
           </div>
-        )}
+        ) : (
+          sonuc.urunler.length > 0 && (
+            <>
+              <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
+                {sonuc.urunler.map((u) => (
+                  <UrunKarti key={u.id} urun={u} />
+                ))}
+              </div>
 
-        {sonuc.length > 0 && (
-          <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
-            {sonuc.map((u) => (
-              <UrunKarti key={u.id} urun={u} />
-            ))}
-          </div>
+              {/* Sayfalama */}
+              {toplamSayfa > 1 && (
+                <div className="mt-10 flex items-center justify-center gap-1.5">
+                  {aktifSayfa > 1 && (
+                    <Link href={href(aktifSirala, aktifSayfa - 1)} className="rounded-lg border border-black/15 px-3 py-2 text-[12px] font-bold text-black/60 transition hover:border-black hover:text-black">
+                      ‹ Önceki
+                    </Link>
+                  )}
+                  {Array.from({ length: toplamSayfa }).map((_, i) => {
+                    const n = i + 1;
+                    if (toplamSayfa > 7 && Math.abs(n - aktifSayfa) > 2 && n !== 1 && n !== toplamSayfa) return null;
+                    return (
+                      <Link
+                        key={n}
+                        href={href(aktifSirala, n)}
+                        className={`rounded-lg px-3 py-2 text-[12px] font-bold tabular-nums transition ${
+                          n === aktifSayfa ? "bg-black text-white" : "text-black/50 hover:bg-black/5 hover:text-black"
+                        }`}
+                      >
+                        {n}
+                      </Link>
+                    );
+                  })}
+                  {aktifSayfa < toplamSayfa && (
+                    <Link href={href(aktifSirala, aktifSayfa + 1)} className="rounded-lg border border-black/15 px-3 py-2 text-[12px] font-bold text-black/60 transition hover:border-black hover:text-black">
+                      Sonraki ›
+                    </Link>
+                  )}
+                </div>
+              )}
+            </>
+          )
         )}
       </div>
     </div>

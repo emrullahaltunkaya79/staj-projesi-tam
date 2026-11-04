@@ -91,6 +91,29 @@ export async function urun(id: number): Promise<Urun | null> {
   }
 }
 
+export type AramaSonucu = { urunler: Urun[]; toplam: number; markalar: string[] };
+
+/** Sunucu tarafı arama: FULLTEXT + sayfalama + sıralama (10K+ ürün için ölçeklenir). */
+export async function urunAra(
+  terim: string,
+  sirala: string,
+  sayfa: number,
+  perPage = 24,
+): Promise<AramaSonucu> {
+  try {
+    const sonuc = await istek(
+      `/products/arama?q=${encodeURIComponent(terim)}&sirala=${encodeURIComponent(sirala)}&sayfa=${sayfa}&per_page=${perPage}`,
+    );
+    return {
+      urunler: (sonuc.data ?? []).map(gorselProxy),
+      toplam: sonuc.meta?.toplam ?? 0,
+      markalar: sonuc.meta?.markalar ?? [],
+    };
+  } catch {
+    return { urunler: [], toplam: 0, markalar: [] };
+  }
+}
+
 export type Yorum = {
   rating: number;
   comment: string;

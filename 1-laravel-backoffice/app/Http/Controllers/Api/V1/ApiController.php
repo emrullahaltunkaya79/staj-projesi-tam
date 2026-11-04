@@ -653,6 +653,105 @@ class ApiController extends Controller
     }
 
     /**
+     * Sunucu tarafı ürün arama — FULLTEXT (name, brand) + sayfalama + sıralama.
+     * GET /api/v1/products/arama?q=&sirala=&sayfa=&per_page=
+     * sirala: (bos)=alaka | fiyat-artan | fiyat-azalan | yeni
+     */
+    public function arama(Request $request): JsonResponse
+    {
+        $terim = trim((string) $request->query('q', ''));
+        $sayfa = max(1, (int) $request->query('sayfa', '1'));
+        $perPage = min(48, max(6, (int) $request->query('per_page', '24')));
+        $sirala = (string) $request->query('sirala');
+
+        $query = Product::query();
+
+        if ($terim !== '') {
+            // Boolean tam metin: her kelimeye önek jokeri (kulak → Kulaklık*)
+            $boole = collect(preg_split('/\s+/u', $terim) ?: [])
+                ->map(fn ($w) => preg_replace('/[^\p{L}\p{N}]/u', '', $w))
+                ->filter(fn ($w) => mb_strlen($w) >= 2)
+                ->map(fn ($w) => $w.'*')
+                ->implode(' ');
+
+            if ($boole !== '') {
+                $query->whereRaw('MATCH(name, brand) AGAINST(? IN BOOLEAN MODE)', [$boole]);
+            } else {
+                // Tek harf gibi tam metin sözlüğüne düşmeyen terimler: LIKE ile yumuşak eşleşme
+                $query->where(function ($w) use ($terim) {
+                    $w->where('name', 'like', "%{$terim}%")->orWhere('brand', 'like', "%{$terim}%");
+                });
+            }
+        }
+
+        $toplam = (clone $query)->count();
+
+        $siralaIfadeleri = [
+            'fiyat-artan' => 'sale_price * (100 - COALESCE(discount_percent, 0)) / 100 ASC',
+            'fiyat-azalan' => 'sale_price * (100 - COALESCE(discount_percent, 0)) / 100 DESC',
+            'yeni' => 'id DESC',
+        ];
+
+        if (isset($siralaIfadeleri[$sirala])) {
+            $query->orderByRaw($siralaIfadeleri[$sirala]);
+        } elseif ($terim !== '' && isset($boole) && $boole !== '') {
+            // Varsayılan: tam metin alaka puanı
+            $query->orderByRaw('MATCH(name, brand) AGAINST(? IN BOOLEAN MODE) DESC', [$boole]);
+        } else {
+            $query->orderBy('name');
+        }
+
+        $urunler = $query->with(['category', 'images'])
+            ->forPage($sayfa, $perPage)
+            ->get();
+
+        $puanlar = \DB::table('product_reviews')
+            ->selectRaw('product_id, ROUND(AVG(rating), 1) as oran, COUNT(*) as adet')
+            ->where('is_approved', true)
+            ->whereIn('product_id', $urunler->modelKeys())
+            ->groupBy('product_id')
+            ->get()->keyBy('product_id');
+
+        // Marka dağılımı: aynı tam metin filtresiyle taze sorgu (klon sıralamasından etkilenmesin)
+        $markalarSorgu = Product::query();
+        if ($terim !== '' && isset($boole) && $boole !== '') {
+            $markalarSorgu->whereRaw('MATCH(name, brand) AGAINST(? IN BOOLEAN MODE)', [$boole]);
+        }
+        $markalar = $markalarSorgu
+            ->whereNotNull('brand')
+            ->selectRaw('brand, COUNT(*) as adet')
+            ->groupBy('brand')
+            ->orderByDesc('adet')
+            ->limit(8)
+            ->pluck('adet', 'brand');
+
+        return response()->json([
+            'data' => $urunler->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'brand' => $p->brand,
+                'category' => $p->category?->name,
+                'sale_price' => (float) $p->sale_price,
+                'discount_percent' => $p->discount_percent !== null ? (int) $p->discount_percent : null,
+                'final_price' => $p->finalPrice(),
+                'stock_quantity' => $p->stock_quantity,
+                'available_quantity' => $p->availableQuantity(),
+                'in_stock' => $p->availableQuantity() > 0,
+                'rating_avg' => $puanlar[$p->id]->oran ?? null,
+                'review_count' => (int) ($puanlar[$p->id]->adet ?? 0),
+                'is_bestseller' => false,
+                'image_url' => $p->images->isNotEmpty() ? 'ok' : null,
+            ]),
+            'meta' => [
+                'toplam' => $toplam,
+                'sayfa' => $sayfa,
+                'per_page' => $perPage,
+                'markalar' => $markalar,
+            ],
+        ]);
+    }
+
+    /**
      * Satıcı paneli: bülten aboneleri + bekleyen/gönderilen stok bildirimleri.
      * GET /api/v1/bildirimler
      */
