@@ -196,7 +196,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={() => dilDegistir(aktifDil === "tr" ? "en" : "tr")}
               title={aktifDil === "tr" ? "Switch to English" : "Türkçe'ye geç"}
-              className="flex items-center gap-1 rounded-full border border-black/15 bg-white px-3 py-1.5 text-[11px] font-black text-black/60 transition hover:border-black/40"
+              className="header-chip flex items-center gap-1 rounded-full border border-black/15 bg-white px-3 py-1.5 text-[11px] font-black text-black/60 transition hover:border-black/40"
             >
               <Globe className="h-3 w-3" />
               {aktifDil === "tr" ? "EN" : "TR"}
@@ -219,7 +219,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             {girisYapmis && kullanici ? (
               <div className="relative">
                 <button type="button" onClick={() => setMenuAcik(!menuAcik)}
-                        className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-sm text-black transition hover:border-black/40">
+                        className="header-chip flex items-center gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-sm text-black transition hover:border-black/40">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--marka)] text-xs font-black text-white">
                     {kullanici.name.charAt(0).toUpperCase()}
                   </span>
@@ -258,7 +258,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               </div>
             ) : (
               <button type="button" onClick={() => setAuthModalAcik(true)}
-                      className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2 text-[13px] font-bold text-black/70 transition hover:border-black/40 hover:text-black">
+                      className="header-chip flex items-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2 text-[13px] font-bold text-black/70 transition hover:border-black/40 hover:text-black">
                 <User className="h-3.5 w-3.5" />
                 Giriş Yap
               </button>

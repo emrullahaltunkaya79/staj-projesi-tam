@@ -37,6 +37,16 @@ body {
 /* Dark mode mağaza geçişleri */
 .dark .bg-white { background-color: #0f0f23 !important; }
 .dark .bg-\[var\(--marka\)\] { color: #111827 !important; }
+/* Koyu header içindeki beyaz çipler: cam stile döner (EN/Giriş/Kullanıcı çipleri) */
+.dark .header-chip {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+.dark .header-chip:hover {
+  background-color: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
 .dark .bg-\[\#f4f4f4\] { background-color: #1a1a2e !important; }
 .dark .bg-\[\#f8f8f8\] { background-color: #16213e !important; }
 .dark .bg-slate-50 { background-color: #0f0f23 !important; }
