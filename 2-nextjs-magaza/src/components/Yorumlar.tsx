@@ -20,6 +20,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   const [mesaj, setMesaj] = useState("");
   const [gonderildi, setGonderildi] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(false);
+  const [buyuyen, setBuyuyen] = useState<string | null>(null);
   const [foto, setFoto] = useState<File | null>(null);
   const [fotoOnizleme, setFotoOnizleme] = useState<string | null>(null);
 
@@ -174,7 +175,15 @@ export function Yorumlar({ urunId }: { urunId: number }) {
                     {y.comment && <p className="mt-2 pl-11 text-sm leading-relaxed text-black/70">{y.comment}</p>}
                     {y.gorsel && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={y.gorsel} alt="Yorum fotoğrafı" loading="lazy" className="ml-11 mt-2.5 h-28 w-40 rounded-xl border border-black/10 object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setBuyuyen(y.gorsel ?? null)}
+                        aria-label="Fotoğrafı büyüt"
+                        className="ml-11 block"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={y.gorsel} alt="Yorum fotoğrafı" loading="lazy" className="h-28 w-40 rounded-xl border border-black/10 object-cover transition hover:opacity-90" />
+                      </button>
                     )}
                   </div>
                 ))}
@@ -183,6 +192,25 @@ export function Yorumlar({ urunId }: { urunId: number }) {
           </div>
         </div>
       </div>
+      {buyuyen && (
+        <div
+          onClick={() => setBuyuyen(null)}
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-6 backdrop-blur-sm"
+          role="dialog"
+          aria-label="Büyütülmüş yorum fotoğrafı"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={buyuyen} alt="Yorum fotoğrafı" className="max-h-[85vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl" />
+          <button
+            type="button"
+            onClick={() => setBuyuyen(null)}
+            aria-label="Kapat"
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-xl text-white backdrop-blur transition hover:bg-white/25"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </section>
   );
 }

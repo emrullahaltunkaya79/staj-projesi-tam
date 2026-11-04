@@ -11,7 +11,10 @@ const inter = Inter({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3001";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "HepsiBirarada — Teknoloji & Ofis",
     template: "%s | HepsiBirarada",

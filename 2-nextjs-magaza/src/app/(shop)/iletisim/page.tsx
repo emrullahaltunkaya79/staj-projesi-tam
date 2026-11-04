@@ -8,9 +8,26 @@ export default function Iletisim() {
   const [eposta, setEposta] = useState("");
   const [mesaj, setMesaj] = useState("");
 
-  const gonder = (e: React.FormEvent) => {
+  const [gonderiliyor, setGonderiliyor] = useState(false);
+  const [hata, setHata] = useState<string | null>(null);
+
+  const gonder = async (e: React.FormEvent) => {
     e.preventDefault();
-    setGonderildi(true);
+    setGonderiliyor(true);
+    setHata(null);
+    try {
+      const r = await fetch("/api/iletisim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ad, eposta, konu: "İletişim formu", mesaj }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.message ?? "Mesaj gönderilemedi.");
+      setGonderildi(true);
+    } catch (err) {
+      setHata(err instanceof Error ? err.message : "Mesaj gönderilemedi.");
+      setGonderiliyor(false);
+    }
   };
 
   return (
@@ -42,6 +59,7 @@ export default function Iletisim() {
             </div>
           </div>
 
+          {hata && <p className="mb-4 text-sm font-bold text-red-600">{hata}</p>}
           {gonderildi ? (
             <div className="flex h-full min-h-[280px] flex-col items-center justify-center border border-black/15 bg-[#f8f8f8] text-center">
               <span className="text-4xl">✓</span>

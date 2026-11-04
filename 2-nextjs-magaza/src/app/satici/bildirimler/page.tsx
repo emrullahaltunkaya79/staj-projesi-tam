@@ -5,12 +5,14 @@ import { Mail, BellRing, CheckCircle2, Clock } from "lucide-react";
 
 type BultenKaydi = { email: string; subscribed_at: string };
 type StokKaydi = { email: string; urun: string; gonderildi: boolean; tarih: string };
+type MesajKaydi = { id: number; ad: string; eposta: string; konu: string | null; mesaj: string; created_at: string };
 
 const tarih = (v: string) => new Date(v).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" });
 
 export default function BildirimlerSayfasi() {
   const [bulten, setBulten] = useState<BultenKaydi[]>([]);
   const [stok, setStok] = useState<StokKaydi[]>([]);
+  const [mesajlar, setMesajlar] = useState<MesajKaydi[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
 
   useEffect(() => {
@@ -20,6 +22,10 @@ export default function BildirimlerSayfasi() {
         setBulten(d.data?.bulten ?? []);
         setStok(d.data?.stok ?? []);
       })
+      .catch(() => {});
+    fetch("/api/iletisim")
+      .then((r) => r.json())
+      .then((d) => setMesajlar(d.data ?? []))
       .catch(() => {})
       .finally(() => setYukleniyor(false));
   }, []);
@@ -74,6 +80,33 @@ export default function BildirimlerSayfasi() {
                     ))}
                   </tbody>
                 </table>
+              )}
+            </div>
+          </section>
+
+          {/* İletişim mesajları */}
+          <section>
+            <h2 className="mb-3 flex items-center gap-2 text-[15px] font-black text-slate-900">
+              <Mail className="h-4.5 w-4.5 text-slate-400" /> İletişim Mesajları ({mesajlar.length})
+            </h2>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              {mesajlar.length === 0 ? (
+                <p className="p-6 text-sm text-slate-400">Henüz mesaj yok.</p>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {mesajlar.map((m) => (
+                    <div key={m.id} className="px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-bold text-slate-800">
+                          {m.ad} <span className="ml-1 font-normal text-slate-400">· {m.eposta}</span>
+                        </p>
+                        <span className="text-[11px] text-slate-400">{new Date(m.created_at).toLocaleDateString("tr-TR")}</span>
+                      </div>
+                      {m.konu && <p className="text-[11px] font-bold text-slate-500">Konu: {m.konu}</p>}
+                      <p className="mt-1 text-sm text-slate-600">{m.mesaj}</p>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </section>

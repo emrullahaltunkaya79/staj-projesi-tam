@@ -58,8 +58,29 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
     .slice(0, 6);
   const ortakSatinAlmalar = await ayniAldilar(u.id);
 
+  // Google zengin sonuçları için Product schema
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: u.name,
+    description: `${u.name}${u.brand ? ` — ${u.brand}` : ""} — HepsiBirarada mağazasında ${new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(u.final_price ?? u.sale_price)} ₺`,
+    image: [`/api/img/${u.id}`],
+    brand: { "@type": "Brand", name: u.brand ?? "HepsiBirarada" },
+    sku: u.code ?? String(u.id),
+    ...(u.rating_avg != null && {
+      aggregateRating: { "@type": "AggregateRating", ratingValue: u.rating_avg, reviewCount: Math.max(1, u.review_count ?? 1) },
+    }),
+    offers: {
+      "@type": "Offer",
+      price: u.final_price ?? u.sale_price,
+      priceCurrency: "TRY",
+      availability: u.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+  };
+
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10"><div className="mx-auto max-w-7xl">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="px-5 pb-6 pt-8 sm:px-10">
         <div className="mx-auto max-w-7xl text-[13px] font-medium text-black/50">
           <a href="/" className="hover:underline underline-offset-4">Mağaza</a>

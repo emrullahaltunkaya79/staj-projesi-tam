@@ -360,7 +360,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Bilgi</div>
               <div className="flex flex-col gap-2">
                 <span>⛓️ CSPR ile kripto ödeme</span>
-                <span>🔒 HMAC imzalı güvenli API</span>
+                <span>🔒 Token ile korunan güvenli API</span>
                 <a href="/sozlesme/mesafeli-satis" className="hover:text-white transition">↩️ 14 gün koşulsuz iade — Mesafeli Satış Sözleşmesi</a>
               </div>
             </div>

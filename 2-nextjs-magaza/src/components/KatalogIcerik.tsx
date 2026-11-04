@@ -13,12 +13,14 @@ export function KatalogIcerik({
   baslik,
   marka = null,
   sidebar = true,
+  baslikGizle = false,
 }: {
   tumUrunler: Urun[];
   kategori: string | null;
   baslik: string;
   marka?: string | null;
   sidebar?: boolean;
+  baslikGizle?: boolean;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,6 +63,7 @@ export function KatalogIcerik({
     <div className="px-5 pb-24 pt-2 sm:px-10">
       <div className="mx-auto max-w-7xl">
         {/* Başlık */}
+        {!baslikGizle && (
         <div className="border-b border-black/20 pb-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex items-baseline gap-3">
@@ -77,6 +80,7 @@ export function KatalogIcerik({
             </div>
           </div>
         </div>
+        )}
 
         {/* Grid — sidebar'lı (katalog sayfaları) veya tam genişlik (ana sayfa) */}
         {sidebar ? (

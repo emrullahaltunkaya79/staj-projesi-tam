@@ -3,8 +3,8 @@ import { Lock, Zap, RotateCcw, Package } from "lucide-react";
 const KARTLAR = [
   {
     ikon: Lock,
-    baslik: "HMAC İmzalı API",
-    aciklama: "Her istek kriptografik olarak imzalanır",
+    baslik: "Token ile Korunan API",
+    aciklama: "Her istek Sanctum kimlik doğrulamasından geçer",
   },
   {
     ikon: Zap,
