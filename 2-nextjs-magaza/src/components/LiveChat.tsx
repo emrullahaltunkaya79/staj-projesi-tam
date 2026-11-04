@@ -72,7 +72,7 @@ export function LiveChat() {
         className={`fixed bottom-5 right-5 z-[55] flex h-14 w-14 items-center justify-center rounded-full shadow-2xl transition-all duration-300 ${
           acik
             ? "rotate-90 bg-slate-700 text-white"
-            : "bg-indigo-600 text-white hover:scale-110 hover:bg-indigo-500"
+            : "bg-[var(--marka)] text-white hover:scale-110 hover:opacity-90"
         }`}
       >
         {acik ? <X className="h-5 w-5" /> : <MessageCircle className="h-6 w-6" />}
@@ -110,12 +110,12 @@ export function LiveChat() {
               <div
                 className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm ${
                   m.kimden === "ben"
-                    ? "rounded-br-sm bg-indigo-600 text-white"
+                    ? "rounded-br-sm bg-[var(--marka)] text-white"
                     : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
                 }`}
               >
                 {m.metin}
-                <span suppressHydrationWarning className={`mt-1 block text-[9px] ${m.kimden === "ben" ? "text-indigo-200" : "text-slate-300"}`}>
+                <span suppressHydrationWarning className={`mt-1 block text-[9px] ${m.kimden === "ben" ? "text-white/50" : "text-slate-300"}`}>
                   {m.saat}
                 </span>
               </div>

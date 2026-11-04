@@ -9,6 +9,11 @@ import { imgUrl } from "@/lib/img";
 import { GeriSayim } from "./GeriSayim";
 import { KartaEkleButonu } from "./KartaEkleButonu";
 
+/**
+ * KAMPANYA VURGUSU: Bu bölümdeki turuncu (orange-500/600) tonlar bilinçli olarak
+ * temadan bağımsızdır — seçilen marka rengi ne olursa olsun kampanya alanı aynı
+ * sıcak vurguyu taşır (tek istisna, tasarım kararı).
+ */
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
 /** Flaş İndirimler — düzenli fırsat şeridi: eşit kartlar, ok navigasyonu, stok çubuğu. */

@@ -6,7 +6,7 @@ const fmt = (v: number) =>
 export function OzetKartlari({ ozet }: { ozet: SellerStats["ozet"] }) {
   const kartlar = [
     { ikon: TrendingUp, label: "Toplam Ciro", deger: fmt(ozet.toplam_ciro), alt: `Bu ay ${fmt(ozet.bu_ay_ciro)}`, renk: "text-emerald-600 bg-emerald-50" },
-    { ikon: ShoppingBag, label: "Siparişler", deger: String(ozet.siparis_sayisi), alt: `${ozet.kargolanacak} kargolanacak · ${ozet.bekleyen_siparis} bekliyor`, renk: "text-indigo-600 bg-indigo-50" },
+    { ikon: ShoppingBag, label: "Siparişler", deger: String(ozet.siparis_sayisi), alt: `${ozet.kargolanacak} kargolanacak · ${ozet.bekleyen_siparis} bekliyor`, renk: "text-[var(--marka)] bg-black/5" },
     { ikon: Package, label: "Ürünler", deger: String(ozet.urun_sayisi), alt: `Stok değeri ${fmt(ozet.stok_degeri)}`, renk: "text-violet-600 bg-violet-50" },
     { ikon: AlertTriangle, label: "Kritik Stok", deger: String(ozet.kritik_stok), alt: `${ozet.tukenen} ürün tükendi`, renk: "text-amber-600 bg-amber-50" },
   ];
@@ -36,7 +36,7 @@ export function SonSiparisler({ siparisler }: { siparisler: SellerStats["son_sip
   const DURUM: Record<string, string> = {
     pending: "bg-amber-50 text-amber-700",
     paid: "bg-emerald-50 text-emerald-700",
-    preparing: "bg-indigo-50 text-indigo-700",
+    preparing: "bg-black/5 text-[var(--marka)]",
     shipped: "bg-sky-50 text-sky-700",
     delivered: "bg-emerald-50 text-emerald-700",
     cancelled: "bg-red-50 text-red-600",

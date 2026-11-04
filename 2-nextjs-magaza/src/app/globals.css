@@ -22,7 +22,6 @@ html.dark {
 }
 
 /* Her renk temasinin koyu mod varyanti — butonlar koyu zeminde kaybolmasin */
-.dark[data-tema="siyah"] { --marka: #4b5563; }
 .dark[data-tema="lacivert"] { --marka: #3b82f6; }
 .dark[data-tema="yesil"] { --marka: #10b981; }
 .dark[data-tema="bordo"] { --marka: #f43f5e; }
@@ -116,7 +115,6 @@ body {
 
 /* Marka rengi — TemaSecici html[data-tema] ile değiştirir */
 :root { --marka: #111827; } /* antrasit minimal */
-[data-tema="siyah"] { --marka: #111827; }
 [data-tema="lacivert"] { --marka: #1e3a8a; }
 [data-tema="yesil"] { --marka: #065f46; }
 [data-tema="bordo"] { --marka: #7f1d1d; }

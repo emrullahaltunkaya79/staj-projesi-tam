@@ -10,7 +10,7 @@ export default async function SaticiSiparisler() {
   const DURUM: Record<string, { label: string; renk: string }> = {
     pending: { label: "Bekliyor", renk: "bg-amber-50 text-amber-700" },
     paid: { label: "Ödendi", renk: "bg-emerald-50 text-emerald-700" },
-    preparing: { label: "Hazırlanıyor", renk: "bg-indigo-50 text-indigo-700" },
+    preparing: { label: "Hazırlanıyor", renk: "bg-black/5 text-[var(--marka)]" },
     shipped: { label: "Kargoda", renk: "bg-sky-50 text-sky-700" },
     delivered: { label: "Teslim", renk: "bg-emerald-50 text-emerald-700" },
     return_requested: { label: "İade Talebi", renk: "bg-amber-100 text-amber-800" },

@@ -90,7 +90,7 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
           <p className="mt-1 text-sm text-slate-400">{urunler.length} ürün · ekleyin, düzenleyin, silin</p>
         </div>
         <button type="button" onClick={() => ac()}
-                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-500 active:scale-95">
+                className="flex items-center gap-2 rounded-xl bg-[var(--marka)] px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90 active:scale-95">
           <Plus className="h-4 w-4" /> Yeni Ürün
         </button>
       </div>
@@ -141,7 +141,7 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
                                onChange={(e) => gorselYukle(u.id, e.target.files)} />
                       </label>
                       <button type="button" onClick={() => ac(u)} title="Düzenle"
-                              className="rounded-lg p-2 text-slate-400 transition hover:bg-indigo-50 hover:text-indigo-600">
+                              className="rounded-lg p-2 text-slate-400 transition hover:bg-black/5 hover:text-[var(--marka)]">
                         <Pencil className="h-4 w-4" />
                       </button>
                       <button type="button" onClick={() => sil(u.id, u.name)} title="Sil"
@@ -172,12 +172,12 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
               <div className="col-span-2">
                 <label className="mb-1 block text-xs font-bold text-slate-500">Ürün Adı *</label>
                 <input required value={ad} onChange={(e) => setAd(e.target.value)}
-                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
+                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">Kategori</label>
                 <select value={kategori} onChange={(e) => setKategori(e.target.value)}
-                        className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none">
+                        className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none">
                   <option value="">Seçiniz</option>
                   {kategoriler.map((k) => <option key={k} value={k}>{k}</option>)}
                 </select>
@@ -185,41 +185,41 @@ export function UrunYonetim({ urunler, kategoriler }: { urunler: SellerUrun[]; k
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">Birim *</label>
                 <select value={birim} onChange={(e) => setBirim(e.target.value)}
-                        className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none">
+                        className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none">
                   {["adet", "kutu", "paket", "set", "takım", "kg", "lt", "metre"].map((b) => <option key={b}>{b}</option>)}
                 </select>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">Alış Fiyatı (₺) *</label>
                 <input required type="number" step="0.01" min="0" value={alisFiyat} onChange={(e) => setAlisFiyat(e.target.value)}
-                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
+                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">Satış Fiyatı (₺) *</label>
                 <input required type="number" step="0.01" min="0" value={satisFiyat} onChange={(e) => setSatisFiyat(e.target.value)}
-                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
+                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">İndirim (%)</label>
                 <input type="number" min="0" max="90" value={indirim} onChange={(e) => setIndirim(e.target.value)} placeholder="0-90, boş = yok"
-                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
+                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">Stok *</label>
                 <input required type="number" min="0" value={stok} onChange={(e) => setStok(e.target.value)}
-                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
+                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-500">Ürün Kodu</label>
                 <input value={kod} onChange={(e) => setKod(e.target.value)} placeholder="URN-001"
-                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-indigo-500 focus:outline-none" />
+                       className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-[var(--marka)] focus:outline-none" />
               </div>
 
               {hata && <p className="col-span-2 text-sm font-semibold text-red-600">{hata}</p>}
 
               <div className="col-span-2 mt-2 flex gap-3">
                 <button type="submit" disabled={yukleniyor}
-                        className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 text-sm font-bold text-white transition hover:bg-indigo-500 active:scale-95 disabled:opacity-50">
+                        className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--marka)] text-sm font-bold text-white transition hover:opacity-90 active:scale-95 disabled:opacity-50">
                   {yukleniyor ? <Loader2 className="h-4 w-4 animate-spin" /> : duzenlenen ? "Güncelle" : "Ürünü Oluştur"}
                 </button>
                 <button type="button" onClick={() => setModalAcik(false)}

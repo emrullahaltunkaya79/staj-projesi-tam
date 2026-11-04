@@ -105,7 +105,7 @@ export default function SaticiLayout({ children }: { children: React.ReactNode }
       >
         <div className="flex h-16 items-center border-b border-slate-800 px-5">
           <span className="text-lg font-black text-white">HepsiBirarada</span>
-          <span className="ml-2 rounded bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white">SATICI</span>
+          <span className="ml-2 rounded bg-[var(--marka)] px-2 py-0.5 text-[10px] font-bold text-white">SATICI</span>
         </div>
         <nav className="space-y-1 p-3">
           {MENU.map(({ href, label, ikon: Ikon }) => {
@@ -117,7 +117,7 @@ export default function SaticiLayout({ children }: { children: React.ReactNode }
                 onClick={() => setMenuAcik(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium transition ${
                   aktif
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-[var(--marka)] text-white"
                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
                 }`}
               >

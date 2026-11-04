@@ -6,7 +6,6 @@ import { Palette } from "lucide-react";
 const ANAHTAR = "hba-tema";
 const TEMALAR: { id: string; ad: string; renk: string }[] = [
   { id: "", ad: "Antrasit Minimal", renk: "#111827" },
-  { id: "siyah", ad: "Siyah (Klasik)", renk: "#111111" },
   { id: "lacivert", ad: "Lacivert", renk: "#1e3a8a" },
   { id: "yesil", ad: "Yeşil", renk: "#065f46" },
   { id: "bordo", ad: "Bordo", renk: "#7f1d1d" },
@@ -20,7 +19,12 @@ export function TemaSecici() {
 
   useEffect(() => {
     try {
-      const kayitli = localStorage.getItem(ANAHTAR);
+      let kayitli = localStorage.getItem(ANAHTAR);
+      if (kayitli === "siyah") {
+        // "Siyah" teması antrasitle birleştirildi — eski kayıt temizlenir
+        localStorage.removeItem(ANAHTAR);
+        kayitli = "";
+      }
       if (kayitli) {
         setAktif(kayitli);
         document.documentElement.dataset.tema = kayitli;
