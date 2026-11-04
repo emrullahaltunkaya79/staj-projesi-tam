@@ -88,7 +88,7 @@ export default function Siparislerim() {
     <div className="px-5 pb-24 pt-10 sm:px-10">
       <div className="mx-auto max-w-3xl">
         <div className="border-b border-black/20 pb-5">
-          <h1 className="text-[56px] font-black leading-none tracking-[-0.03em] sm:text-[84px]">Siparişlerim</h1>
+          <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Siparişlerim</h1>
           {girisYapmis && kullanici && (
             <p className="mt-3 text-sm font-medium text-black/60">
               Hoş geldin <span className="font-bold text-black">{kullanici.name}</span> — siparişleriniz otomatik listeleniyor.

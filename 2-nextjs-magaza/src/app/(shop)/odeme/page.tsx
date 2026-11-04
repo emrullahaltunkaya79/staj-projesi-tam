@@ -145,7 +145,7 @@ export default function OdemeSayfasi() {
     <div className="px-5 pb-24 pt-10 sm:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="border-b border-black/20 pb-5">
-          <h1 className="text-[56px] font-black leading-none tracking-[-0.03em] sm:text-[84px]">Ödeme</h1>
+          <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Ödeme</h1>
           <div className="mt-5"><OdemeAdimlari aktif={2} /></div>
         </div>
 

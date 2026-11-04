@@ -72,7 +72,7 @@ export default function SSS() {
     <div className="px-5 pb-24 pt-10 sm:px-10">
       <div className="mx-auto max-w-3xl">
         <div className="border-b border-black/20 pb-5">
-          <h1 className="text-[48px] font-black leading-none tracking-[-0.03em] sm:text-[64px]">SSS</h1>
+          <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Sıkça Sorulan Sorular</h1>
           <p className="mt-2 text-sm text-black/40">Sıkça sorulan sorular ve yanıtları</p>
         </div>
 

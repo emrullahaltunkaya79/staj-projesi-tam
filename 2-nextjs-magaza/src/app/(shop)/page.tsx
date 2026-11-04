@@ -133,7 +133,7 @@ export default async function Home() {
       {hata ? (
         <div className="px-5 pb-20 sm:px-10">
           <div className="mx-auto max-w-7xl border-b border-black/20 pb-5">
-            <h2 className="text-[36px] font-black leading-none tracking-[-0.03em] text-black/40">Katalog</h2>
+            <h2 className="text-[17px] font-black uppercase tracking-wide text-black/40">Katalog</h2>
           </div>
           <p className="mt-8 text-sm text-black/50">{hata}</p>
         </div>

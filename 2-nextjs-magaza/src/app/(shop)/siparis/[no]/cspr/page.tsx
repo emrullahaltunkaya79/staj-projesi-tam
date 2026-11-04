@@ -13,7 +13,7 @@ export default async function CsprOdemeSayfasi({ params }: { params: Promise<{ n
     <div className="px-5 pb-24 pt-10 sm:px-10">
       <div className="mx-auto max-w-lg">
         <div className="border-b border-black/20 pb-5">
-          <h1 className="text-[40px] font-black leading-none tracking-[-0.03em] sm:text-[56px]">CSPR ile Öde</h1>
+          <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">CSPR ile Öde</h1>
           <p className="mt-2 font-mono text-sm text-black/50">{s.order_no} · {new Intl.NumberFormat("tr-TR").format(s.total)} ₺</p>
         </div>
         <CsprPanel orderNo={s.order_no} />

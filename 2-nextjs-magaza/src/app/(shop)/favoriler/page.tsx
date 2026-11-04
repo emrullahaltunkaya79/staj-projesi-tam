@@ -31,7 +31,7 @@ export default function FavorilerSayfasi() {
       <div className="mx-auto max-w-7xl">
         <div className="flex items-end justify-between border-b border-black/20 pb-5">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-[36px] font-black leading-none tracking-[-0.02em] sm:text-[48px]">Favorilerim</h1>
+            <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Favorilerim</h1>
             <span className="text-[13px] font-medium text-black/30">{favoriler.length} ürün</span>
           </div>
           {favoriler.length > 0 && (

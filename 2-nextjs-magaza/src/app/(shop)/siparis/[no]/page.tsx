@@ -54,7 +54,7 @@ export default async function SiparisSayfasi({
         )}
 
         <div className="border-b border-black/20 pb-5">
-          <h1 className="text-[40px] font-black leading-none tracking-[-0.03em] sm:text-[56px]">Sipariş</h1>
+          <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Sipariş</h1>
           <p className="mt-2 font-mono text-sm text-black/50">{s.order_no}</p>
           <div className="mt-5"><OdemeAdimlari aktif={3} /></div>
         </div>
