@@ -26,3 +26,6 @@ Schedule::command('casper:odemeler-kontrol')->everyTwoMinutes();
 
 // Haftalık veritabanı yedeği (spatie/laravel-backup → storage/app/backups)
 Schedule::command('backup:run --only-db')->weeklyOn(1, '03:00');
+
+// Stok bildirimi e-postaları: stoğa giren ürünlerin bekleyen kayıtlarına mail atar (her 15 dakikada)
+Schedule::command('stok:bildirim-gonder')->everyFifteenMinutes();

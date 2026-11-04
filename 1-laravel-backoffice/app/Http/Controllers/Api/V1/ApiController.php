@@ -653,6 +653,43 @@ class ApiController extends Controller
     }
 
     /**
+     * Satıcı paneli: bülten aboneleri + bekleyen/gönderilen stok bildirimleri.
+     * GET /api/v1/bildirimler
+     */
+    public function bildirimKayitlari(Request $request): JsonResponse
+    {
+        $bulten = \DB::table('newsletter_subscribers')
+            ->orderByDesc('subscribed_at')
+            ->limit(100)
+            ->get(['email', 'subscribed_at']);
+
+        $stok = \DB::table('stock_alerts')
+            ->join('products', 'products.id', '=', 'stock_alerts.product_id')
+            ->orderByDesc('stock_alerts.created_at')
+            ->limit(100)
+            ->get([
+                'stock_alerts.email',
+                'stock_alerts.product_id',
+                'stock_alerts.variant_id',
+                'stock_alerts.notified_at',
+                'stock_alerts.created_at',
+                'products.name as urun_adi',
+            ]);
+
+        return response()->json([
+            'data' => [
+                'bulten' => $bulten,
+                'stok' => $stok->map(fn ($k) => [
+                    'email' => $k->email,
+                    'urun' => $k->urun_adi,
+                    'gonderildi' => $k->notified_at !== null,
+                    'tarih' => $k->created_at,
+                ]),
+            ],
+        ]);
+    }
+
+    /**
      * E-bülten aboneliği.
      * POST /api/v1/newsletter  { email }
      */

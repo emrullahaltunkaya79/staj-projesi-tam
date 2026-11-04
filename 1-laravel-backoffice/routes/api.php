@@ -74,6 +74,7 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         Route::get('/reviews/latest', [ApiController::class, 'latestReviews'])->name('api.reviews.latest');
         Route::post('/stock-alerts', [ApiController::class, 'stockAlert'])->name('api.stock-alerts');
         Route::post('/newsletter', [ApiController::class, 'newsletterSubscribe'])->name('api.newsletter');
+        Route::get('/bildirimler', [ApiController::class, 'bildirimKayitlari'])->name('api.bildirimler');
 
         // Aktif token listesi (yönetim)
         Route::get('/tokens', [ApiController::class, 'tokens'])->name('api.tokens');

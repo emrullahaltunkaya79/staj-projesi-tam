@@ -8,6 +8,7 @@ import {
   Package,
   ShoppingCart,
   BarChart3,
+  Bell,
   Store,
   Menu,
   X,
@@ -21,6 +22,7 @@ const MENU = [
   { href: "/satici/urunler", label: "Ürünler", ikon: Package },
   { href: "/satici/siparisler", label: "Siparişler", ikon: ShoppingCart },
   { href: "/satici/raporlar", label: "Raporlar", ikon: BarChart3 },
+  { href: "/satici/bildirimler", label: "Bildirimler", ikon: Bell },
 ];
 
 export default function SaticiLayout({ children }: { children: React.ReactNode }) {
