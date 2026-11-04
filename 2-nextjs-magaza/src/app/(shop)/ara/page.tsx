@@ -34,25 +34,29 @@ export default async function AraSayfasi({
     <div className="px-5 pb-24 pt-10 sm:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="border-b border-black/20 pb-5">
-          <h1 className="text-[56px] font-black leading-none tracking-[-0.03em] sm:text-[84px]">Arama</h1>
-          <p className="mt-2 text-sm text-black/40">
-            {terim ? `"${terim}" için ${sonuc.toplam} sonuç` : "Bir arama terimi girin"}
-          </p>
-          {terim && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {SIRALALAR.map(([deger, etiket]) => (
-                <Link
-                  key={deger || "onerilen"}
-                  href={href(deger, 1)}
-                  className={`rounded-full px-3 py-1 text-[12px] font-bold transition ${
-                    aktifSirala === deger ? "bg-black text-white" : "text-black/50 hover:text-black"
-                  }`}
-                >
-                  {etiket}
-                </Link>
-              ))}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Arama Sonuçları</h1>
+              <span className="text-[13px] font-medium text-black/30">
+                {terim ? `"${terim}" için ${sonuc.toplam} sonuç` : "Bir arama terimi girin"}
+              </span>
             </div>
-          )}
+            {terim && (
+              <div className="flex flex-wrap gap-2">
+                {SIRALALAR.map(([deger, etiket]) => (
+                  <Link
+                    key={deger || "onerilen"}
+                    href={href(deger, 1)}
+                    className={`rounded-full px-3 py-1 text-[12px] font-bold transition ${
+                      aktifSirala === deger ? "bg-black text-white" : "text-black/50 hover:text-black"
+                    }`}
+                  >
+                    {etiket}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {terim && sonuc.urunler.length === 0 ? (
