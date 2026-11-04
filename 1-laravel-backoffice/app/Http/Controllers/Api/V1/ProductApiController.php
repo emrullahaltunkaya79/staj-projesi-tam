@@ -112,6 +112,66 @@ class ProductApiController extends Controller
      * Ürün yorumları.
      * GET /api/v1/products/{id}/reviews
      */
+    /**
+     * Satıcı paneli: tüm yorumlar (onaylı + gizli) — moderasyon listesi.
+     * GET /api/v1/yorumlar
+     */
+    public function yorumModerasyon(): JsonResponse
+    {
+        $yorumlar = \App\Models\ProductReview::with('product:id,name')
+            ->latest()
+            ->take(100)
+            ->get([
+                'id', 'product_id', 'user_name', 'rating', 'comment',
+                'image_path', 'is_approved', 'created_at',
+            ]);
+
+        return response()->json([
+            'data' => $yorumlar->map(fn ($y) => [
+                'id' => $y->id,
+                'urun' => $y->product?->name ?? '—',
+                'kullanici' => $y->user_name,
+                'rating' => $y->rating,
+                'comment' => $y->comment,
+                'gorsel' => $y->image_path,
+                'onayli' => (bool) $y->is_approved,
+                'tarih' => $y->created_at,
+            ]),
+        ]);
+    }
+
+    /**
+     * Moderasyon: yorumu göster/gizle.
+     * PATCH /api/v1/yorumlar/{id}/onay
+     */
+    public function yorumOnay(Request $request, int $id): JsonResponse
+    {
+        $yorum = \App\Models\ProductReview::find($id);
+        if (! $yorum) {
+            return response()->json(['message' => 'Yorum bulunamadı.'], 404);
+        }
+
+        $yorum->update(['is_approved' => ! $yorum->is_approved]);
+
+        return response()->json([
+            'message' => $yorum->is_approved ? 'Yorum gösteriliyor.' : 'Yorum gizlendi.',
+            'data' => ['id' => $yorum->id, 'onayli' => (bool) $yorum->is_approved],
+        ]);
+    }
+
+    /**
+     * Moderasyon: yorumu kalıcı sil.
+     * DELETE /api/v1/yorumlar/{id}
+     */
+    public function yorumSil(int $id): JsonResponse
+    {
+        $silinen = \App\Models\ProductReview::destroy($id);
+
+        return response()->json([
+            'message' => $silinen ? 'Yorum silindi.' : 'Yorum bulunamadı.',
+        ], $silinen ? 200 : 404);
+    }
+
     public function reviews(int $id): JsonResponse
     {
         $reviews = ProductReview::where('product_id', $id)

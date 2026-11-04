@@ -43,6 +43,9 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         Route::delete('/products/{id}', [ProductApiController::class, 'destroy'])->whereNumber('id')->name('api.products.destroy');
         Route::post('/products/{id}/images', [ProductApiController::class, 'uploadImage'])->whereNumber('id')->name('api.products.images');
         Route::get('/products/{id}/reviews', [ProductApiController::class, 'reviews'])->whereNumber('id')->name('api.products.reviews');
+        Route::get('/yorumlar', [ProductApiController::class, 'yorumModerasyon'])->name('api.yorumlar');
+        Route::patch('/yorumlar/{id}/onay', [ProductApiController::class, 'yorumOnay'])->whereNumber('id')->name('api.yorumlar.onay');
+        Route::delete('/yorumlar/{id}', [ProductApiController::class, 'yorumSil'])->whereNumber('id')->name('api.yorumlar.sil');
         Route::post('/products/{id}/reviews', [ProductApiController::class, 'addReview'])->whereNumber('id')->name('api.products.reviews.add');
 
         // Canlı stok
@@ -54,6 +57,8 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         // Kuponlar
         Route::post('/coupons/validate', [CouponApiController::class, 'validateCoupon'])->name('api.coupons.validate');
         Route::get('/coupons', [CouponApiController::class, 'index'])->name('api.coupons.index');
+        Route::post('/coupons', [CouponApiController::class, 'store'])->name('api.coupons.store');
+        Route::delete('/coupons/{id}', [CouponApiController::class, 'destroy'])->whereNumber('id')->name('api.coupons.destroy');
 
         // Müşteri (idempotent: e-posta eşleşirse mevcut cari döner)
         Route::post('/customers', [ApiController::class, 'createCustomer'])->name('api.customers');
@@ -76,6 +81,8 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         Route::post('/stock-alerts', [ApiController::class, 'stockAlert'])->name('api.stock-alerts');
         Route::post('/newsletter', [ApiController::class, 'newsletterSubscribe'])->name('api.newsletter');
         Route::get('/bildirimler', [ApiController::class, 'bildirimKayitlari'])->name('api.bildirimler');
+        Route::post('/iletisim', [ApiController::class, 'iletisimKayit'])->name('api.iletisim.kayit');
+        Route::get('/iletisim', [ApiController::class, 'iletisimListesi'])->name('api.iletisim.liste');
 
         // Aktif token listesi (yönetim)
         Route::get('/tokens', [ApiController::class, 'tokens'])->name('api.tokens');

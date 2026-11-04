@@ -52,4 +52,53 @@ class CouponApiController extends Controller
 
         return response()->json(['data' => $kuponlar]);
     }
+
+    /**
+     * Satıcı paneli: yeni kupon oluştur.
+     * POST /api/v1/coupons
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $veri = $request->validate([
+            'code' => ['required', 'string', 'max:50', 'unique:coupons,code'],
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:percent,fixed,free_shipping'],
+            'value' => ['required', 'numeric', 'min:0'],
+            'min_order_total' => ['nullable', 'numeric', 'min:0'],
+            'usage_limit' => ['nullable', 'integer', 'min:1'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
+        ]);
+
+        $kupon = \App\Models\Coupon::create([
+            'company_id' => $request->user()->company_id,
+            'code' => strtoupper($veri['code']),
+            'name' => $veri['name'],
+            'type' => $veri['type'],
+            'value' => $veri['value'],
+            'min_order_total' => $veri['min_order_total'] ?? 0,
+            'usage_limit' => $veri['usage_limit'] ?? null,
+            'expires_at' => $veri['expires_at'] ?? null,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Kupon oluşturuldu.',
+            'data' => ['id' => $kupon->id, 'code' => $kupon->code],
+        ], 201);
+    }
+
+    /**
+     * Satıcı paneli: kupon pasifleştir.
+     * DELETE /api/v1/coupons/{id}
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $etkilenen = \App\Models\Coupon::where('company_id', $request->user()->company_id)
+            ->where('id', $id)
+            ->update(['is_active' => false]);
+
+        return response()->json([
+            'message' => $etkilenen ? 'Kupon devre dışı bırakıldı.' : 'Kupon bulunamadı.',
+        ], $etkilenen ? 200 : 404);
+    }
 }

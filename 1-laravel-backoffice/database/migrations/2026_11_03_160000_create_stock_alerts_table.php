@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('email');
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('variant_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('variant_id')->nullable()->constrained('product_variants')->nullOnDelete();
             $table->timestamp('notified_at')->nullable();
             $table->timestamps();
 

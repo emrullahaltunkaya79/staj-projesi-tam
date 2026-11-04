@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Contact;
+use Illuminate\Http\UploadedFile;
 use App\Models\Product;
+use App\Models\ProductReview;
 use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -125,5 +127,144 @@ class ApiEcommerceTest extends TestCase
         $this->postJson('/api/v1/customers', $payload)->assertStatus(200);
 
         $this->assertSame(1, Contact::where('email', 'ayni@ornek.com')->count());
+    }
+
+    /** @test */
+    public function arama_endpointu_terimle_sonuc_doner(): void
+    {
+        $user = $this->loginUser();
+        $this->createProduct($user, ['name' => 'Kablosuz Kulaklık Pro', 'brand' => 'Sony']);
+        $this->createProduct($user, ['name' => 'Ofis Sandalyesi', 'brand' => 'IKEA']);
+
+        $cevap = $this->getJson('/api/v1/products/arama?q=kulak');
+
+        $cevap->assertOk();
+        $cevap->assertJsonStructure(['data' => [['id', 'name', 'final_price', 'in_stock']], 'meta' => ['toplam', 'markalar']]);
+        $this->assertStringContainsString('Kulaklık', $cevap->json('data.0.name'));
+    }
+
+    /** @test */
+    public function arama_fiyata_gore_siralanir(): void
+    {
+        $user = $this->loginUser();
+        $this->createProduct($user, ['name' => 'Ucuz Kulaklık', 'sale_price' => 90, 'brand' => 'A']);
+        $this->createProduct($user, ['name' => 'Pahalı Kulaklık', 'sale_price' => 900, 'brand' => 'B']);
+
+        $cevap = $this->getJson('/api/v1/products/arama?q=kulak&sirala=fiyat-artan');
+        $cevap->assertOk();
+        $fiyatlar = array_map(fn ($u) => $u['final_price'], $cevap->json('data'));
+        $this->assertCount(2, $fiyatlar);
+        $this->assertLessThanOrEqual($fiyatlar[1], $fiyatlar[0]);
+    }
+
+    /** @test */
+    public function gorselli_yorum_multipart_ile_eklenir(): void
+    {
+        $user = $this->loginUser();
+        $product = $this->createProduct($user);
+
+        $cevap = $this->postJson(
+            "/api/v1/products/{$product->id}/reviews",
+            [
+                'rating' => 5,
+                'comment' => 'Fotolu deneme yorumu',
+                'image' => UploadedFile::fake()->image('yorum.jpg', 300, 200),
+            ],
+        );
+
+        $cevap->assertCreated();
+        $yorum = ProductReview::latest('id')->first();
+        $this->assertNotNull($yorum->image_path);
+        $this->assertStringStartsWith('reviews/', $yorum->image_path);
+
+        $liste = $this->getJson("/api/v1/products/{$product->id}/reviews");
+        $liste->assertOk()->assertJsonPath('data.yorumlar.0.image_path', $yorum->image_path);
+    }
+
+    /** @test */
+    public function gorselli_yorum_gecersiz_dosyada_reddedilir(): void
+    {
+        $user = $this->loginUser();
+        $product = $this->createProduct($user);
+
+        $cevap = $this->postJson(
+            "/api/v1/products/{$product->id}/reviews",
+            [
+                'rating' => 4,
+                'image' => UploadedFile::fake()->create('not.pdf', 50, 'application/pdf'),
+            ],
+        )->assertStatus(422);
+    }
+
+    /** @test */
+    public function bulten_aboneligi_kaydedilir(): void
+    {
+        $this->loginUser();
+
+        $this->postJson('/api/v1/newsletter', ['email' => 'abone@ornek.test'])
+            ->assertOk()
+            ->assertJsonPath('message', fn ($m) => str_contains($m, 'Abone'));
+
+        $this->assertDatabaseHas('newsletter_subscribers', ['email' => 'abone@ornek.test']);
+    }
+
+    /** @test */
+    public function stok_bildirimi_kaydi_eklenir(): void
+    {
+        $user = $this->loginUser();
+        $product = $this->createProduct($user);
+
+        $this->postJson('/api/v1/stock-alerts', ['email' => 'bekleyen@ornek.test', 'product_id' => $product->id])
+            ->assertOk();
+
+        $this->assertDatabaseHas('stock_alerts', ['email' => 'bekleyen@ornek.test', 'product_id' => $product->id]);
+    }
+
+    /** @test */
+    public function bildirim_kayitlari_listelenir(): void
+    {
+        $this->loginUser();
+
+        \DB::table('newsletter_subscribers')->insert([
+            'email' => 'liste@ornek.test', 'subscribed_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        \DB::table('stock_alerts')->insert([
+            'email' => 'alert@ornek.test', 'product_id' => $this->createProduct($this->loginUser())->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $cevap = $this->getJson('/api/v1/bildirimler');
+        $cevap->assertOk();
+        $this->assertSame('liste@ornek.test', $cevap->json('data.bulten.0.email'));
+        $this->assertSame('alert@ornek.test', $cevap->json('data.stok.0.email'));
+    }
+
+    /** @test */
+    public function iletisim_formu_mesaji_kaydedilir(): void
+    {
+        $this->loginUser();
+
+        $this->postJson('/api/v1/iletisim', [
+            'ad' => 'Ayşe Yılmaz',
+            'eposta' => 'ayse@ornek.test',
+            'mesaj' => 'Toplu alım fiyatı öğrenmek istiyorum.',
+        ])->assertOk()->assertJsonPath('message', fn ($m) => str_contains($m, 'alındı'));
+
+        $this->assertDatabaseHas('contact_messages', ['eposta' => 'ayse@ornek.test']);
+    }
+
+    /** @test */
+    public function iletisim_mesajlari_listelenir(): void
+    {
+        $this->loginUser();
+
+        \DB::table('contact_messages')->insert([
+            'ad' => 'Mehmet', 'eposta' => 'mehmet@ornek.test', 'mesaj' => 'Bayilik süreci?',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $cevap = $this->getJson('/api/v1/iletisim');
+        $cevap->assertOk();
+        $this->assertSame('mehmet@ornek.test', $cevap->json('data.0.eposta'));
     }
 }

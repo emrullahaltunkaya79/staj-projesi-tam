@@ -666,6 +666,8 @@ class ApiController extends Controller
 
         $query = Product::query();
 
+        $sqlite = \DB::connection()->getDriverName() === 'sqlite'; // test DB'si FULLTEXT desteklemez
+
         if ($terim !== '') {
             // Boolean tam metin: her kelimeye önek jokeri (kulak → Kulaklık*)
             $boole = collect(preg_split('/\s+/u', $terim) ?: [])
@@ -674,10 +676,10 @@ class ApiController extends Controller
                 ->map(fn ($w) => $w.'*')
                 ->implode(' ');
 
-            if ($boole !== '') {
+            if ($boole !== '' && ! $sqlite) {
                 $query->whereRaw('MATCH(name, brand) AGAINST(? IN BOOLEAN MODE)', [$boole]);
             } else {
-                // Tek harf gibi tam metin sözlüğüne düşmeyen terimler: LIKE ile yumuşak eşleşme
+                // Tek harf veya SQLite: LIKE ile yumuşak eşleşme
                 $query->where(function ($w) use ($terim) {
                     $w->where('name', 'like', "%{$terim}%")->orWhere('brand', 'like', "%{$terim}%");
                 });
@@ -694,7 +696,7 @@ class ApiController extends Controller
 
         if (isset($siralaIfadeleri[$sirala])) {
             $query->orderByRaw($siralaIfadeleri[$sirala]);
-        } elseif ($terim !== '' && isset($boole) && $boole !== '') {
+        } elseif ($terim !== '' && ! $sqlite && isset($boole) && $boole !== '') {
             // Varsayılan: tam metin alaka puanı
             $query->orderByRaw('MATCH(name, brand) AGAINST(? IN BOOLEAN MODE) DESC', [$boole]);
         } else {
@@ -714,8 +716,12 @@ class ApiController extends Controller
 
         // Marka dağılımı: aynı tam metin filtresiyle taze sorgu (klon sıralamasından etkilenmesin)
         $markalarSorgu = Product::query();
-        if ($terim !== '' && isset($boole) && $boole !== '') {
+        if ($terim !== '' && isset($boole) && $boole !== '' && \DB::connection()->getDriverName() !== 'sqlite') {
             $markalarSorgu->whereRaw('MATCH(name, brand) AGAINST(? IN BOOLEAN MODE)', [$boole]);
+        } elseif ($terim !== '' && \DB::connection()->getDriverName() === 'sqlite') {
+            $markalarSorgu->where(function ($w) use ($terim) {
+                $w->where('name', 'like', "%{$terim}%")->orWhere('brand', 'like', "%{$terim}%");
+            });
         }
         $markalar = $markalarSorgu
             ->whereNotNull('brand')
@@ -786,6 +792,45 @@ class ApiController extends Controller
                 ]),
             ],
         ]);
+    }
+
+    /**
+     * İletişim formu kaydı (mağazadan gelen mesajlar).
+     * POST /api/v1/iletisim  { ad, eposta, konu?, mesaj }
+     */
+    public function iletisimKayit(Request $request): JsonResponse
+    {
+        $veri = $request->validate([
+            'ad' => ['required', 'string', 'max:120'],
+            'eposta' => ['required', 'email', 'max:120'],
+            'konu' => ['nullable', 'string', 'max:150'],
+            'mesaj' => ['required', 'string', 'max:2000'],
+        ]);
+
+        \DB::table('contact_messages')->insert([
+            'ad' => $veri['ad'],
+            'eposta' => $veri['eposta'],
+            'konu' => $veri['konu'] ?? null,
+            'mesaj' => $veri['mesaj'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Mesajınız alındı — en kısa sürede dönüş yapacağız.']);
+    }
+
+    /**
+     * Satıcı paneli: iletişim mesajları listesi.
+     * GET /api/v1/iletisim
+     */
+    public function iletisimListesi(): JsonResponse
+    {
+        $mesajlar = \DB::table('contact_messages')
+            ->orderByDesc('created_at')
+            ->limit(100)
+            ->get(['id', 'ad', 'eposta', 'konu', 'mesaj', 'created_at']);
+
+        return response()->json(['data' => $mesajlar]);
     }
 
     /**
