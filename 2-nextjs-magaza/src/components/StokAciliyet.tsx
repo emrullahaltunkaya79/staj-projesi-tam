@@ -8,13 +8,16 @@ import { useEffect, useState } from "react";
  */
 export function StokAciliyet({ musaitAdet, urunId }: { musaitAdet: number; urunId: number }) {
   const [goster, setGoster] = useState(false);
+  const ANAHTAR = `hba-stok-kapali-${urunId}`;
 
   useEffect(() => {
     if (musaitAdet > 0 && musaitAdet <= 5) {
+      // Kullanıcı bu ürün için bu oturumda kapattıysa tekrar rahatsız etme
+      if (sessionStorage.getItem(ANAHTAR) === "1") return;
       const t = setTimeout(() => setGoster(true), 1500);
       return () => clearTimeout(t);
     }
-  }, [musaitAdet]);
+  }, [musaitAdet, ANAHTAR]);
 
   if (musaitAdet <= 0 || musaitAdet > 5) return null;
 
@@ -38,7 +41,10 @@ export function StokAciliyet({ musaitAdet, urunId }: { musaitAdet: number; urunI
             <p className="text-sm font-bold text-red-700">Son {musaitAdet} adet!</p>
             <p className="text-xs text-red-500">Şu anda {sepetten} kişinin sepetinde</p>
           </div>
-          <button type="button" onClick={() => setGoster(false)}
+          <button type="button" onClick={() => {
+            try { sessionStorage.setItem(ANAHTAR, "1"); } catch {}
+            setGoster(false);
+          }}
                   className="ml-2 text-red-300 transition hover:text-red-600">✕</button>
         </div>
       </div>

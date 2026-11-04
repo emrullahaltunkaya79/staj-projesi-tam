@@ -57,7 +57,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
     <section className="px-5 pb-24 pt-16 sm:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="flex items-end justify-between border-b border-black/20 pb-5">
-          <h2 className="text-[32px] font-black leading-none tracking-[-0.02em] sm:text-[48px]">
+          <h2 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">
             Değerlendirmeler
           </h2>
           {sayi > 0 && (
