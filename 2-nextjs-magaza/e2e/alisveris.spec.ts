@@ -23,7 +23,7 @@ test.describe("Alışveriş hunisi", () => {
   test("arama sonuç filtreler", async ({ page }) => {
     await page.goto("/ara?q=Kulakl%C4%B1k");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.locator("p", { hasText: /için \d+ sonuç/ })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/için \d+ sonuç/).first()).toBeVisible({ timeout: 20_000 });
     const kartlar = await page.locator("a[href^='/urun/']").count();
     expect(kartlar).toBeGreaterThan(0);
     expect(kartlar).toBeLessThan(140);
