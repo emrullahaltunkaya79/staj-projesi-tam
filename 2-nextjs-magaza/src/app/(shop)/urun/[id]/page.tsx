@@ -18,6 +18,24 @@ const ACIKLAMALAR: Record<string, string> = {
   Ofis: "Uzun çalışma saatlerini konforlu hale getiren, sağlam gövdeli ofis ürünleri. Kolay montaj kılavuzu kutudan çıkar.",
 };
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const u = await urun(Number(id));
+  if (!u) return { title: "Ürün bulunamadı — HepsiBirarada" };
+  const fiyat = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(
+    u.final_price ?? u.sale_price,
+  );
+  return {
+    title: `${u.name} — HepsiBirarada`,
+    description: `${u.name}${u.brand ? ` (${u.brand})` : ""} — ${fiyat} ₺. ${ACIKLAMALAR[u.category ?? ""] ?? "Sade ve zamansız tasarım, kaliteli malzeme."} Aynı gün kargo, 14 gün koşulsuz iade.`,
+    openGraph: {
+      title: `${u.name} — ${fiyat} ₺`,
+      description: u.name,
+      images: [`/api/img/${u.id}`],
+    },
+  };
+}
+
 export default async function UrunSayfasi({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const u = await urun(Number(id));

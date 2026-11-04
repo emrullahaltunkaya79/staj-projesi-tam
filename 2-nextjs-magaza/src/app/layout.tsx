@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   openGraph: {
     title: "HepsiBirarada — Teknoloji & Ofis",
-    description: "74 ürün · 9 kategori · CSPR ile ödeme · aynı gün kargo",
+    description: "HepsiBirarada'da teknoloji ve ofis ürünleri — CSPR ile kripto ödeme, aynı gün kargo, 14 gün koşulsuz iade.",
     type: "website",
     locale: "tr_TR",
   },

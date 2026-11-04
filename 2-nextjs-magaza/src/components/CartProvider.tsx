@@ -19,7 +19,7 @@ type SepetBaglami = {
   araToplam: number;
   kdv: number;
   genelToplam: number;
-      ekle: (yeniOge: Omit<SepetOgesi, "adet">, adet?: number) => void;
+      ekle: (yeniOge: Omit<SepetOgesi, "adet">, adet?: number, musait?: number) => void;
   adetGuncelle: (id: number, adet: number, varyantId?: number) => void;
   cikar: (id: number, varyantId?: number) => void;
   temizle: () => void;
@@ -66,14 +66,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       araToplam,
       kdv,
       genelToplam: Math.round((araToplam + kdv) * 100) / 100,
-      ekle: (yeniOge, adet = 1) => {
-        setBildirim({ ad: yeniOge.ad, adet, anahtar: Date.now() });
+      ekle: (yeniOge, adet = 1, musait?: number) => {
+        const sepetteki = ogeler.find((o) => o.id === yeniOge.id && o.varyantId === yeniOge.varyantId)?.adet ?? 0;
+        // Stok bilgisi verildiyse: sepetteki adetle birlikte stoğu aşan kısım kırpılır
+        const eklenecek = musait != null ? Math.max(0, Math.min(adet, musait - sepetteki)) : adet;
+        if (eklenecek <= 0) return; // stoğun tamamı zaten sepette
+        setBildirim({ ad: yeniOge.ad, adet: eklenecek, anahtar: Date.now() });
         setOgeler((mevcut) => {
           const varOlan = mevcut.find((o) => o.id === yeniOge.id && o.varyantId === yeniOge.varyantId);
           if (varOlan) {
-            return mevcut.map((o) => (o.id === yeniOge.id && o.varyantId === yeniOge.varyantId ? { ...o, adet: o.adet + adet } : o));
+            return mevcut.map((o) => (o.id === yeniOge.id && o.varyantId === yeniOge.varyantId ? { ...o, adet: o.adet + eklenecek } : o));
           }
-          return [...mevcut, { ...yeniOge, adet }];
+          return [...mevcut, { ...yeniOge, adet: eklenecek }];
         });
       },
       adetGuncelle: (id, adet, varyantId) =>

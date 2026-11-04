@@ -6,7 +6,10 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ ad: string }> }) {
   const { ad } = await params;
-  return { title: `${decodeURIComponent(ad)} — HepsiBirarada` };
+  return {
+    title: `${decodeURIComponent(ad)} — HepsiBirarada`,
+    description: `${decodeURIComponent(ad)} kategorisindeki ürünler — aynı gün kargo, 14 gün koşulsuz iade, CSPR ile kripto ödeme.`,
+  };
 }
 
 export default async function KategoriSayfasi({ params }: { params: Promise<{ ad: string }> }) {

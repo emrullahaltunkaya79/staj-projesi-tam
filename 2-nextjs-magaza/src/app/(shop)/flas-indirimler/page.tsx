@@ -3,7 +3,10 @@ import { KatalogIcerik } from "@/components/KatalogIcerik";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Flaş İndirimler — HepsiBirarada" };
+export const metadata = {
+  title: "Flaş İndirimler — HepsiBirarada",
+  description: "Günlük flaş indirimler — %40'a kadar iskonto, bugün gece bitiyor. Kaçırma!",
+};
 
 export default async function FlasIndirimlerSayfasi() {
   const tumu = await urunler();

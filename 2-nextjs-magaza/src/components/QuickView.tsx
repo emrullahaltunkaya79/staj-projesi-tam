@@ -42,7 +42,7 @@ export function QuickViewButonu({ urunId }: { urunId: number }) {
 }
 
 function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }) {
-  const { ekle } = sepet();
+  const { ekle, ogeler } = sepet();
   const [ozet, setOzet] = useState<Ozet | null>(null);
   const [hata, setHata] = useState<string | null>(null);
   const [adet, setAdet] = useState(1);
@@ -169,7 +169,7 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
                   <div className="flex h-11 items-center border border-black/15">
                     <button type="button" onClick={() => setAdet(Math.max(1, adet - 1))} className="h-full w-10 text-lg font-bold text-black/60 hover:text-black">−</button>
                     <span className="w-8 text-center text-sm font-bold tabular-nums">{adet}</span>
-                    <button type="button" onClick={() => setAdet(Math.min(Math.max(stok, 1), adet + 1))} className="h-full w-10 text-lg font-bold text-black/60 hover:text-black">+</button>
+                    <button type="button" onClick={() => setAdet(Math.min(Math.max(stok, 1), adet + 1))} disabled={adet >= Math.max(stok, 1)} className="h-full w-10 text-lg font-bold text-black/60 hover:text-black disabled:text-black/25">+</button>
                   </div>
                   <button
                     type="button"

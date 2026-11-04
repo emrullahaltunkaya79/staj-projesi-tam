@@ -4,7 +4,10 @@ import { KatalogIcerik } from "@/components/KatalogIcerik";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Son Fırsat — HepsiBirarada" };
+export const metadata = {
+  title: "Son Fırsat — HepsiBirarada",
+  description: "Tükenmek üzere olan son adetler — kaçmadan yakalayın, aynı gün kargo fırsatıyla.",
+};
 
 export default async function SonFirsatSayfasi() {
   const tumu = await urunler();

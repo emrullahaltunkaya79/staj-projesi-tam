@@ -6,7 +6,10 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const m = mevsimBul();
-  return { title: `${MEVSIMLER[m].ad} Ürünleri — HepsiBirarada` };
+  return {
+    title: `${MEVSIMLER[m].ad} Ürünleri — HepsiBirarada`,
+    description: `${MEVSIMLER[m].ad} sezonuna özel ürün önerileri — ${MEVSIMLER[m].aciklama}.`,
+  };
 }
 
 export default async function SezonSayfasi() {
