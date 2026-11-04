@@ -1,21 +1,42 @@
+import Link from "next/link";
 import { BosDurum } from "@/components/BosDurum";
-import { urunler } from "@/lib/backoffice";
+import { urunler, indirimliFiyat } from "@/lib/backoffice";
 import { UrunKarti } from "@/components/Catalog";
 
 export const dynamic = "force-dynamic";
 
-export default async function AraSayfasi({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams;
+export default async function AraSayfasi({ searchParams }: { searchParams: Promise<{ q?: string; sirala?: string }> }) {
+  const { q, sirala } = await searchParams;
   const terim = (q ?? "").trim().toLocaleLowerCase("tr");
 
   const tumu = await urunler();
-  const sonuc = terim
+  let sonuc = terim
     ? tumu.filter((u) =>
         [u.name, u.code, u.barcode, u.category, u.brand]
           .filter(Boolean)
           .some((f) => (f as string).toLocaleLowerCase("tr").includes(terim)),
       )
     : [];
+
+  // Sıralama
+  switch (sirala) {
+    case "fiyat-artan":
+      sonuc = [...sonuc].sort((a, b) => indirimliFiyat(a) - indirimliFiyat(b));
+      break;
+    case "fiyat-azalan":
+      sonuc = [...sonuc].sort((a, b) => indirimliFiyat(b) - indirimliFiyat(a));
+      break;
+    case "yeni":
+      sonuc = [...sonuc].sort((a, b) => b.id - a.id);
+      break;
+  }
+
+  const secenekler: [string, string][] = [
+    ["", "Önerilen"],
+    ["fiyat-artan", "Fiyat ↑"],
+    ["fiyat-azalan", "Fiyat ↓"],
+    ["yeni", "Yeni"],
+  ];
 
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10">
@@ -25,6 +46,21 @@ export default async function AraSayfasi({ searchParams }: { searchParams: Promi
           <p className="mt-2 text-sm text-black/40">
             {terim ? `"${terim}" için ${sonuc.length} sonuç` : "Bir arama terimi girin"}
           </p>
+          {terim && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {secenekler.map(([deger, etiket]) => (
+                <Link
+                  key={deger || "onerilen"}
+                  href={`/ara?q=${encodeURIComponent(q ?? "")}${deger ? `&sirala=${deger}` : ""}`}
+                  className={`rounded-full px-3 py-1 text-[12px] font-bold transition ${
+                    (sirala ?? "") === deger ? "bg-black text-white" : "text-black/50 hover:text-black"
+                  }`}
+                >
+                  {etiket}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {terim && sonuc.length === 0 && (

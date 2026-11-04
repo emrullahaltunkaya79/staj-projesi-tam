@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Sidebar, bosFiltreler, urunFiltrele, type Filtreler } from "@/components/Sidebar";
@@ -23,8 +23,12 @@ export function KatalogIcerik({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [filtreler, setFiltreler] = useState<Filtreler>(bosFiltreler);
+  const [gosterilen, setGosterilen] = useState(24);
 
   const sirala = searchParams.get("sirala") ?? "";
+
+  // Filtre/kategori/sıralama değişince sayfalama başa döner
+  useEffect(() => setGosterilen(24), [kategori, marka, filtreler, sirala]);
 
   const kategoriler = useMemo(() => {
     const m = new Map<string, number>();
@@ -96,7 +100,7 @@ export function KatalogIcerik({
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
-                  {sonuc.map((u) => (
+                  {sonuc.slice(0, gosterilen).map((u) => (
                     <UrunKarti key={u.id} urun={u} />
                   ))}
                 </div>
@@ -113,11 +117,27 @@ export function KatalogIcerik({
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-7">
-                {sonuc.map((u) => (
+                {sonuc.slice(0, gosterilen).map((u) => (
                   <UrunKarti key={u.id} urun={u} />
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Sayfalama: daha fazla göster */}
+        {sonuc.length > gosterilen && (
+          <div className="mt-10 text-center">
+            <button
+              type="button"
+              onClick={() => setGosterilen((g) => g + 24)}
+              className="rounded-full border border-black/15 px-8 py-3 text-[13px] font-bold text-black/70 transition hover:border-black hover:text-black"
+            >
+              Daha fazla göster ({sonuc.length - gosterilen} ürün kaldı)
+            </button>
+            <p className="mt-2 text-[11px] font-medium tabular-nums text-black/35">
+              {Math.min(gosterilen, sonuc.length)} / {sonuc.length} ürün
+            </p>
           </div>
         )}
       </div>

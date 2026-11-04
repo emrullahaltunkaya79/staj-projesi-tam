@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ShoppingCart, User, LogOut, ChevronDown, Heart, Globe, Moon, Sun, Menu } from "lucide-react";
 import { sepet } from "./CartProvider";
@@ -40,6 +40,10 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [aramaOdak, setAramaOdak] = useState(false);
   const [megaAcik, setMegaAcik] = useState<string | null>(null);
   const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[] }> | null>(null);
+  const [oneriler, setOneriler] = useState<{
+    urunler: { id: number; name: string; brand?: string | null; fiyat: number; image: string | null }[];
+    markalar: string[];
+  } | null>(null);
 
   const POPULER_ARAMALAR = ["Kulaklık", "Projeksiyon", "Akıllı Saat", "Drone", "Klavye", "Hoparlör"];
 
@@ -57,6 +61,23 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
     menuGetir();
     setMegaAcik(ad);
   };
+
+  // Canlı arama önerisi: yazarken 250 ms debounce ile ürün/marka eşleşmeleri
+  useEffect(() => {
+    const terim = q.trim();
+    if (!aramaOdak || terim.length < 2) {
+      setOneriler(null);
+      return;
+    }
+    const z = setTimeout(() => {
+      fetch(`/api/oneri?q=${encodeURIComponent(terim)}`)
+        .then((r) => r.json())
+        .then((d) => setOneriler(d.data ?? { urunler: [], markalar: [] }))
+        .catch(() => setOneriler(null));
+    }, 250);
+    return () => clearTimeout(z);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, aramaOdak]);
 
   const ara = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,19 +124,68 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             </form>
             {aramaOdak && (
               <div className="absolute left-0 right-0 top-11 z-50 rounded-xl border border-black/10 bg-white p-3 shadow-2xl">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Popüler Aramalar</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {POPULER_ARAMALAR.map((terim) => (
-                    <button
-                      key={terim}
-                      type="button"
-                      onMouseDown={() => { setAramaOdak(false); router.push(`/ara?q=${encodeURIComponent(terim)}`); }}
-                      className="rounded-full border border-black/10 px-3 py-1.5 text-[11px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white"
-                    >
-                      {terim}
-                    </button>
-                  ))}
-                </div>
+                {oneriler && (oneriler.urunler.length > 0 || oneriler.markalar.length > 0) ? (
+                  <>
+                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Öneriler</p>
+                    <div className="space-y-0.5">
+                      {oneriler.urunler.map((u) => (
+                        <button
+                          key={u.id}
+                          type="button"
+                          onMouseDown={() => { setAramaOdak(false); router.push(`/urun/${u.id}`); }}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition hover:bg-black/5"
+                        >
+                          {u.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={u.image} alt="" className="h-8 w-8 shrink-0 rounded-md object-contain" />
+                          ) : (
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-black/5 text-[10px] font-black text-black/30">{u.name.charAt(0)}</span>
+                          )}
+                          <span className="min-w-0 flex-1">
+                            {u.brand && <span className="block text-[9px] font-black uppercase tracking-widest text-black/35">{u.brand}</span>}
+                            <span className="block truncate text-[12px] font-semibold text-black">{u.name}</span>
+                          </span>
+                          <span className="shrink-0 text-[11px] font-bold tabular-nums text-black/50">
+                            {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(u.fiyat)} ₺
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    {oneriler.markalar.length > 0 && (
+                      <div className="mt-2 border-t border-black/10 pt-2">
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Markalar</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {oneriler.markalar.map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              onMouseDown={() => { setAramaOdak(false); router.push(`/marka/${encodeURIComponent(m)}`); }}
+                              className="rounded-full border border-black/10 px-3 py-1.5 text-[11px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white"
+                            >
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Popüler Aramalar</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {POPULER_ARAMALAR.map((terim) => (
+                        <button
+                          key={terim}
+                          type="button"
+                          onMouseDown={() => { setAramaOdak(false); router.push(`/ara?q=${encodeURIComponent(terim)}`); }}
+                          className="rounded-full border border-black/10 px-3 py-1.5 text-[11px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white"
+                        >
+                          {terim}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
