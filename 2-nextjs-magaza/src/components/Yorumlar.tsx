@@ -9,6 +9,7 @@ type Yorum = {
   rating: number;
   comment: string | null;
   created_at: string;
+  gorsel?: string | null;
 };
 
 export function Yorumlar({ urunId }: { urunId: number }) {
@@ -19,12 +20,14 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   const [mesaj, setMesaj] = useState("");
   const [gonderildi, setGonderildi] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(false);
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoOnizleme, setFotoOnizleme] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/products/${urunId}/reviews`)
       .then((r) => r.json())
       .then((d) => {
-        setYorumlar(d.data?.yorumlar ?? []);
+        setYorumlar((d.data?.yorumlar ?? []).map((y: { image_path?: string } & Record<string, unknown>) => ({ ...y, gorsel: y.image_path ? `/api/yorum-gorseli/${String(y.image_path).split("/").pop()}` : null })));
         setOrtalam(d.data?.ortalam_puan ?? 0);
         setSayi(d.data?.yorum_sayisi ?? 0);
       })
@@ -34,17 +37,23 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   const gonder = async (e: React.FormEvent) => {
     e.preventDefault();
     setYukleniyor(true);
+    const formVerisi = new FormData();
+    formVerisi.append("rating", String(puan));
+    if (mesaj) formVerisi.append("comment", mesaj);
+    if (foto) formVerisi.append("image", foto);
     try {
       const r = await fetch(`/api/products/${urunId}/reviews`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating: puan, comment: mesaj || null }),
+        headers: {},
+        body: formVerisi,
       });
       if (r.ok) {
         setGonderildi(true);
         setMesaj("");
+        setFoto(null);
+        setFotoOnizleme(null);
         const d = await fetch(`/api/products/${urunId}/reviews`).then((r) => r.json());
-        setYorumlar(d.data?.yorumlar ?? []);
+        setYorumlar((d.data?.yorumlar ?? []).map((y: { image_path?: string } & Record<string, unknown>) => ({ ...y, gorsel: y.image_path ? `/api/yorum-gorseli/${String(y.image_path).split("/").pop()}` : null })));
         setOrtalam(d.data?.ortalam_puan ?? 0);
         setSayi(d.data?.yorum_sayisi ?? 0);
       }
@@ -101,6 +110,35 @@ export function Yorumlar({ urunId }: { urunId: number }) {
                             placeholder="Ürün hakkındaki düşünceniz…"
                             className="w-full border border-black/15 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none" />
                 </div>
+                <div className="flex items-center gap-2.5">
+                  <label className="flex cursor-pointer items-center gap-1.5 rounded-full border border-black/15 px-3 py-1.5 text-[11px] font-bold text-black/50 transition hover:border-black hover:text-black">
+                    📷 Fotoğraf ekle
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0] ?? null;
+                        setFoto(f);
+                        setFotoOnizleme(f ? URL.createObjectURL(f) : null);
+                      }}
+                    />
+                  </label>
+                  {fotoOnizleme && (
+                    <span className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={fotoOnizleme} alt="Önizleme" className="h-10 w-10 rounded-lg object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => { setFoto(null); setFotoOnizleme(null); }}
+                        aria-label="Fotoğrafı kaldır"
+                        className="absolute -right-1.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-black text-[9px] text-white"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  )}
+                </div>
                 <button type="submit" disabled={yukleniyor}
                         className="h-10 w-full rounded-full bg-black text-xs font-bold text-white transition hover:bg-black/80 disabled:opacity-50">
                   {yukleniyor ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Gönder"}
@@ -134,6 +172,10 @@ export function Yorumlar({ urunId }: { urunId: number }) {
                       </div>
                     </div>
                     {y.comment && <p className="mt-2 pl-11 text-sm leading-relaxed text-black/70">{y.comment}</p>}
+                    {y.gorsel && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={y.gorsel} alt="Yorum fotoğrafı" loading="lazy" className="ml-11 mt-2.5 h-28 w-40 rounded-xl border border-black/10 object-cover" />
+                    )}
                   </div>
                 ))}
               </div>

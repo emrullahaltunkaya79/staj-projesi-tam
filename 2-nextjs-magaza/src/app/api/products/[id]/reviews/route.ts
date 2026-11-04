@@ -15,6 +15,18 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ id: st
 
 export async function POST(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
+  const icerikTuru = request.headers.get("content-type") ?? "";
+  // Fotoğraflı yorum: multipart formlar sınır başlığıyla aynen aktarılır
+  if (icerikTuru.includes("multipart/form-data")) {
+    const form = await request.formData();
+    const r = await fetch(`${BASE}/products/${id}/reviews`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json" },
+      body: form,
+    });
+    const d = await r.json().catch(() => ({}));
+    return NextResponse.json(d, { status: r.status });
+  }
   const body = await request.text();
   const r = await fetch(`${BASE}/products/${id}/reviews`, {
     method: "POST",

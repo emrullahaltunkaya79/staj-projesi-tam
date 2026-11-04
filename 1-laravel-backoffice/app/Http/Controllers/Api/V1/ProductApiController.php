@@ -118,7 +118,7 @@ class ProductApiController extends Controller
             ->where('is_approved', true)
             ->latest()
             ->take(20)
-            ->get(['id', 'user_name', 'rating', 'comment', 'created_at']);
+            ->get(['id', 'user_name', 'rating', 'comment', 'image_path', 'created_at']);
 
         $ortalamа = ProductReview::where('product_id', $id)
             ->where('is_approved', true)
@@ -191,9 +191,17 @@ class ProductApiController extends Controller
         $validated = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:1000'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ], [
             'rating.required' => 'Puan zorunludur (1-5).',
         ]);
+
+        $gorselYolu = null;
+        if ($request->hasFile('image')) {
+            // multipart: JSON kabulüne ek olarak fotoğraf kabul edilir
+            $gorselYolu = 'reviews/'.$request->file('image')->hashName();
+            $request->file('image')->storeAs('reviews', basename($gorselYolu), 'public');
+        }
 
         $review = ProductReview::create([
             'product_id' => $id,
@@ -201,6 +209,7 @@ class ProductApiController extends Controller
             'user_name' => $request->user()->name,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
+            'image_path' => $gorselYolu,
             'is_approved' => true,
         ]);
 
