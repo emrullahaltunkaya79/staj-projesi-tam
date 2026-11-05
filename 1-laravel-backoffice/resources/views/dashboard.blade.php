@@ -189,38 +189,18 @@
             </div>
         </div>
 
-        {{-- Bu ay nakit akışı --}}
-        <div class="card p-5">
-            <div class="card-header border-b-0 p-0">Bu Ay Nakit Akışı</div>
-            <p class="mt-1 text-xs text-slate-400">{{ now()->translatedFormat('F Y') }} — tahsilat ve gider hareketleri</p>
-
-            <div class="mt-4 space-y-3">
-                <div class="flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950/30">
-                    <span class="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0 0l-6-6m6 6l6-6"/></svg>
-                        Tahsilat
-                    </span>
-                    <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ $fmt($stats['month_collection']) }}</span>
-                </div>
-                <div class="flex items-center justify-between rounded-xl bg-red-50 px-4 py-3 dark:bg-red-950/30">
-                    <span class="flex items-center gap-2 text-sm font-medium text-red-800 dark:text-red-300">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20V4m0 0l-6 6m6-6l6 6"/></svg>
-                        Gider
-                    </span>
-                    <span class="font-bold text-red-700 dark:text-red-300">{{ $fmt($stats['month_expense']) }}</span>
-                </div>
-                <div class="flex items-center justify-between rounded-xl border {{ $stats['month_net'] >= 0 ? 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/20' : 'border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20' }} px-4 py-3">
-                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Net Akış</span>
-                    <span class="font-bold {{ $stats['month_net'] >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300' }}">{{ ($stats['month_net'] >= 0 ? '+' : '') . $fmt($stats['month_net']) }}</span>
-                </div>
-            </div>
-
-            <div class="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-700">
+        {{-- Bu ay nakit özeti: tek satır şerit --}}
+        <div class="card mt-6 flex flex-wrap items-center gap-4 p-4">
+            <span class="text-xs font-bold uppercase tracking-wide text-slate-400">Bu Ay</span>
+            <span class="text-sm text-slate-600">Tahsilat <strong class="text-emerald-600">{{ $fmt($stats['month_collection']) }}</strong></span>
+            <span class="text-sm text-slate-600">Gider <strong class="text-red-600">{{ $fmt($stats['month_expense']) }}</strong></span>
+            <span class="text-sm text-slate-600">Net <strong class="text-slate-800">{{ ($stats['month_net'] >= 0 ? '+' : '') . $fmt($stats['month_net']) }}</strong></span>
+            <span class="ml-auto flex items-center gap-2">
                 <a href="{{ route('payments.create') }}" data-modal-url="{{ route('payments.create') }}" data-modal-title="Yeni Tahsilat" class="btn-secondary !py-1.5 !px-3 text-xs">+ Tahsilat</a>
                 <a href="{{ route('giderler.create') }}" data-modal-url="{{ route('giderler.create') }}" data-modal-title="Gider Kaydı" class="btn-secondary !py-1.5 !px-3 text-xs">+ Gider</a>
-                <a href="{{ route('raporlar.index') }}" class="ml-auto text-xs font-semibold text-indigo-600 hover:text-indigo-700">Raporlar →</a>
-            </div>
+            </span>
         </div>
+
     </div>
 
     {{-- 3) Son Hareketler + Kritik Stok --}}
