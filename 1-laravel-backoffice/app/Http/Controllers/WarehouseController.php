@@ -25,7 +25,7 @@ class WarehouseController extends Controller
                 'is_active' => $wh->is_active,
                 'product_count' => $stocks->count(),
                 'total_items' => $stocks->sum('stock_quantity'),
-                'stock_value' => $stocks->sum(fn ($s) => $s->stock_quantity * $s->product->purchase_price),
+                'stock_value' => $stocks->sum(fn ($s) => $s->stock_quantity * ($s->product?->purchase_price ?? 0)),
                 'critical_count' => $stocks->where('stock_quantity', '<', 5)->count(),
             ];
         });
@@ -44,8 +44,9 @@ class WarehouseController extends Controller
         $stocks = WarehouseStock::with('product')
             ->where('warehouse_id', $warehouse->id)
             ->where('stock_quantity', '>', 0)
+            ->whereHas('product')
             ->get()
-            ->sortBy(fn ($s) => mb_strtolower($s->product->name))
+            ->sortBy(fn ($s) => mb_strtolower($s->product?->name ?? ''))
             ->values();
 
         $export = new class($warehouse->name, $stocks) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
@@ -59,13 +60,13 @@ class WarehouseController extends Controller
             public function array(): array
             {
                 return $this->stocks->map(fn ($s) => [
-                    $s->product->code,
-                    $s->product->name,
-                    $s->product->unit,
+                    $s->product?->code,
+                    $s->product?->name ?? 'Silinmiş ürün',
+                    $s->product?->unit ?? 'adet',
                     $s->stock_quantity,
-                    (float) $s->product->purchase_price,
-                    (float) $s->product->sale_price,
-                    round($s->stock_quantity * $s->product->purchase_price, 2),
+                    (float) ($s->product?->purchase_price ?? 0),
+                    (float) ($s->product?->sale_price ?? 0),
+                    round($s->stock_quantity * ($s->product?->purchase_price ?? 0), 2),
                 ])->all();
             }
         };
@@ -162,7 +163,7 @@ class WarehouseController extends Controller
             ->where('warehouse_id', $warehouse->id)
             ->where('stock_quantity', '>', 0)
             ->get()
-            ->sortBy(fn ($s) => mb_strtolower($s->product->name))
+            ->sortBy(fn ($s) => mb_strtolower($s->product?->name ?? ''))
             ->values();
 
         $allWarehouses = Warehouse::where('is_active', true)
