@@ -28,7 +28,7 @@ class ActivityLogController extends Controller
         }
 
         return view('activity.index', [
-            'logs' => $query->paginate(25)->withQueryString(),
+            'logs' => $query->paginate(10)->withQueryString(),
             'filters' => ['action' => $action, 'model' => $modelType],
         ]);
     }
