@@ -17,7 +17,7 @@ class OrderController extends Controller
         }
 
         return view('orders.index', [
-            'orders' => $query->paginate(20)->withQueryString(),
+            'orders' => $query->paginate(5)->withQueryString(),
             'filters' => ['status' => $status],
         ]);
     }
