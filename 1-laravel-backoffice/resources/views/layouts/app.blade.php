@@ -6,6 +6,42 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Panel') - {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script>
+        /* Link hover/mousedown'da önden yükleme: Turbo geçişleri anında açılır */
+        (function () {
+            let zamanlayici = null;
+            const eklendi = new Set();
+
+            const oner = (yol) => {
+                if (eklendi.has(yol)) return;
+                eklendi.add(yol);
+                const baglanti = document.createElement('link');
+                baglanti.rel = 'prefetch';
+                baglanti.as = 'document';
+                baglanti.href = yol;
+                document.head.appendChild(baglanti);
+            };
+
+            const hedefBul = (e) => {
+                const a = e.target.closest('a[href]');
+                if (!a || a.dataset.turbo === 'false' || a.target === '_blank') return null;
+                const yol = new URL(a.href).pathname;
+                return yol.startsWith('/') && ! yol.startsWith('/api') ? yol : null;
+            };
+
+            document.addEventListener('mouseover', (e) => {
+                const yol = hedefBul(e);
+                if (! yol) return;
+                clearTimeout(zamanlayici);
+                zamanlayici = setTimeout(() => oner(yol), 60);
+            }, true);
+
+            document.addEventListener('mousedown', (e) => {
+                const yol = hedefBul(e);
+                if (yol) oner(yol);
+            }, true);
+        })();
+    </script>
 </head>
 <body>
 {{-- Erişilebilirlik: klavye kullanıcıları için içeriğe atla --}}

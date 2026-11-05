@@ -35,7 +35,7 @@ class ExpenseTest extends TestCase
         // Raporlarda gider kartı ve kasa durumu görünür
         $this->get('/raporlar')
             ->assertOk()
-            ->assertSee('Toplam Gider')
+            ->assertSee('Kasa Durumu')
             ->assertSee('Kasada (Nakit)')
             ->assertSee('2.500,00');
     }

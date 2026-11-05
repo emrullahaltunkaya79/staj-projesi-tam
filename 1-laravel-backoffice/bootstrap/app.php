@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // API çağrılarında token istek sayacını artır
         $middleware->api()->append(\App\Http\Middleware\CountApiRequests::class);
+
+        // Başarılı HTML yanıtlarına kısa önbellek: Turbo geçişleri + hover-prefetch anında
+        $middleware->web()->append(\App\Http\Middleware\HtmlCacheHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // PHP'in post_max_size sınırını aşan yüklemelerde dostça mesaj göster
