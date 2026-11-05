@@ -82,24 +82,27 @@
                 </table>
             </div>
             @if ($stocks->lastPage() > 1)
-                <div class="mt-4 flex items-center justify-between gap-3">
-                    <p class="whitespace-nowrap text-xs text-slate-400">Sayfa {{ $stocks->currentPage() }} / {{ $stocks->lastPage() }} — sayfa başına 6 ürün</p>
-                    <div class="flex items-center gap-1.5">
+                {{-- Sayfa gezinme: merkezli, düzgün sarılan tek düzen --}}
+                <div class="mt-4 space-y-2">
+                    <div class="flex flex-wrap items-center justify-center gap-1">
                         @if ($stocks->onFirstPage())
-                            <span class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-300 dark:border-slate-700 dark:text-slate-600">‹ Önceki</span>
+                            <span class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-300 dark:border-slate-700 dark:text-slate-600">‹ Önceki</span>
                         @else
-                            <a href="{{ $stocks->previousPageUrl() }}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400">‹ Önceki</a>
+                            <a href="{{ $stocks->previousPageUrl() }}" class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400">‹ Önceki</a>
                         @endif
                         @foreach (range(1, $stocks->lastPage()) as $n)
                             <a href="{{ $stocks->url($n) }}"
                                class="rounded-lg px-2.5 py-1.5 text-xs font-bold tabular-nums transition {{ $n === $stocks->currentPage() ? 'bg-slate-900 text-white dark:bg-indigo-600' : 'border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white' }}">{{ $n }}</a>
                         @endforeach
                         @if ($stocks->hasMorePages())
-                            <a href="{{ $stocks->nextPageUrl() }}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400">Sonraki ›</a>
+                            <a href="{{ $stocks->nextPageUrl() }}" class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400">Sonraki ›</a>
                         @else
-                            <span class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-300 dark:border-slate-700 dark:text-slate-600">Sonraki ›</span>
+                            <span class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-300 dark:border-slate-700 dark:text-slate-600">Sonraki ›</span>
                         @endif
                     </div>
+                    <p class="text-center text-[11px] font-medium text-slate-400">
+                        Sayfa {{ $stocks->currentPage() }} / {{ $stocks->lastPage() }} — sayfa başına 6 ürün
+                    </p>
                 </div>
             @endif
         </div>
