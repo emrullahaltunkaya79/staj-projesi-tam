@@ -1,6 +1,6 @@
 # Ön Muhasebe & Stok Takip Web Uygulaması
 
-Laravel 11 + Tailwind CSS ile geliştirilmiş, staj projesi amaçlı sadeleştirilmiş bir ön muhasebe ve stok takip sistemi.
+Laravel 11 + Tailwind CSS ile geliştirilmiş, staj projesi amaçlı sadeleştirilmiş bir ön muhasebe ve stok takip sistemi. Aynı REST API'yi tüketen **Next.js 16** vitrin mağazası ve **Livewire** yedek mağazasıyla birlikte üç bileşenli bir ön muhasebe + e-ticaret bütünüdür.
 
 > 📐 **[Mimarî & Veritabanı Dokümanı (ERD)](docs/MIMARI.md)** — katmanlar, servisler, transaction desenleri, tablo şeması
 > 🎬 **[Sunum Demo Senaryosu](docs/DEMO.md)** — 5 dakikalık rota + muhtemel sorular
@@ -21,6 +21,12 @@ Laravel 11 + Tailwind CSS ile geliştirilmiş, staj projesi amaçlı sadeleştir
 - **REST API (Sanctum):** `GET products`, `GET stock`, `POST customers`, `POST orders`, `POST orders/{no}/pay|cancel|shipping` — detay: [docs/API.md](docs/API.md)
 - **Panel:** Siparişler sayfası (özet kartlar + filtre + detay + kargolama)
 - **Ürün görselleri:** Çoklu yükleme, ana görsel, API `image_url` (base64)
+- **CSPR kripto ödeme:** Casper Network memo-bazlı akış — onay webhook'u (HMAC imzalı) siparişi otomatik ödenmiş geçirir: fatura kesilir, stok düşer
+- **Mağaza uygulamaları:** Next.js 16 vitrin + Livewire yedek mağaza — ikisi de bu API'yi tüketir, kendi veritabanları yok
+- **Mağaza arama:** MySQL FULLTEXT (ad + marka), canlı arama önerileri, fiyat/tarih sıralama, sayfalama
+- **Görselli yorumlar:** müşteri fotoğraf yükler; panelde onay/gizle/sil moderasyonu
+- **Panel yönetimi:** yorum moderasyonu, kupon CRUD, stok bildirimleri + iletişim mesajları, sistem sağlığı paneli
+- **Kargo takip widget'ı:** mağazada sipariş no ile durum sorgulama
 
 ### Stok & Depo Yönetimi
 - Ürünler + **kategoriler** + kritik stok uyarısı
@@ -47,6 +53,7 @@ Laravel 11 + Tailwind CSS ile geliştirilmiş, staj projesi amaçlı sadeleştir
 - **QR kod:** Her faturada tekil doğrulama kodu; PDF'e basılı; okutan herkes web'den doğrulayabilir
 - **E-posta:** Fatura/teklif PDF ekli gönderim; günlük özet (scheduler, kuyrukta)
 - **Dark mode:** Toggle butonu, kalıcı tercih, tüm bileşenlerde koyu tema
+- **Turbo Drive:** panelde sayfa geçişleri SPA hızında (hover-prefetch + HTML önbelleği)
 - **Global arama:** Üst bardan cari/ürün/fatura araması (canlı açılır sonuçlar)
 - **Etkinlik günlüğü:** Kim, neyi, ne zaman — değişen alanlar ve IP ile
 - **Geri dönüşüm kutusu:** Soft delete + geri yükleme
@@ -93,9 +100,9 @@ Uygulama: http://127.0.0.1:8000
 php artisan test
 ```
 
-**83 PHPUnit testi / 334 doğrulama** — SQLite bellek-içi.
+**122 PHPUnit testi / 488 doğrulama** — SQLite bellek-içi.
 
-Kapsam: fatura akışları (stok/bakiye/rollback), kısmi iade, tekrarlayan fatura, teklif→fatura dönüşümü, çok kiracılık sızıntıları, rol/fiyat yetkileri, rate limiting, şifre akışları, Excel içe/dışa, QR doğrulama, denetim/geri dönüşüm, bildirim komutları, PDF üretimi.
+Kapsam: fatura akışları (stok/bakiye/rollback), kısmi iade, tekrarlayan fatura, teklif→fatura dönüşümü, çok kiracılık sızıntıları, rol/fiyat yetkileri, rate limiting, şifre akışları, Excel içe/dışa, QR doğrulama, denetim/geri dönüşüm, bildirim komutları, PDF üretimi, CSPR ödeme onayı, API arama ve moderasyon uçları.
 
 ## Önemli Dosyalar
 
@@ -105,6 +112,8 @@ Kapsam: fatura akışları (stok/bakiye/rollback), kısmi iade, tekrarlayan fatu
 | `app/Services/PaymentService.php` | Tahsilat/ödeme: transaction + bakiye aşım kontrolü |
 | `app/Services/QuoteService.php` | Teklif oluştur/düzenle/durum/faturalaştır |
 | `app/Services/ReceivableService.php` | FIFO dağıtım, gecikme günü, yaşlandırma |
+| `app/Services/OrderService.php` | E-ticaret siparişleri: idempotent create, rezerve stok, ödeme→fatura dönüşümü |
+| `app/Services/CasperPaymentService.php` | CSPR kripto ödeme: memo üretimi, ağ sorgusu, onay akışı |
 | `app/Http/Controllers/` | 20+ denetleyici |
 | `app/Policies/` | 7 policy (rol bazlı yetkilendirme) |
 | `app/Http/Requests/` | 8 Form Request (Türkçe mesajlı doğrulama) |

@@ -9,6 +9,9 @@
 # 1) MySQL açık olmalı (XAMPP Control Panel → MySQL Start)
 # 2) Sunucu:
 php artisan serve          # http://127.0.0.1:8000
+# 2b) Mağazalar (10. adım için):
+#     Livewire mağaza:  cd eticaret-site && php artisan serve --port=3000
+#     Next.js mağaza:   cd eticaret-next && npm run dev   # http://127.0.0.1:3001
 # 3) (İsteğe bağlı) temiz demo verisi:
 php artisan migrate:fresh --seed
 ```
@@ -54,13 +57,24 @@ php artisan migrate:fresh --seed
 ### 8. Roller (20 sn) — çıkış yapıp `personel@test.com` ile girin
 - Menüde Kullanıcılar yok; Sil butonları yok; `…/kullanicilar` → 403.
 
-### 9. Yönetim araçları (25 sn) — tekrar admin ile
+### 9. Yönetim araçları (40 sn) — tekrar admin ile
 - **Etkinlik Günlüğü**: "kim, neyi, ne zaman" — değişen alanlar ve IP.
 - **Geri Dönüşüm**: silinen kaydı geri yükleme (soft delete).
 - **Şirket Ayarları**: logo yükle → faturada görünür; **Şimdi Yedekle**.
+- **Yorum Moderasyonu / Kuponlar / Bildirimler**: mağazadan gelen yorumları onayla-gizle,
+  aktif kuponlar (KAMPANYA10, FREEKARGO…), stok bildirimleri + iletişim mesajları.
+- **Sistem Sağlığı**: kuyruk, scheduler, yedek ve CSPR ödeme denetimi durumları.
 
-### 10. Kapanış (10 sn)
-- "67 otomatik test, CI'da her push'ta çalışıyor; detaylar docs/MIMARI.md'de."
+### 10. E-ticaret mağazası (90 sn) — http://127.0.0.1:3001
+- Ana sayfa: kategori vitrini, geri sayımlı **flaş indirimler**, **kargo takip widget'ı**.
+- Arama kutusuna "kablosuz" → **canlı arama önerileri**; sonuç sayfasında **sıralama + sayfalama**.
+- Ürün detay: varyasyon seçimi, görsel galerisi, **fotoğraflı müşteri yorumları**.
+- Sepete ekle → kupon **KAMPANYA10** → ödeme → sipariş numarası.
+- Panele dönüp **Siparişler**'i aç: "aynı sipariş rezerve stok olarak buraya düşüyor."
+- Yedek mağaza (Livewire): http://127.0.0.1:3000 — aynı API'yi tüketen ikinci yüzey.
+
+### 11. Kapanış (10 sn)
+- "122 otomatik test (488 doğrulama), CI'da her push'ta çalışıyor; detaylar docs/MIMARI.md'de."
 
 ---
 
@@ -90,3 +104,12 @@ tutarı ve gecikme günü buna göre hesaplanır (`ReceivableService`).
 C: `MAIL_MAILER=log` ile geliştirmede e-postalar log'a yazılır; production'da
 SMTP verilir, e-postalar kuyruklanır (`queue:work`). Yedekler haftalık ve
 elle alınabilir (spatie/laravel-backup).
+
+**S: Mağaza (Next.js / Livewire) hangi veritabanını kullanıyor?**
+C: Hiçbirini — kendi veritabanı yok; panelin REST API'sini (Sanctum token)
+tüketir. Ürün, stok ve sipariş tek yerde yaşar: panelin MySQL'i.
+
+**S: Kripto (CSPR) ödeme nasıl doğrulanıyor?**
+C: Sipariş için benzersiz bir memo üretilir; Casper ağından bu memo'ya gelen
+transfer sorgulanır; onay webhook'u HMAC imzalıdır ve sipariş otomatik
+ödenmiş geçer (fatura kesilir, stok düşer).
