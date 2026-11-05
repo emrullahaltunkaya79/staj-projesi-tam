@@ -22,15 +22,13 @@
     @endphp
 
     {{-- Hızlı Erişim: en çok kullanılan sayfalar --}}
-    <nav aria-label="Hızlı erişim" class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+    <nav aria-label="Hızlı erişim" class="mb-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
         @php
             $quickLinks = [
                 ['Cariler', 'cariler.index', 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 11-3-3'],
                 ['Ürünler', 'urunler.index', 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'],
                 ['Siparişler', 'siparisler.index', 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
                 ['Faturalar', 'faturalar.index', 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
-                ['Giderler', 'giderler.index', 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'],
-                ['Depolar', 'depolar.index', 'M3 21V8l9-5 9 5v13M9 21v-6h6v6'],
                 ['Raporlar', 'raporlar.index', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
                 ['Etkinlikler', 'etkinlik.index', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012 2h2a2 2 0 012 2m-6 9l2 2 4-4'],
             ];
@@ -205,95 +203,21 @@
 
     {{-- 3) Son Hareketler + Kritik Stok --}}
     <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {{-- Son Hareketler: son kesilen 5 fatura --}}
-        <div class="card">
-            <div class="card-header flex items-center justify-between">
-                <span class="flex items-center gap-2">
-                    <svg class="h-5 w-5 text-indigo-500" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Son Hareketler
-                </span>
-                <span class="text-xs font-normal text-slate-400">Son kesilen 5 fatura</span>
-                <a href="{{ route('faturalar.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Tümünü Gör →</a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="table-base">
-                    <thead>
-                    <tr>
-                        <th>Fatura No</th>
-                        <th>Cari</th>
-                        <th>Tarih</th>
-                        <th>Tutar</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @forelse ($recentInvoices as $invoice)
-                        <tr class="hover:bg-slate-50">
-                            <td>
-                                <div class="flex items-center gap-2">
-                                    <span class="{{ $invoice->typeBadgeClass() }}">{{ $invoice->typeShortLabel() }}</span>
-                                    <a href="{{ route('faturalar.show', $invoice) }}" data-modal-url="{{ route('faturalar.show', $invoice) }}" data-modal-title="Fatura {{ $invoice->invoice_no }}" data-modal-wide="1" class="font-semibold text-indigo-600 hover:text-indigo-700">{{ $invoice->invoice_no }}</a>
-                                </div>
-                            </td>
-                            <td>{{ $invoice->contact->name }}</td>
-                            <td>{{ $invoice->issue_date->format('d.m.Y') }}</td>
-                            <td class="text-right font-semibold tabular-nums">{{ $fmt($invoice->total) }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="4" class="py-8 text-center text-slate-400">Henüz fatura kesilmedi.</td></tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {{-- Kritik Stok: stoğu 5'in altına düşen ürünler --}}
-        <div class="card border-amber-200">
-            <div class="card-header flex items-center justify-between border-amber-200 bg-amber-50 text-amber-800">
-                <span class="flex items-center gap-2">
-                    <svg class="h-5 w-5 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                    Kritik Stok
-                </span>
-                <span class="text-xs font-normal text-amber-600">Stoğu 5'in altına düşen ürünler</span>
-                <a href="{{ route('urunler.index', ['low_stock' => 1]) }}" class="text-xs font-semibold text-amber-700 hover:text-amber-800">Tümü →</a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="table-base">
-                    <thead>
-                    <tr>
-                        <th>Ürün</th>
-                        <th>Kod</th>
-                        <th class="!text-right">Stok</th>
-                        <th>Durum</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @forelse ($lowStockProducts as $product)
-                        <tr class="hover:bg-amber-50/50">
-                            <td class="font-medium text-slate-700">{{ $product->name }}</td>
-                            <td class="font-mono text-xs text-slate-500">{{ $product->code ?: '—' }}</td>
-                            <td class="text-right">
-                                <span class="{{ $product->stock_quantity == 0 ? 'badge-red' : 'badge-amber' }}">
-                                    {{ $product->stock_quantity }} {{ $product->unit }}
-                                </span>
-                            </td>
-                            <td class="text-xs font-semibold {{ $product->stock_quantity == 0 ? 'text-red-600' : 'text-amber-600' }}">
-                                {{ $product->stock_quantity == 0 ? 'Stok tükendi — sipariş gerekli' : 'Yakında tükenecek — sipariş önerilir' }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="py-8 text-center text-slate-400">
-                                Kritik seviyede ürün yok. 👍
-                            </td>
-                        </tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
+        {{-- Kritik stok: ince şerit --}}
+        <div class="card mt-6 flex flex-wrap items-center gap-3 p-4">
+            <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-700">
+                ⚠ Kritik Stok
+            </span>
+            @forelse ($lowStockProducts as $product)
+                <a href="{{ route('urunler.edit', $product) }}"
+                   class="flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
+                    {{ Str::limit($product->name, 22) }}
+                    <span class="rounded px-1 font-bold {{ $product->stock_quantity == 0 ? 'bg-red-100 text-red-600' : 'bg-amber-100' }}">{{ $product->stock_quantity }}</span>
+                </a>
+            @empty
+                <span class="text-xs text-slate-400">Kritik seviyede ürün yok 👍</span>
+            @endforelse
+            <a href="{{ route('urunler.index') }}" class="ml-auto text-xs font-semibold text-indigo-600 hover:text-indigo-700">Ürünler →</a>
         </div>
     </div>
 @endsection
