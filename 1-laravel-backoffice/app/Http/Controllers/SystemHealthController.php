@@ -22,7 +22,8 @@ class SystemHealthController extends Controller
         $queuePending = DB::table('jobs')->count();
 
         // Son scheduler işaretleri (cache'de scheduler içinde set edilebilir; burada DB göstergeleri kullanılır)
-        $lastCasperCheck = \App\Models\CasperPayment::query()->max('updated_at');
+        $lastCasperHam = \App\Models\CasperPayment::query()->max('updated_at');
+        $lastCasperCheck = $lastCasperHam ? \Illuminate\Support\Carbon::parse($lastCasperHam) : null;
         $lastBackupFile = glob(storage_path('app/backups/*/*.zip'));
         $lastBackup = $lastBackupFile ? date('d.m.Y H:i', filemtime(end($lastBackupFile))) : null;
 
