@@ -7,7 +7,6 @@ import { VitrinSeridi } from "@/components/VitrinSeridi";
 import { FlasSeridi } from "@/components/FlasSeridi";
 import { GununFirsati } from "@/components/GununFirsati";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
-import { KargoTakip } from "@/components/KargoTakip";
 import { urunler, indirimliFiyat, type Urun } from "@/lib/backoffice";
 
 export const dynamic = "force-dynamic";
@@ -69,13 +68,6 @@ export default async function Home() {
 
       {/* Günün Fırsatı — tek büyük fırsat bloğu */}
       {!hata && gununFirsatiUrun && <GununFirsati urun={gununFirsatiUrun} />}
-
-      {/* Kargo takip widget'ı */}
-      <section className="px-5 pt-3 sm:px-10">
-        <div className="mx-auto max-w-7xl">
-          <KargoTakip />
-        </div>
-      </section>
 
       {/* 1. Kampanya vitrini — geri sayımlı flaş indirimler */}
       {!hata && flasUrunler.length > 0 && (

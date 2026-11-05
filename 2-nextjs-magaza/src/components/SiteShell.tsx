@@ -16,6 +16,7 @@ import { KaydirmaYardimcisi } from "./KaydirmaYardimcisi";
 import { LogoIshari } from "./Logo";
 import { AuthModal } from "./AuthModal";
 import { BultenFormu } from "./BultenFormu";
+import { KargoTakip } from "./KargoTakip";
 
 /**
  * Tüm mağaza sayfalarını saran kabuk: duyuru bandı + header + kategori menüsü + alt bilgi.
@@ -329,6 +330,12 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <LiveChat />
 
       <div className="page-enter flex-1">{children}</div>
+
+      <div className="px-5 pt-6 sm:px-10">
+        <div className="mx-auto max-w-7xl">
+          <KargoTakip />
+        </div>
+      </div>
 
       <footer className="mt-4 bg-[#334155] px-5 py-10 text-white sm:px-10">
         <div className="mx-auto max-w-7xl">
