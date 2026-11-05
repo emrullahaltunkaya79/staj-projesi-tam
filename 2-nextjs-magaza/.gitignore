@@ -42,3 +42,4 @@ next-env.d.ts
 dev.log
 e2e/.sonuclar/
 playwright-report/
+.env.local

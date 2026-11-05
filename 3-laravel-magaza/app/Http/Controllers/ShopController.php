@@ -21,7 +21,11 @@ class ShopController extends Controller
 
             // Kategori filtresi
             $kategori = request('category');
-            $products = $hamKatalog;
+            // API artık base64 yerine 'ok' işareti döner — Next mağaza görsel proxy'sine çevrilir
+            $magazaUrl = rtrim(config('backoffice.shop_url', 'http://127.0.0.1:3001'), '/');
+            $products = array_map(fn ($p) => array_merge($p, [
+                'image_url' => ($p['image_url'] ?? null) ? "{$magazaUrl}/api/img/{$p['id']}" : null,
+            ]), $hamKatalog);
             if ($kategori !== null && $kategori !== '') {
                 $products = array_values(array_filter($products, fn ($p) => ($p['category'] ?? '') === $kategori));
             }

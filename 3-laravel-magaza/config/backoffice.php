@@ -6,4 +6,5 @@ return [
     'token' => env('BACKOFFICE_TOKEN', ''),
     'webhook_secret' => env('BACKOFFICE_WEBHOOK_SECRET', ''),
     'timeout' => 15,
+    'shop_url' => env('MAGAZA_URL', 'http://127.0.0.1:3001'),
 ];
