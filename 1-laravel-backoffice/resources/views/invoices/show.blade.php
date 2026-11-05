@@ -26,7 +26,7 @@
             E-posta ile Gönder
         </button>
     </form>
-    <a href="{{ route('faturalar.pdf', $invoice) }}" class="btn-secondary" title="Faturayı PDF dosyası olarak indir">
+    <a href="{{ route('faturalar.pdf', $invoice) }}" data-turbo="false" class="btn-secondary" title="Faturayı PDF dosyası olarak indir">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
         </svg>

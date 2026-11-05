@@ -107,7 +107,7 @@
                         </td>
                         <td>
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('depolar.excel', $wh) }}" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700" title="Excel'e aktar">Excel</a>
+                                <a href="{{ route('depolar.excel', $wh) }}" data-turbo="false" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700" title="Excel'e aktar">Excel</a>
                                 @can('delete', $wh)
                                     <form method="POST" action="{{ route('depolar.destroy', $wh) }}"
                                           onsubmit="return confirm('Bu depoyu silmek istediğinize emin misiniz?');">

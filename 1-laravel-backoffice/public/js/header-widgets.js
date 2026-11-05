@@ -3,20 +3,28 @@
  * Hava durumu pill'ine tıklayınca şehir değişir (localStorage'da saklanır).
  */
 (function () {
+    let clockInterval = null;
+
+    function initHeaderWidgets() {
     // ---------- Saat + tarih ----------
     const clockTime = document.getElementById('clock-time');
     const clockDate = document.getElementById('clock-date');
 
+    if (clockInterval) clearInterval(clockInterval);
+
     if (clockTime) {
         const tick = () => {
             const now = new Date();
-            clockTime.textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            const t = document.getElementById('clock-time');
+            const d = document.getElementById('clock-date');
+            if (!t || !d) return;
+            t.textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
             if (clockDate) {
                 clockDate.textContent = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' });
             }
         };
         tick();
-        setInterval(tick, 1000);
+        clockInterval = setInterval(tick, 1000);
     }
 
     // ---------- Hava durumu ----------
@@ -88,4 +96,9 @@
     load();
     // 30 dakikada bir tazele
     setInterval(load, 30 * 60 * 1000);
+    }
+
+    initHeaderWidgets();
+    document.addEventListener('turbo:load', initHeaderWidgets);
 })();
+

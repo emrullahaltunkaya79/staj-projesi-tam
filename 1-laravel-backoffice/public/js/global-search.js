@@ -3,6 +3,9 @@
  * /ara endpoint'ine gecikmeli istek atıp açılır sonuç listesi gösterir.
  */
 (function () {
+    let docClickBound = false;
+
+    function initSearch() {
     const input = document.getElementById('global-search');
     const results = document.getElementById('global-search-results');
     if (!input || !results) return;
@@ -75,9 +78,18 @@
         if (e.key === 'Escape') closeResults();
     });
 
+    if (!docClickBound) {
+        docClickBound = true;
     document.addEventListener('click', (e) => {
         if (!results.contains(e.target) && e.target !== input) {
             closeResults();
         }
     });
+    }
+
+    }
+
+    initSearch();
+    document.addEventListener('turbo:load', initSearch);
 })();
+
