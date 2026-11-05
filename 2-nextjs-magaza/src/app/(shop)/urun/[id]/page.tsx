@@ -120,7 +120,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
       {/* Güven kartları */}
       <div className="px-5 sm:px-10">
         <div className="mx-auto max-w-7xl">
-          <GuvenKartlari />
+          <GuvenKartlari ince />
         </div>
       </div>
       {/* Gerçek değerlendirmeler */}
@@ -137,22 +137,6 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
         />
       )}
 
-      {/* Benzer ürünler */}
-      {benzerler.length > 0 && (
-        <section className="px-5 pb-24 pt-10 sm:px-10">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex items-baseline gap-3 border-b border-black/20 pb-3">
-              <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Bunları da beğenebilirsiniz</h2>
-              <span className="text-[13px] font-medium text-black/30">{benzerler.length} ürün</span>
-            </div>
-            <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-              {benzerler.map((b) => (
-                <UrunKarti key={b.id} urun={b} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </div></div>
   );
 }

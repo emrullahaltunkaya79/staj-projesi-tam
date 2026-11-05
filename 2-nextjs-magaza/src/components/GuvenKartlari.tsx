@@ -23,7 +23,20 @@ const KARTLAR = [
   },
 ];
 
-export function GuvenKartlari({ kompakt = false }: { kompakt?: boolean }) {
+export function GuvenKartlari({ kompakt = false, ince = false }: { kompakt?: boolean; ince?: boolean }) {
+  if (ince) {
+    // Tek satır şerit: ikon + başlik, kart kutuları yerine hafif ayraçlar
+    return (
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 border-y border-black/10 py-3 lg:grid-cols-4">
+        {KARTLAR.map(({ ikon: Ikon, baslik }) => (
+          <div key={baslik} className="flex items-center gap-2">
+            <Ikon className="h-4 w-4 shrink-0 text-black/60" strokeWidth={2} />
+            <span className="text-[12px] font-semibold text-black/70">{baslik}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className={`grid grid-cols-2 gap-3 ${kompakt ? "" : "lg:grid-cols-4"}`}>
       {KARTLAR.map(({ ikon: Ikon, baslik, aciklama }) => (
