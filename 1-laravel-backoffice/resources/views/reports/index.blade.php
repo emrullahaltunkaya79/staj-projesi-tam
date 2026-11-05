@@ -39,22 +39,12 @@
         </div>
     </div>
 
-    {{-- Kasa durumu --}}
-    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div class="card border-l-4 border-l-red-400 p-4">
-            <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Toplam Gider</div>
-            <div class="mt-1 text-xl font-bold text-red-600">−{{ $fmt($stats['expense_total']) }}</div>
-        </div>
-        <div class="card border-l-4 border-l-emerald-400 p-4">
-            <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Kasada (Nakit)</div>
-            <div class="mt-1 text-xl font-bold {{ $stats['cash_nakit'] >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ $fmt($stats['cash_nakit']) }}</div>
-            <div class="mt-0.5 text-[11px] text-slate-400">Nakit tahsilat − ödeme − gider</div>
-        </div>
-        <div class="card border-l-4 border-l-indigo-400 p-4">
-            <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Bankada (Havale)</div>
-            <div class="mt-1 text-xl font-bold {{ $stats['cash_banka'] >= 0 ? 'text-indigo-600' : 'text-red-600' }}">{{ $fmt($stats['cash_banka']) }}</div>
-            <div class="mt-0.5 text-[11px] text-slate-400">Havale tahsilat − ödeme − gider</div>
-        </div>
+    {{-- Kasa durumu: ince şerit --}}
+    <div class="card mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3.5">
+        <span class="text-xs font-bold uppercase tracking-wide text-slate-400">Kasa Durumu</span>
+        <span class="text-sm text-slate-600">Gider <strong class="text-red-600">−{{ $fmt($stats['expense_total']) }}</strong></span>
+        <span class="text-sm text-slate-600">Kasada (Nakit) <strong class="text-emerald-600">{{ $fmt($stats['cash_nakit']) }}</strong></span>
+        <span class="text-sm text-slate-600">Bankada (Havale) <strong class="text-indigo-600">{{ $fmt($stats['cash_banka']) }}</strong></span>
     </div>
 
     {{-- Grafikler --}}
