@@ -21,6 +21,33 @@
         };
     @endphp
 
+    {{-- Hızlı Erişim: en çok kullanılan sayfalar --}}
+    <nav aria-label="Hızlı erişim" class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+        @php
+            $quickLinks = [
+                ['Cariler', 'cariler.index', 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 11-3-3'],
+                ['Ürünler', 'urunler.index', 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'],
+                ['Siparişler', 'siparisler.index', 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
+                ['Faturalar', 'faturalar.index', 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
+                ['Giderler', 'giderler.index', 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'],
+                ['Depolar', 'depolar.index', 'M3 21V8l9-5 9 5v13M9 21v-6h6v6'],
+                ['Raporlar', 'raporlar.index', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
+                ['Etkinlikler', 'etkinlik.index', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012 2h2a2 2 0 012 2m-6 9l2 2 4-4'],
+            ];
+        @endphp
+        @foreach ($quickLinks as [$label, $rota, $path])
+            <a href="{{ route($rota) }}" aria-label="{{ $label }} sayfasına git"
+               class="group flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-3 text-center transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md focus-visible:outline-indigo-600">
+                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/>
+                    </svg>
+                </span>
+                <span class="text-[11px] font-bold text-slate-600 group-hover:text-slate-900">{{ $label }}</span>
+            </a>
+        @endforeach
+    </nav>
+
     {{-- Vadesi geçen fatura uyarısı --}}
     @if ($overdue['count'] > 0)
         <a href="{{ route('faturalar.index') }}"
@@ -34,7 +61,7 @@
     @endif
 
     {{-- 1) İstatistik kartları --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" role="list" aria-label="Özet istatistikler">
         {{-- Toplam Cari Sayısı --}}
         <div class="card p-5">
             <div class="flex items-center justify-between">

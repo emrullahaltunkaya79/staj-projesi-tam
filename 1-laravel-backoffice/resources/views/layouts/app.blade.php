@@ -8,6 +8,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
+{{-- Erişilebilirlik: klavye kullanıcıları için içeriğe atla --}}
+<a href="#icerik" class="skip-link">İçeriğe atla</a>
 {{-- Sayfa geçişi ilerleme çizgisi --}}
 <div id="page-progress"
      class="pointer-events-none fixed left-0 top-0 z-[80] h-[3px] w-0 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 opacity-0 shadow-[0_0_10px_rgba(99,102,241,.7)] transition-[width,opacity] duration-200 print:hidden"></div>
@@ -476,7 +478,7 @@
                 @yield('actions')
             </div>
 
-            <main class="flex-1 p-6 print:p-0">
+            <main id="icerik" tabindex="-1" class="flex-1 p-6 print:p-0">
                 @if (auth()->user() && ! auth()->user()->hasVerifiedEmail())
                     <div class="mb-4 flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 sm:flex-row sm:items-center print:hidden">
                         <span class="flex-1">
