@@ -157,14 +157,25 @@ class WarehouseController extends Controller
     /**
      * Belirli bir deponun stok görünümü: hangi ürün, ne kadar.
      */
-    public function stock(Warehouse $warehouse)
+    public function stock(Request $request, Warehouse $warehouse)
     {
+        // Depo Stoğu sayfası: sayfa başına 6 satır (sıralı koleksiyon üzerinde sayfalama)
         $stocks = WarehouseStock::with('product.category')
             ->where('warehouse_id', $warehouse->id)
             ->where('stock_quantity', '>', 0)
             ->get()
             ->sortBy(fn ($s) => mb_strtolower($s->product?->name ?? ''))
             ->values();
+
+        $sayfa = max(1, (int) $request->query('sayfa', '1'));
+        $stocks = new \Illuminate\Pagination\LengthAwarePaginator(
+            $stocks->forPage($sayfa, 6),
+            $stocks->count(),
+            6,
+            $sayfa,
+            ['path' => url()->current()],
+        );
+        $stocks->withQueryString();
 
         $allWarehouses = Warehouse::where('is_active', true)
             ->where('id', '!=', $warehouse->id)

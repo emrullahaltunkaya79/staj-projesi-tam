@@ -17,7 +17,7 @@
         <div>
             <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">{{ $warehouse->name }}</h2>
             <p class="text-sm text-slate-500 dark:text-slate-400">
-                {{ $warehouse->code ? $warehouse->code . ' · ' : '' }}{{ $stocks->count() }} ürün · Toplam {{ $stocks->sum('stock_quantity') }} adet
+                {{ $warehouse->code ? $warehouse->code . ' · ' : '' }}{{ $stocks->total() }} ürün · Toplam {{ $stocks->getCollection()->sum('stock_quantity') }} adet · Sayfa {{ $stocks->currentPage() }} / {{ $stocks->lastPage() }}
             </p>
         </div>
     </div>
@@ -81,6 +81,27 @@
                     </tbody>
                 </table>
             </div>
+            @if ($stocks->lastPage() > 1)
+                <div class="mt-4 flex items-center justify-between gap-3">
+                    <p class="whitespace-nowrap text-xs text-slate-400">Sayfa {{ $stocks->currentPage() }} / {{ $stocks->lastPage() }} — sayfa başına 6 ürün</p>
+                    <div class="flex items-center gap-1.5">
+                        @if ($stocks->onFirstPage())
+                            <span class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-300 dark:border-slate-700 dark:text-slate-600">‹ Önceki</span>
+                        @else
+                            <a href="{{ $stocks->previousPageUrl() }}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400">‹ Önceki</a>
+                        @endif
+                        @foreach (range(1, $stocks->lastPage()) as $n)
+                            <a href="{{ $stocks->url($n) }}"
+                               class="rounded-lg px-2.5 py-1.5 text-xs font-bold tabular-nums transition {{ $n === $stocks->currentPage() ? 'bg-slate-900 text-white dark:bg-indigo-600' : 'border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white' }}">{{ $n }}</a>
+                        @endforeach
+                        @if ($stocks->hasMorePages())
+                            <a href="{{ $stocks->nextPageUrl() }}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400">Sonraki ›</a>
+                        @else
+                            <span class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-300 dark:border-slate-700 dark:text-slate-600">Sonraki ›</span>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
 
         {{-- Özet --}}
@@ -89,19 +110,19 @@
             <dl class="mt-3 space-y-3 text-sm">
                 <div class="flex justify-between">
                     <dt class="text-slate-500">Ürün çeşidi</dt>
-                    <dd class="font-bold">{{ $stocks->count() }}</dd>
+                    <dd class="font-bold">{{ $stocks->total() }}</dd>
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-slate-500">Toplam adet</dt>
-                    <dd class="font-bold">{{ $stocks->sum('stock_quantity') }}</dd>
+                    <dd class="font-bold">{{ $stocks->getCollection()->sum('stock_quantity') }}</dd>
                 </div>
                 <div class="flex justify-between border-t border-slate-100 dark:border-slate-700 pt-3">
                     <dt class="text-slate-500">Stok değeri (alış)</dt>
-                    <dd class="font-bold">{{ $fmt($stocks->sum(fn ($s) => $s->stock_quantity * $s->product->purchase_price)) }}</dd>
+                    <dd class="font-bold">{{ $fmt($stocks->getCollection()->sum(fn ($s) => $s->stock_quantity * ($s->product?->purchase_price ?? 0))) }}</dd>
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-slate-500">Stok değeri (satış)</dt>
-                    <dd class="font-bold">{{ $fmt($stocks->sum(fn ($s) => $s->stock_quantity * $s->product->sale_price)) }}</dd>
+                    <dd class="font-bold">{{ $fmt($stocks->getCollection()->sum(fn ($s) => $s->stock_quantity * ($s->product?->sale_price ?? 0))) }}</dd>
                 </div>
             </dl>
         </div>
