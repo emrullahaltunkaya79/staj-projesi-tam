@@ -4,13 +4,6 @@ import { createHmac } from "crypto";
 
 const SECRET = process.env.BACKOFFICE_WEBHOOK_SECRET ?? "";
 
-/**
- * Katalog önbelleği sürüm anahtarı — her webhook'ta artırılır.
- * `force-dynamic` sayfalar fetch cache'ini bu anahtarla kırar.
- */
-const KATALOG_ANAHTARI = "hba-katalog-v";
-const SIPARIS_ANAHTARI = "hba-siparis-v";
-
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-signature") ?? "";

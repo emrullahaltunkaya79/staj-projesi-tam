@@ -31,7 +31,6 @@ const USER_KEY = "hba-user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [kullanici, setKullanici] = useState<AuthUser | null>(null);
-  const [hazir, setHazir] = useState(false);
 
   useEffect(() => {
     try {
@@ -50,7 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
       }
     } catch {}
-    setHazir(true);
   }, []);
 
   const giris = async (email: string, password: string): Promise<AuthUser> => {

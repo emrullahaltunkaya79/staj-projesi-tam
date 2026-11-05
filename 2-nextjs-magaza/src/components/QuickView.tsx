@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { X, Loader2, Minus, Plus } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { sepet, type SepetOgesi } from "./CartProvider";
 import { sepeteUcur } from "@/lib/sepetFx";
 
@@ -42,7 +42,7 @@ export function QuickViewButonu({ urunId }: { urunId: number }) {
 }
 
 function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }) {
-  const { ekle, ogeler } = sepet();
+  const { ekle } = sepet();
   const [ozet, setOzet] = useState<Ozet | null>(null);
   const [hata, setHata] = useState<string | null>(null);
   const [adet, setAdet] = useState(1);

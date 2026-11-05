@@ -6,7 +6,6 @@ use App\Models\CasperPayment;
 use App\Models\Order;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Casper Network (CSPR) kripto ödeme servisi.

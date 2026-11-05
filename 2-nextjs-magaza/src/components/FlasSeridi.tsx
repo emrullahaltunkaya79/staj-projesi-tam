@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ShoppingCart, Star, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, Zap } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
 import { imgUrl } from "@/lib/img";

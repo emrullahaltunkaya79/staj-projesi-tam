@@ -6,12 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\CasperPayment;
 use App\Models\Contact;
 use App\Models\Product;
-use App\Models\Warehouse;
-use App\Services\InvoiceService;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * E-ticaret entegrasyonu API'si (Sanctum token ile).

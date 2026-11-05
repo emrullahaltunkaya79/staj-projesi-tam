@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
-use App\Models\WebhookDelivery;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 /**

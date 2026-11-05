@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";

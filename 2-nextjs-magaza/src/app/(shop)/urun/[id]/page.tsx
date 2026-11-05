@@ -1,13 +1,8 @@
-import { urun, urunler, ayniAldilar } from "@/lib/backoffice";
+import { urun, ayniAldilar } from "@/lib/backoffice";
 import { Users } from "lucide-react";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
-import { SepeteEkleButonu } from "@/components/SepeteEkleButonu";
 import { GuvenKartlari } from "@/components/GuvenKartlari";
-import { UrunKarti } from "@/components/Catalog";
 import { Yorumlar } from "@/components/Yorumlar";
-import { GorselGaleri } from "@/components/GorselGaleri";
-import { StokAciliyet } from "@/components/StokAciliyet";
-import { KalpButonu } from "@/components/KalpButonu";
 import { UrunDetayOzellikleri } from "@/components/UrunDetayOzellikleri";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
 
@@ -49,13 +44,8 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
   }
 
   const aciklama = ACIKLAMALAR[u.category ?? ""] ?? "Sade ve zamansız tasarım, kaliteli malzeme.";
-  const fiyat = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(u.sale_price);
   const puan = 4.2 + ((u.id * 7) % 8) / 10;
   const yorum = 37 + ((u.id * 13) % 480);
-  const tumUrunler = await urunler();
-  const benzerler = tumUrunler
-    .filter((x) => x.category === u.category && x.id !== u.id)
-    .slice(0, 6);
   const ortakSatinAlmalar = await ayniAldilar(u.id);
 
   // Google zengin sonuçları için Product schema

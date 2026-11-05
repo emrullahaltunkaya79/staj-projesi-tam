@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 export type Varyasyon = {
   ad: string;
   secenekler: string[];

@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const KARGO_BOLGELERI = [
   { id: "istanbul-avr", ad: "İstanbul (Avrupa)", fiyat: 29 },
   { id: "istanbul-anadolu", ad: "İstanbul (Anadolu)", fiyat: 34 },

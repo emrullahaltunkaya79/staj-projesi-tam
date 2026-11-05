@@ -13,7 +13,6 @@ import { CerezOnayi } from "./CerezOnayi";
 import { GeriSayim } from "./GeriSayim";
 import { TemaSecici } from "./TemaSecici";
 import { KaydirmaYardimcisi } from "./KaydirmaYardimcisi";
-import { LogoIshari } from "./Logo";
 import { AuthModal } from "./AuthModal";
 import { BultenFormu } from "./BultenFormu";
 import { KargoTakip } from "./KargoTakip";
@@ -34,7 +33,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [q, setQ] = useState("");
   const { kullanici, girisYapmis, cikis } = auth();
   const { sayi: favoriSayi } = favori();
-  const { dil: aktifDil, dilDegistir, cevir } = dil();
+  const { dil: aktifDil, dilDegistir } = dil();
   const { dark: karanlik, degistir: karanlikDegistir } = karanlikModKullan();
   const [authModalAcik, setAuthModalAcik] = useState(false);
   const [menuAcik, setMenuAcik] = useState(false);

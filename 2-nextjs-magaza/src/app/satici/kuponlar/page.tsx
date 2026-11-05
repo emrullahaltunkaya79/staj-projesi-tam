@@ -15,12 +15,6 @@ type Kupon = {
   expires_at: string | null;
 };
 
-const TIP_ETIKETI: Record<string, string> = {
-  percent: "% indirim",
-  fixed: "₺ indirim",
-  free_shipping: "Ücretsiz kargo",
-};
-
 export default function KuponlarSayfasi() {
   const [kuponlar, setKuponlar] = useState<Kupon[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);

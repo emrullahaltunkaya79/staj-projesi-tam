@@ -26,6 +26,7 @@ export default function Iletisim() {
       setGonderildi(true);
     } catch (err) {
       setHata(err instanceof Error ? err.message : "Mesaj gönderilemedi.");
+    } finally {
       setGonderiliyor(false);
     }
   };
@@ -83,9 +84,9 @@ export default function Iletisim() {
                 <textarea required rows={5} value={mesaj} onChange={(e) => setMesaj(e.target.value)}
                           className="w-full border border-black/15 bg-white px-3.5 py-2.5 text-sm focus:border-black focus:outline-none" />
               </div>
-              <button type="submit"
-                      className="h-11 w-full rounded-full bg-black text-sm font-bold text-white transition hover:bg-black/80 active:scale-95">
-                Gönder
+              <button type="submit" disabled={gonderiliyor}
+                      className="h-11 w-full rounded-full bg-black text-sm font-bold text-white transition hover:bg-black/80 active:scale-95 disabled:opacity-50">
+                {gonderiliyor ? "Gönderiliyor…" : "Gönder"}
               </button>
             </form>
           )}

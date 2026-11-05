@@ -13,7 +13,6 @@ import {
   Ticket,
   Store,
   Menu,
-  X,
   Lock,
 } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";

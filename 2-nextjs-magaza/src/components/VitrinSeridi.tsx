@@ -24,8 +24,6 @@ export function VitrinSeridi({
 }) {
   if (urunler.length === 0) return null;
 
-  const kirmizi = tur === "flas";
-
   return (
     <section className="px-5 pb-8 pt-6 sm:px-10">
       <div className="mx-auto max-w-7xl">

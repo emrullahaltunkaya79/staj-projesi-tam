@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
 
-export async function GET(request: NextRequest, ctx: { params: Promise<{ no: string }> }) {
-  const { no } = await ctx.params;
+export async function GET(request: NextRequest) {
   const memo = request.nextUrl.searchParams.get("memo") ?? "";
 
   if (!memo) return NextResponse.json({ status: "unknown", paid: false });
