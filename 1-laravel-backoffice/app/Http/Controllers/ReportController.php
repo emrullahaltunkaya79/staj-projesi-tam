@@ -29,7 +29,7 @@ class ReportController extends Controller
         $salesByMonth = $monthlyInvoices('satis')->all();
         $purchasesByMonth = $monthlyInvoices('alis')->all();
 
-        $expensesByMonth = Expense::where('expense_date', '>=', $startDate->toDateString())
+        $expensesRaw = Expense::where('expense_date', '>=', $startDate->toDateString())
             ->groupBy(DB::raw('substr(expense_date, 1, 7)'))
             ->selectRaw('substr(expense_date, 1, 7) as ym, SUM(amount) as total')
             ->pluck('total', 'ym')
@@ -43,11 +43,17 @@ class ReportController extends Controller
             $cursor->addMonth();
         }
         $labelKeys = array_keys($labels);
-        $emptyMonths = array_fill_keys($labelKeys, 0.0);
-        $salesByMonth = array_map(fn ($k) => round((float) ($salesByMonth[$k] ?? 0), 2), $emptyMonths);
-        $purchasesByMonth = array_map(fn ($k) => round((float) ($purchasesByMonth[$k] ?? 0), 2), $emptyMonths);
-        $expensesByMonth = array_map(fn ($k) => round((float) ($expensesByMonth[$k] ?? 0), 2), $emptyMonths);
+        $salesRaw = $monthlyInvoices('satis')->all();
+        $purchasesRaw = $monthlyInvoices('alis')->all();
 
+        $salesByMonth = [];
+        $purchasesByMonth = [];
+        $expensesByMonth = [];
+        foreach ($labelKeys as $k) {
+            $salesByMonth[$k] = round((float) ($salesRaw[$k] ?? 0), 2);
+            $purchasesByMonth[$k] = round((float) ($purchasesRaw[$k] ?? 0), 2);
+            $expensesByMonth[$k] = round((float) ($expensesRaw[$k] ?? 0), 2);
+        }
         // En çok satan 5 ürün (satılan adet bazında, SQL toplaması)
         $topProducts = InvoiceItem::whereHas('invoice', fn ($q) => $q->where('type', 'satis'))
             ->groupBy('product_name')

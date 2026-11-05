@@ -210,3 +210,17 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
+
+Route::get('/__debug_chart', function () {
+    $startDate = now()->subMonths(11)->startOfMonth();
+    $q = App\Models\Invoice::where('type', 'satis')
+        ->where('issue_date', '>=', $startDate->toDateString())
+        ->groupBy(DB::raw('substr(issue_date, 1, 7)'))
+        ->selectRaw('substr(issue_date, 1, 7) as ym, SUM(total) as total')
+        ->pluck('total', 'ym');
+    return response()->json([
+        'baslangic' => $startDate->toDateString(),
+        'veri' => $q->all(),
+        'sayi' => count($q),
+    ]);
+});
