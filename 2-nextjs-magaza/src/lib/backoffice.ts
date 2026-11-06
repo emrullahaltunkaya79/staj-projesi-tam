@@ -30,6 +30,14 @@ export type Urun = {
   is_bestseller?: boolean;
   varyant_adlari?: string[];
   varyant_min_stok?: number | null;
+  varyantlar?: VaryantOzeti[];
+};
+
+/** API varyant özeti — ad, tür (renk | beden) ve stok durumu. */
+export type VaryantOzeti = {
+  ad: string;
+  tur: string;
+  stokta: boolean;
 };
 
 /** İndirim uygulanmış nihai fiyat (API final_price vermezse kendisi hesaplar). */
@@ -91,7 +99,12 @@ export async function urun(id: number): Promise<Urun | null> {
   }
 }
 
-export type AramaSonucu = { urunler: Urun[]; toplam: number; markalar: string[] };
+export type AramaSonucu = {
+  urunler: Urun[];
+  toplam: number;
+  markalar: Record<string, number>;
+  kategoriler: Record<string, number>;
+};
 
 /** Sunucu tarafı arama: FULLTEXT + sayfalama + sıralama (10K+ ürün için ölçeklenir). */
 export async function urunAra(
@@ -107,10 +120,11 @@ export async function urunAra(
     return {
       urunler: (sonuc.data ?? []).map(gorselProxy),
       toplam: sonuc.meta?.toplam ?? 0,
-      markalar: sonuc.meta?.markalar ?? [],
+      markalar: sonuc.meta?.markalar ?? {},
+      kategoriler: sonuc.meta?.kategoriler ?? {},
     };
   } catch {
-    return { urunler: [], toplam: 0, markalar: [] };
+    return { urunler: [], toplam: 0, markalar: {}, kategoriler: {} };
   }
 }
 

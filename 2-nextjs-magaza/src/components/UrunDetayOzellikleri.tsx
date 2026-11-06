@@ -34,7 +34,7 @@ export function UrunDetayOzellikleri({
     in_stock: boolean;
     image_url: string | null;
     image_count?: number;
-    variants?: { id: number; name: string; stock_quantity: number; in_stock: boolean }[];
+    variants?: { id: number; name: string; type?: string; stock_quantity: number; in_stock: boolean }[];
   };
 }) {
   const [secimler, setSecimler] = useState<Record<string, string>>({});
@@ -114,7 +114,7 @@ export function UrunDetayOzellikleri({
         {gercekVaryantlar.length > 0 && (
           <div className="mt-6">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">
-              Seçenek <span className="text-red-400">*</span>
+              {gercekVaryantlar[0]?.type === "beden" ? "Beden" : "Seçenek"} <span className="text-red-400">*</span>
             </p>
             <div className="flex flex-wrap gap-2">
               {gercekVaryantlar.map((v) => {
@@ -141,7 +141,9 @@ export function UrunDetayOzellikleri({
               })}
             </div>
             {!tumSecildi && (
-              <p className="mt-2 text-xs font-bold text-amber-500">Devam etmek için bir seçenek seçiniz</p>
+              <p className="mt-2 text-xs font-bold text-amber-500">
+                Devam etmek için bir {gercekVaryantlar[0]?.type === "beden" ? "beden" : "seçenek"} seçiniz
+              </p>
             )}
           </div>
         )}

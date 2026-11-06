@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { X } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Sidebar, bosFiltreler, urunFiltrele, type Filtreler } from "@/components/Sidebar";
 import { UrunKarti } from "@/components/Catalog";
@@ -14,6 +15,7 @@ export function KatalogIcerik({
   marka = null,
   sidebar = true,
   baslikGizle = false,
+  aramaTerimi = null,
 }: {
   tumUrunler: Urun[];
   kategori: string | null;
@@ -21,16 +23,20 @@ export function KatalogIcerik({
   marka?: string | null;
   sidebar?: boolean;
   baslikGizle?: boolean;
+  /** /ara sayfası: kategori sayfaya gitmek yerine sonuçlar içinde filtrelenir */
+  aramaTerimi?: string | null;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [filtreler, setFiltreler] = useState<Filtreler>(bosFiltreler);
   const [gosterilen, setGosterilen] = useState(24);
+  const [aramaKategori, setAramaKategori] = useState<string | null>(() => searchParams.get("kategori"));
 
   const sirala = searchParams.get("sirala") ?? "";
+  const etkinKategori = aramaTerimi ? aramaKategori : kategori;
 
   // Filtre/kategori/sıralama değişince sayfalama başa döner
-  useEffect(() => setGosterilen(24), [kategori, marka, filtreler, sirala]);
+  useEffect(() => setGosterilen(24), [etkinKategori, marka, filtreler, sirala]);
 
   const kategoriler = useMemo(() => {
     const m = new Map<string, number>();
@@ -43,8 +49,13 @@ export function KatalogIcerik({
 
   const sonuc = useMemo(() => {
     const liste = marka ? tumUrunler.filter((u) => u.brand === marka) : tumUrunler;
-    return urunFiltrele(liste, kategori, filtreler, sirala);
-  }, [tumUrunler, kategori, marka, filtreler, sirala]);
+    return urunFiltrele(liste, etkinKategori, filtreler, sirala);
+  }, [tumUrunler, etkinKategori, marka, filtreler, sirala]);
+
+  const tumunuTemizle = () => {
+    setFiltreler(bosFiltreler);
+    if (aramaTerimi) setAramaKategori(null);
+  };
 
   const secenekler: [string, string][] = [
     ["", "Önerilen"],
@@ -55,9 +66,37 @@ export function KatalogIcerik({
 
   const hrefyle = (s: string) => {
     const p = new URLSearchParams();
+    if (aramaTerimi) {
+      p.set("q", aramaTerimi);
+      if (aramaKategori) p.set("kategori", aramaKategori);
+    }
     if (s) p.set("sirala", s);
     return `${pathname}${p.size > 0 ? `?${p}` : ""}`;
   };
+
+  // Seçili filtreler tek tıkla kaldırılabilir çipler olarak grid'in üstünde gösterilir
+  const cipler: { etiket: string; kaldir: () => void }[] = [
+    ...(aramaTerimi && aramaKategori ? [{ etiket: aramaKategori, kaldir: () => setAramaKategori(null) }] : []),
+    ...(filtreler.marka ? [{ etiket: `Marka: ${filtreler.marka}`, kaldir: () => setFiltreler({ ...filtreler, marka: null }) }] : []),
+    ...(filtreler.minFiyat || filtreler.maxFiyat
+      ? [{
+          etiket: `${filtreler.minFiyat || "0"} – ${filtreler.maxFiyat || "∞"} ₺`,
+          kaldir: () => setFiltreler({ ...filtreler, minFiyat: "", maxFiyat: "" }),
+        }]
+      : []),
+    ...filtreler.renkler.map((r) => ({ etiket: r, kaldir: () => setFiltreler({ ...filtreler, renkler: filtreler.renkler.filter((x) => x !== r) }) })),
+    ...filtreler.bedenler.map((b) => ({ etiket: `Beden ${b}`, kaldir: () => setFiltreler({ ...filtreler, bedenler: filtreler.bedenler.filter((x) => x !== b) }) })),
+    ...filtreler.boyutlar.map((b) => ({ etiket: b, kaldir: () => setFiltreler({ ...filtreler, boyutlar: filtreler.boyutlar.filter((x) => x !== b) }) })),
+    ...(filtreler.sadeceStok ? [{ etiket: "Stokta", kaldir: () => setFiltreler({ ...filtreler, sadeceStok: false }) }] : []),
+  ];
+
+  const sonucYok = (
+    <div className="py-20 text-center">
+      <p className="text-sm text-black/50">Bu filtrelerle ürün bulunamadı.</p>
+      <button type="button" onClick={tumunuTemizle}
+              className="mt-3 text-sm font-bold underline underline-offset-4">Filtreleri temizle</button>
+    </div>
+  );
 
   return (
     <div className="px-5 pb-24 pt-2 sm:px-10">
@@ -68,7 +107,9 @@ export function KatalogIcerik({
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex items-baseline gap-3">
               <h1 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">{baslik}</h1>
-              <span className="text-[13px] font-medium text-black/30">{sonuc.length} ürün</span>
+              <span className="text-[13px] font-medium text-black/30">
+                {aramaTerimi ? `"${aramaTerimi}" için ${sonuc.length} sonuç` : `${sonuc.length} ürün`}
+              </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {secenekler.map(([deger, etiket]) => (
@@ -87,22 +128,33 @@ export function KatalogIcerik({
           <div className="mt-6 flex flex-wrap gap-4 lg:flex-nowrap lg:gap-8">
             <Sidebar
               kategoriler={kategoriler}
-              aktifKategori={kategori}
+              aktifKategori={etkinKategori}
               filtreler={filtreler}
               onFiltreDegistir={setFiltreler}
-              onTemizle={() => setFiltreler(bosFiltreler)}
+              onTemizle={tumunuTemizle}
               toplamUrun={sonuc.length}
-              urunler={kategori ? tumUrunler.filter((u) => u.category === kategori) : tumUrunler}
+              urunler={etkinKategori ? tumUrunler.filter((u) => u.category === etkinKategori) : tumUrunler}
+              onKategoriSec={aramaTerimi ? (ad) => setAramaKategori(ad === aramaKategori ? null : ad) : undefined}
             />
 
             <div className="min-w-0 flex-1">
-              {sonuc.length === 0 ? (
-                <div className="py-20 text-center">
-                  <p className="text-sm text-black/50">Bu filtrelerle ürün bulunamadı.</p>
-                  <button type="button" onClick={() => setFiltreler(bosFiltreler)}
-                          className="mt-3 text-sm font-bold underline underline-offset-4">Filtreleri temizle</button>
+              {cipler.length > 0 && (
+                <div className="mb-4 flex flex-wrap items-center gap-1.5">
+                  {cipler.map((c) => (
+                    <button key={c.etiket} type="button" onClick={c.kaldir}
+                            className="flex items-center gap-1 rounded-full bg-black/5 px-3 py-1 text-[11px] font-bold text-black/70 transition hover:bg-black/10">
+                      {c.etiket}
+                      <X className="h-3 w-3 text-black/40" />
+                    </button>
+                  ))}
+                  <button type="button" onClick={tumunuTemizle}
+                          className="px-2 text-[11px] font-bold text-black/40 underline underline-offset-2 transition hover:text-black">
+                    Tümünü temizle
+                  </button>
                 </div>
-              ) : (
+              )}
+
+              {sonuc.length === 0 ? sonucYok : (
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
                   {sonuc.slice(0, gosterilen).map((u) => (
                     <UrunKarti key={u.id} urun={u} />
@@ -113,13 +165,7 @@ export function KatalogIcerik({
           </div>
         ) : (
           <div className="mt-6">
-            {sonuc.length === 0 ? (
-              <div className="py-20 text-center">
-                <p className="text-sm text-black/50">Bu filtrelerle ürün bulunamadı.</p>
-                <button type="button" onClick={() => setFiltreler(bosFiltreler)}
-                        className="mt-3 text-sm font-bold underline underline-offset-4">Filtreleri temizle</button>
-              </div>
-            ) : (
+            {sonuc.length === 0 ? sonucYok : (
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-7">
                 {sonuc.slice(0, gosterilen).map((u) => (
                   <UrunKarti key={u.id} urun={u} />

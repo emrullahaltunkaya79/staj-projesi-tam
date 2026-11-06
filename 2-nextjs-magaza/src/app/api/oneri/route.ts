@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
 
-/** Arama kutusu canlı önerisi — sunucu tarafı FULLTEXT arama (60 sn cache). */
+/** Arama kutusu canlı önerisi — ürün, marka ve kategori eşleşmeleri (60 sn cache). */
 export async function GET(request: NextRequest) {
   const q = (request.nextUrl.searchParams.get("q") ?? "").trim();
-  if (q.length < 2) return NextResponse.json({ data: { urunler: [], markalar: [] } });
+  if (q.length < 2) return NextResponse.json({ data: { urunler: [], markalar: [], kategoriler: {} } });
 
   try {
     const yanit = await fetch(
@@ -29,12 +29,15 @@ export async function GET(request: NextRequest) {
     );
 
     const markalar = d.meta?.markalar ? Object.keys(d.meta.markalar).slice(0, 4) : [];
+    const kategoriler = Object.fromEntries(
+      Object.entries((d.meta?.kategoriler ?? {}) as Record<string, number>).slice(0, 4),
+    );
 
     return NextResponse.json(
-      { data: { urunler, markalar } },
+      { data: { urunler, markalar, kategoriler } },
       { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } },
     );
   } catch {
-    return NextResponse.json({ data: { urunler: [], markalar: [] } });
+    return NextResponse.json({ data: { urunler: [], markalar: [], kategoriler: {} } });
   }
 }

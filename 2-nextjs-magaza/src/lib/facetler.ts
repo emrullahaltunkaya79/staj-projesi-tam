@@ -28,6 +28,9 @@ export function urunRenkleri(ad: string, varyantlar: string[] = []): string[] {
 
 const BOYUT_KALIP = /(\d+(?:[.,]\d+)?)\s*(cm|mm|"|″|ml|l|gb|tb|mah|m|kg)\b/gi;
 
+/** Beden facet sıralaması — küçükten büyüğe. */
+export const BEDEN_SIRASI = ["S", "M", "L", "XL", "XXL", "S/M", "M/L", "L/XL"];
+
 const BIRIM_GOSTER: Record<string, string> = {
   '"': "″", "″": "″", cm: "cm", mm: "mm", ml: "ml", l: "L",
   gb: "GB", tb: "TB", mah: "mAh", m: "m", kg: "kg",

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\CasperPayment;
+use App\Models\Category;
 use App\Models\Contact;
 use App\Models\Product;
 use App\Services\OrderService;
@@ -66,6 +67,7 @@ class ApiController extends Controller
                 'image_url' => $p->images->isNotEmpty() ? 'ok' : null, // base64 yok — /api/img proxy'si binary servis eder
                 'varyant_adlari' => $p->variants->pluck('name')->values(),
                 'varyant_min_stok' => $p->variants->isNotEmpty() ? (int) $p->variants->min('stock_quantity') : null,
+                'varyantlar' => $this->varyantOzeti($p),
             ]);
 
         return response()->json(['data' => $products]);
@@ -104,9 +106,10 @@ class ApiController extends Controller
                 'in_stock' => $product->availableQuantity() > 0,
                 'image_count' => $product->images->count(),
                 'image_url' => $product->images->isNotEmpty() ? 'ok' : null,
-                'variants' => $product->variants->map(fn ($v) => [
+                'variants' => $product->variants->sortBy(fn ($v) => $v->siraAnahtari())->map(fn ($v) => [
                     'id' => $v->id,
                     'name' => $v->name,
+                    'type' => $v->type ?? 'renk',
                     'stock_quantity' => $v->stock_quantity,
                     'in_stock' => $v->stock_quantity > 0,
                 ])->values(),
@@ -658,7 +661,8 @@ class ApiController extends Controller
     {
         $terim = trim((string) $request->query('q', ''));
         $sayfa = max(1, (int) $request->query('sayfa', '1'));
-        $perPage = min(48, max(6, (int) $request->query('per_page', '24')));
+        // Arama sayfası sonuçları istemcide anında filtreler — tek istekte 200'e kadar
+        $perPage = min(200, max(6, (int) $request->query('per_page', '24')));
         $sirala = (string) $request->query('sirala');
 
         $query = Product::query();
@@ -685,6 +689,17 @@ class ApiController extends Controller
 
         $toplam = (clone $query)->count();
 
+        // Kategori dağılımı (akıllı arama önerileri): sıralama eklenmeden önceki eşleşme kümesi
+        $kategoriSayilari = (clone $query)
+            ->whereNotNull('category_id')
+            ->selectRaw('category_id, COUNT(*) as adet')
+            ->groupBy('category_id')
+            ->pluck('adet', 'category_id');
+        $kategoriler = Category::whereIn('id', $kategoriSayilari->keys())
+            ->pluck('name', 'id')
+            ->mapWithKeys(fn ($ad, $id) => [$ad => (int) $kategoriSayilari[$id]])
+            ->sortDesc();
+
         $siralaIfadeleri = [
             'fiyat-artan' => 'sale_price * (100 - COALESCE(discount_percent, 0)) / 100 ASC',
             'fiyat-azalan' => 'sale_price * (100 - COALESCE(discount_percent, 0)) / 100 DESC',
@@ -700,7 +715,7 @@ class ApiController extends Controller
             $query->orderBy('name');
         }
 
-        $urunler = $query->with(['category', 'images'])
+        $urunler = $query->with(['category', 'images', 'variants'])
             ->forPage($sayfa, $perPage)
             ->get();
 
@@ -744,14 +759,27 @@ class ApiController extends Controller
                 'review_count' => (int) ($puanlar[$p->id]->adet ?? 0),
                 'is_bestseller' => false,
                 'image_url' => $p->images->isNotEmpty() ? 'ok' : null,
+                'varyant_adlari' => $p->variants->pluck('name')->values(),
+                'varyantlar' => $this->varyantOzeti($p),
             ]),
             'meta' => [
                 'toplam' => $toplam,
                 'sayfa' => $sayfa,
                 'per_page' => $perPage,
                 'markalar' => $markalar,
+                'kategoriler' => $kategoriler,
             ],
         ]);
+    }
+
+    /** Mağaza filtreleri için varyant özeti: ad, tür (renk | beden), stok durumu. */
+    private function varyantOzeti(Product $urun): array
+    {
+        return $urun->variants->sortBy(fn ($v) => $v->siraAnahtari())->map(fn ($v) => [
+            'ad' => $v->name,
+            'tur' => $v->type ?? 'renk',
+            'stokta' => $v->stock_quantity > 0,
+        ])->values()->all();
     }
 
     /**

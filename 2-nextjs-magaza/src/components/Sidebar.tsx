@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
-import { urunRenkleri, urunBoyutlari, facetSecenekleri, RENKLER } from "@/lib/facetler";
+import { urunRenkleri, urunBoyutlari, facetSecenekleri, RENKLER, BEDEN_SIRASI } from "@/lib/facetler";
 import { useMemo } from "react";
 
 export type Filtreler = {
@@ -16,9 +16,10 @@ export type Filtreler = {
   kdvDahil: boolean;
   renkler: string[];
   boyutlar: string[];
+  bedenler: string[];
 };
 
-export const bosFiltreler: Filtreler = { marka: null, minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [] };
+export const bosFiltreler: Filtreler = { marka: null, minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [], bedenler: [] };
 
 export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
   let sonuc = urunler;
@@ -36,6 +37,10 @@ export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
       const ub = urunBoyutlari(u.name);
       return f.boyutlar.some((b) => ub.includes(b));
     });
+  if (f.bedenler.length > 0)
+    sonuc = sonuc.filter((u) =>
+      f.bedenler.some((b) => (u.varyantlar ?? []).some((v) => v.tur === "beden" && v.ad === b && v.stokta)),
+    );
   return sonuc;
 }
 
@@ -94,6 +99,7 @@ export function Sidebar({
   onTemizle,
   toplamUrun,
   urunler = [],
+  onKategoriSec,
 }: {
   kategoriler: { ad: string; sayi: number }[];
   aktifKategori: string | null;
@@ -102,6 +108,8 @@ export function Sidebar({
   onTemizle: () => void;
   toplamUrun: number;
   urunler?: Urun[];
+  /** Verilirse kategori satırı sayfaya gitmez, bu geri çağrıyla yerinde filtreler (arama sonuçları) */
+  onKategoriSec?: (ad: string) => void;
 }) {
   const [mobilAcik, setMobilAcik] = useState(false);
   const [masaustuAcik, setMasaustuAcik] = useState(true);
@@ -119,6 +127,17 @@ export function Sidebar({
     () => facetSecenekleri(urunler.map((u) => ({ degerler: urunBoyutlari(u.name) })), 14),
     [urunler],
   );
+  const bedenSecenekleri = useMemo(() => {
+    const sayac = new Map<string, number>();
+    for (const u of urunler) {
+      for (const v of u.varyantlar ?? []) {
+        if (v.tur === "beden" && v.stokta) sayac.set(v.ad, (sayac.get(v.ad) ?? 0) + 1);
+      }
+    }
+    return [...sayac.entries()]
+      .sort((a, b) => (BEDEN_SIRASI.indexOf(b[0]) - BEDEN_SIRASI.indexOf(a[0])) || b[1] - a[1])
+      .map(([deger, sayi]) => ({ deger, sayi }));
+  }, [urunler]);
 
   // Kategori -> marka listesi (accordion alt satırları için)
   const kategoriMarkalari = useMemo(() => {
@@ -151,7 +170,7 @@ export function Sidebar({
   const aktifFiltreSayisi =
     (filtreler.marka ? 1 : 0) +
     (filtreler.minFiyat ? 1 : 0) + (filtreler.maxFiyat ? 1 : 0) + (filtreler.sadeceStok ? 1 : 0) +
-    filtreler.renkler.length + filtreler.boyutlar.length;
+    filtreler.renkler.length + filtreler.boyutlar.length + filtreler.bedenler.length;
 
   const icerik = (
     <div className="flex h-full flex-col rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
@@ -193,12 +212,22 @@ export function Sidebar({
                       : "text-black/60 hover:bg-black/5 hover:text-black"
                   }`}
                 >
-                  <Link
-                    href={aktifKategori === k.ad ? "/" : `/kategori/${encodeURIComponent(k.ad)}`}
-                    className="min-w-0 flex-1 truncate px-3 py-2 text-[13px] font-medium"
-                  >
-                    {k.ad}
-                  </Link>
+                  {onKategoriSec ? (
+                    <button
+                      type="button"
+                      onClick={() => onKategoriSec(k.ad)}
+                      className="min-w-0 flex-1 truncate px-3 py-2 text-left text-[13px] font-medium"
+                    >
+                      {k.ad}
+                    </button>
+                  ) : (
+                    <Link
+                      href={aktifKategori === k.ad ? "/" : `/kategori/${encodeURIComponent(k.ad)}`}
+                      className="min-w-0 flex-1 truncate px-3 py-2 text-[13px] font-medium"
+                    >
+                      {k.ad}
+                    </Link>
+                  )}
                   {markalar.length > 0 && (
                     <button
                       type="button"
@@ -319,6 +348,36 @@ export function Sidebar({
                         : [...filtreler.boyutlar, deger],
                     })
                   }
+                  className={`rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums transition ${
+                    secili ? "border-[var(--marka)] bg-[var(--marka)] text-white" : "border-black/15 text-black/60 hover:border-black/40"
+                  }`}
+                >
+                  {deger}
+                  <span className={`ml-1 ${secili ? "text-white/50" : "text-black/30"}`}>{sayi}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Grup>
+      )}
+
+      {bedenSecenekleri.length > 0 && (
+        <Grup baslik="Beden">
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {bedenSecenekleri.map(({ deger, sayi }) => {
+              const secili = filtreler.bedenler.includes(deger);
+              return (
+                <button
+                  key={deger}
+                  type="button"
+                  onClick={() =>
+                    degistir({
+                      bedenler: secili
+                        ? filtreler.bedenler.filter((b) => b !== deger)
+                        : [...filtreler.bedenler, deger],
+                    })
+                  }
+                  title={`${deger} (${sayi})`}
                   className={`rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums transition ${
                     secili ? "border-[var(--marka)] bg-[var(--marka)] text-white" : "border-black/15 text-black/60 hover:border-black/40"
                   }`}

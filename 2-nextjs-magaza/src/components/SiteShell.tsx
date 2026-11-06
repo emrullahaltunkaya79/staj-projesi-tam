@@ -43,9 +43,26 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [oneriler, setOneriler] = useState<{
     urunler: { id: number; name: string; brand?: string | null; fiyat: number; image: string | null }[];
     markalar: string[];
+    kategoriler?: Record<string, number>;
   } | null>(null);
+  const [sonAramalar, setSonAramalar] = useState<string[]>([]);
+  const [seciliOneri, setSeciliOneri] = useState(-1);
 
   const POPULER_ARAMALAR = ["Kulaklık", "Projeksiyon", "Akıllı Saat", "Drone", "Klavye", "Hoparlör"];
+
+  // Son aramalar: localStorage'dan bir kez yüklenir
+  useEffect(() => {
+    try {
+      const ham = localStorage.getItem("hba-son-aramalar");
+      if (ham) setSonAramalar(JSON.parse(ham));
+    } catch {}
+  }, []);
+
+  const sonAramaEkle = (terim: string) => {
+    const liste = [terim, ...sonAramalar.filter((t) => t !== terim)].slice(0, 6);
+    setSonAramalar(liste);
+    try { localStorage.setItem("hba-son-aramalar", JSON.stringify(liste)); } catch {}
+  };
 
   // Mega menü verisi ilk hover'da bir kez yüklenir
   const menuGetir = () => {
@@ -79,10 +96,43 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, aramaOdak]);
 
-  const ara = (e: React.FormEvent) => {
-    e.preventDefault();
+  const ara = (e?: React.FormEvent) => {
+    e?.preventDefault();
     const terim = q.trim();
-    if (terim) router.push(`/ara?q=${encodeURIComponent(terim)}`);
+    if (terim) {
+      sonAramaEkle(terim);
+      setAramaOdak(false);
+      setSeciliOneri(-1);
+      router.push(`/ara?q=${encodeURIComponent(terim)}`);
+    }
+  };
+
+  // Önerilerde klavye ile gezinme: ↑/↓ seçer, Enter açar, Esc kapatır
+  const onAramaKlavye = (e: React.KeyboardEvent) => {
+    if (!aramaOdak) return;
+    if (e.key === "Escape") {
+      setAramaOdak(false);
+      setSeciliOneri(-1);
+      return;
+    }
+    const oneriVar = oneriler && (oneriler.urunler.length > 0 || oneriler.markalar.length > 0 || (oneriler.kategoriler && Object.keys(oneriler.kategoriler).length > 0));
+    if (!oneriVar) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSeciliOneri((i) => Math.min(oneriler!.urunler.length - 1, i + 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSeciliOneri((i) => Math.max(-1, i - 1));
+    } else if (e.key === "Enter" && seciliOneri >= 0) {
+      e.preventDefault();
+      const u = oneriler!.urunler[seciliOneri];
+      if (u) {
+        sonAramaEkle(q.trim());
+        setAramaOdak(false);
+        setSeciliOneri(-1);
+        router.push(`/urun/${u.id}`);
+      }
+    }
   };
 
   return (
@@ -115,8 +165,11 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
 
           <div className="relative order-3 w-full max-w-md sm:order-2 sm:w-auto sm:flex-1"
                onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setAramaOdak(false); }}>
-            <form onSubmit={ara} className="flex h-10 w-full items-center overflow-hidden rounded-lg border border-black/15 bg-[#f8f8f8]">
-              <input value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setAramaOdak(true)} placeholder="Ürün ara…"
+            <form onSubmit={(e) => ara(e)} className="flex h-10 w-full items-center overflow-hidden rounded-lg border border-black/15 bg-[#f8f8f8]">
+              <input value={q} onChange={(e) => { setQ(e.target.value); setSeciliOneri(-1); }} onFocus={() => setAramaOdak(true)}
+                     onKeyDown={onAramaKlavye}
+                     placeholder="Ürün, marka veya kategori ara…"
+                     aria-label="Ürün, marka veya kategori ara"
                      className="h-full flex-1 bg-transparent px-4 text-sm text-black placeholder-black/35 focus:outline-none" />
               <button type="submit" aria-label="Ara" className="flex h-full w-11 items-center justify-center text-white transition bg-[var(--marka)] hover:opacity-90">
                 <Search className="h-4 w-4" />
@@ -124,17 +177,46 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             </form>
             {aramaOdak && (
               <div className="absolute left-0 right-0 top-11 z-50 rounded-xl border border-black/10 bg-white p-3 shadow-2xl">
-                {oneriler && (oneriler.urunler.length > 0 || oneriler.markalar.length > 0) ? (
+                {oneriler && (oneriler.urunler.length > 0 || oneriler.markalar.length > 0 || (oneriler.kategoriler && Object.keys(oneriler.kategoriler).length > 0)) ? (
                   <>
-                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Öneriler</p>
-                    <div className="space-y-0.5">
-                      {oneriler.urunler.map((u) => (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onMouseDown={() => { setAramaOdak(false); router.push(`/urun/${u.id}`); }}
-                          className="flex w-full items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition hover:bg-black/5"
-                        >
+                    {oneriler.kategoriler && Object.keys(oneriler.kategoriler).length > 0 && (
+                      <div className="mb-2 border-b border-black/10 pb-2">
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Kategoriler</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {Object.entries(oneriler.kategoriler).map(([ad, sayi]) => (
+                            <button
+                              key={ad}
+                              type="button"
+                              onMouseDown={() => {
+                                setAramaOdak(false);
+                                if (q.trim().length >= 2) {
+                                  router.push(`/ara?q=${encodeURIComponent(q.trim())}&kategori=${encodeURIComponent(ad)}`);
+                                } else {
+                                  router.push(`/kategori/${encodeURIComponent(ad)}`);
+                                }
+                              }}
+                              className="rounded-full border border-black/10 px-3 py-1.5 text-[11px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white"
+                            >
+                              {ad} <span className="text-black/30">{sayi}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {oneriler.urunler.length > 0 && (
+                      <>
+                        <p className="mb-1.5 flex items-baseline justify-between text-[10px] font-bold uppercase tracking-widest text-black/40">
+                          Ürünler
+                          <span className="font-medium normal-case tracking-normal text-black/30">↑ ↓ ile seç · Enter</span>
+                        </p>
+                        <div className="space-y-0.5">
+                          {oneriler.urunler.map((u, i) => (
+                            <button
+                              key={u.id}
+                              type="button"
+                              onMouseDown={() => { setAramaOdak(false); router.push(`/urun/${u.id}`); }}
+                              className={`flex w-full items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition ${i === seciliOneri ? "bg-black/10" : "hover:bg-black/5"}`}
+                            >
                           {u.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={u.image} alt="" className="h-8 w-8 shrink-0 rounded-md object-contain" />
@@ -150,7 +232,9 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                           </span>
                         </button>
                       ))}
-                    </div>
+                        </div>
+                      </>
+                    )}
                     {oneriler.markalar.length > 0 && (
                       <div className="mt-2 border-t border-black/10 pt-2">
                         <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Markalar</p>
@@ -171,6 +255,23 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                   </>
                 ) : (
                   <>
+                    {sonAramalar.length > 0 && (
+                      <>
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Son Aramalar</p>
+                        <div className="mb-2 flex flex-wrap gap-1.5 border-b border-black/10 pb-2">
+                          {sonAramalar.map((terim) => (
+                            <button
+                              key={terim}
+                              type="button"
+                              onMouseDown={() => { setAramaOdak(false); router.push(`/ara?q=${encodeURIComponent(terim)}`); }}
+                              className="rounded-full border border-black/10 px-3 py-1.5 text-[11px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white"
+                            >
+                              ⟲ {terim}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                     <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Popüler Aramalar</p>
                     <div className="flex flex-wrap gap-1.5">
                       {POPULER_ARAMALAR.map((terim) => (

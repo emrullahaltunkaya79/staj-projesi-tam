@@ -62,6 +62,9 @@ export default function SepetSayfasi() {
               <Link href="/odeme" className="mt-8 flex h-12 items-center justify-center rounded-full bg-black text-sm font-bold text-white transition hover:bg-black/80 active:scale-95">
                 Ödemeye Geç →
               </Link>
+              <p className="mt-3 text-center text-[11px] font-semibold text-black/55">
+                Üyelik gerekmez — misafir olarak hızlıca tamamlayabilirsiniz.
+              </p>
               <p className="mt-4 text-[11px] leading-relaxed text-black/40">
                 Siparişi onayladığınızda ürünler arka ofiste 30 dakika rezerve tutulur.
               </p>

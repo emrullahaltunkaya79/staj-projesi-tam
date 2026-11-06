@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Contact;
 use Illuminate\Http\UploadedFile;
 use App\Models\Product;
 use App\Models\ProductReview;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -155,6 +157,40 @@ class ApiEcommerceTest extends TestCase
         $fiyatlar = array_map(fn ($u) => $u['final_price'], $cevap->json('data'));
         $this->assertCount(2, $fiyatlar);
         $this->assertLessThanOrEqual($fiyatlar[1], $fiyatlar[0]);
+    }
+
+    /** @test */
+    public function arama_kategori_faceti_ve_varyant_turlerini_doner(): void
+    {
+        $user = $this->loginUser();
+        $kategori = Category::create(['company_id' => $user->company_id, 'name' => 'Elektronik']);
+        $saat = $this->createProduct($user, ['name' => 'Akıllı Saat Sport', 'category_id' => $kategori->id]);
+        ProductVariant::create(['company_id' => $user->company_id, 'product_id' => $saat->id, 'name' => 'M/L', 'type' => 'beden', 'stock_quantity' => 3]);
+        ProductVariant::create(['company_id' => $user->company_id, 'product_id' => $saat->id, 'name' => 'L/XL', 'type' => 'beden', 'stock_quantity' => 0]);
+
+        $cevap = $this->getJson('/api/v1/products/arama?q=saat&per_page=200');
+
+        $cevap->assertOk();
+        $this->assertSame(200, $cevap->json('meta.per_page'));
+        $this->assertSame(1, $cevap->json('meta.kategoriler.Elektronik'));
+        $this->assertSame(
+            [['ad' => 'M/L', 'tur' => 'beden', 'stokta' => true], ['ad' => 'L/XL', 'tur' => 'beden', 'stokta' => false]],
+            $cevap->json('data.0.varyantlar'),
+        );
+    }
+
+    /** @test */
+    public function varyant_turu_belirtilmezse_renk_kabul_edilir(): void
+    {
+        $user = $this->loginUser();
+        $urun = $this->createProduct($user, ['name' => 'Kablosuz Kulaklık']);
+        ProductVariant::create(['company_id' => $user->company_id, 'product_id' => $urun->id, 'name' => 'Siyah', 'stock_quantity' => 5]);
+
+        $liste = $this->getJson('/api/v1/products')->assertOk();
+        $this->assertSame('renk', $liste->json('data.0.varyantlar.0.tur'));
+
+        $detay = $this->getJson("/api/v1/products/{$urun->id}")->assertOk();
+        $this->assertSame('renk', $detay->json('data.variants.0.type'));
     }
 
     /** @test */

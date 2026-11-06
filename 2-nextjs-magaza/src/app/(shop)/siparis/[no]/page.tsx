@@ -4,6 +4,7 @@ import { IptalButonu } from "./IptalButonu";
 import { IadeButonu } from "./IadeButonu";
 import { Konfeti } from "@/components/Konfeti";
 import { OdemeAdimlari } from "@/components/OdemeAdimlari";
+import { KolayUyelik } from "@/components/KolayUyelik";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 const ADIMLAR: Record<string, string> = {
@@ -52,6 +53,7 @@ export default async function SiparisSayfasi({
             <p className="mt-1 text-xs text-black/50">Ödeme için 30 dakikanız var. Sipariş no: <span className="font-mono font-bold">{s.order_no}</span></p>
           </div>
         )}
+        {yeni === "1" && <KolayUyelik orderNo={s.order_no} />}
 
         <div className="border-b border-black/20 pb-5">
           <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Sipariş</h1>

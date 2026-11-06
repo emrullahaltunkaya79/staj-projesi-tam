@@ -7,6 +7,7 @@ import { sepet } from "@/components/CartProvider";
 import { auth } from "@/components/AuthProvider";
 import { OdemeAdimlari } from "@/components/OdemeAdimlari";
 import { KargoSecici, UCRETSIZ_KARGO_LIMITI } from "@/components/KargoSecici";
+import { AuthModal } from "@/components/AuthModal";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
@@ -48,6 +49,7 @@ export default function OdemeSayfasi() {
   const [taxRate, setTaxRate] = useState("20");
   const [gonderiliyor, setGonderiliyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
+  const [authAcik, setAuthAcik] = useState(false);
 
   // Kupon state
   const [kuponKodu, setKuponKodu] = useState("");
@@ -69,8 +71,7 @@ export default function OdemeSayfasi() {
     }
   }, [kullanici?.id]);
 
-  const kuponUygula = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const kuponUygula = async () => {
     if (!kuponKodu.trim()) return;
     setKuponYukleniyor(true);
     setKuponMesaj(null);
@@ -133,6 +134,13 @@ export default function OdemeSayfasi() {
       const sonuc = await yanit.json();
       if (!yanit.ok) throw new Error(sonuc.hata ?? "Sipariş oluşturulamadı.");
 
+      // Misafir siparişi: sipariş sayfasındaki tek adımlı üyelik önerisi bu bilgileri kullanır
+      if (!kullanici) {
+        try {
+          sessionStorage.setItem("hba-misafir-siparis", JSON.stringify({ orderNo: sonuc.orderNo, name, email }));
+        } catch {}
+      }
+
       temizle();
       router.push(`/siparis/${sonuc.orderNo}?yeni=1`);
     } catch (err) {
@@ -151,6 +159,31 @@ export default function OdemeSayfasi() {
 
         <form onSubmit={gonder} className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
+            {kullanici ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <span className="text-sm font-bold text-emerald-800">✓ {kullanici.name} hesabıyla sipariş veriyorsunuz</span>
+                <span className="text-xs text-emerald-700/70">Bilgileriniz otomatik dolduruldu</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border-2 border-black p-4">
+                  <p className="flex items-center justify-between gap-2 text-sm font-black text-black">
+                    Misafir olarak devam et
+                    <span className="rounded-full bg-black px-2 py-0.5 text-[10px] font-bold text-white">Seçili</span>
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-black/50">
+                    Üyelik gerekmez. Siparişinizi sipariş numarası ve e-postanızla takip edebilirsiniz.
+                  </p>
+                </div>
+                <button type="button" onClick={() => setAuthAcik(true)}
+                        className="rounded-xl border-2 border-black/10 p-4 text-left transition hover:border-black/40">
+                  <p className="text-sm font-black text-black">Giriş yap / Üye ol</p>
+                  <p className="mt-1 text-xs leading-relaxed text-black/50">
+                    Bilgileriniz otomatik dolsun, siparişleriniz hesabınızda listelensin.
+                  </p>
+                </button>
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/50">Ad Soyad *</label>
@@ -240,15 +273,16 @@ export default function OdemeSayfasi() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={kuponUygula} className="mt-2 flex gap-2">
+                <div className="mt-2 flex gap-2">
                   <input value={kuponKodu} onChange={(e) => setKuponKodu(e.target.value.toUpperCase())}
+                         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); kuponUygula(); } }}
                          placeholder="KUPON KODU"
                          className="h-10 flex-1 border border-black/15 bg-white px-3 font-mono text-xs font-bold uppercase focus:border-black focus:outline-none" />
-                  <button type="submit" disabled={kuponYukleniyor || !kuponKodu.trim()}
+                  <button type="button" onClick={kuponUygula} disabled={kuponYukleniyor || !kuponKodu.trim()}
                           className="h-10 shrink-0 rounded-full bg-black px-5 text-xs font-bold text-white transition hover:bg-black/80 disabled:opacity-40">
                     {kuponYukleniyor ? "…" : "Uygula"}
                   </button>
-                </form>
+                </div>
               )}
               {kuponMesaj && !kupon && (
                 <p className="mt-1.5 text-xs font-semibold text-red-500">{kuponMesaj}</p>
@@ -302,6 +336,7 @@ export default function OdemeSayfasi() {
           <GuvenKartlari kompakt />
         </div>
       </div>
+      <AuthModal acik={authAcik} kapat={() => setAuthAcik(false)} />
     </div>
   );
 }
