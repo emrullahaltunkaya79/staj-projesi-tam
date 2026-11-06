@@ -33,6 +33,7 @@ export const config = {
     "/api/stats/:path*",
     "/api/kuponlar/:path*",
     "/api/yorumlar/:path*",
+    "/api/sorular",
     "/api/sorular/:path*",
     "/api/bildirimler",
     "/api/iletisim",

@@ -9,9 +9,9 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get("x-signature") ?? "";
   const event = request.headers.get("x-event") ?? request.headers.get("X-Event") ?? "bilinmiyor";
 
-  // HMAC doğrulama
+  // HMAC doğrulama — PHP hash_hmac(algo, data, key) ile aynı sıra: anahtar = gizli anahtar
   if (SECRET) {
-    const beklenen = createHmac("sha256", body).update(SECRET).digest("hex");
+    const beklenen = createHmac("sha256", SECRET).update(body).digest("hex");
     if (beklenen !== signature) {
       return NextResponse.json({ hata: "Geçersiz imza" }, { status: 401 });
     }
