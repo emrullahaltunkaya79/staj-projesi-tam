@@ -281,6 +281,8 @@ class ApiController extends Controller
                 'status_label' => $order->statusLabel(),
                 'total' => (float) $order->total,
                 'paid_at' => $order->paid_at?->toIso8601String(),
+                'delivered_at' => $order->delivered_at?->toIso8601String(),
+                'iade_son_tarih' => $order->iadeSonTarihi()?->toIso8601String(),
                 'expires_at' => $order->expires_at?->toIso8601String(),
                 'tracking_no' => $order->tracking_no,
                 'carrier' => $order->carrier,

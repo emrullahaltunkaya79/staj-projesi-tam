@@ -53,6 +53,9 @@ export type Siparis = {
   status_label?: string;
   total: number;
   expires_at?: string | null;
+  delivered_at?: string | null;
+  /** Teslimden itibaren 14 günlük iade hakkının son anı */
+  iade_son_tarih?: string | null;
   invoice_no?: string | null;
   tracking_no?: string | null;
   tracking_url?: string | null;

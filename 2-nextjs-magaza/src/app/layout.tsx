@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { FavoriProvider } from "@/components/FavoriProvider";
@@ -47,11 +48,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <DilProvider>{children}</DilProvider>
           </FavoriProvider>
         </AuthProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}`,
-          }}
-        />
+        {/* Service worker statik parçaları önbellekten sunar; geliştirmede hash'siz parçalar
+            yüzünden kod değişiklikleri görünmez olur — bu yüzden yalnızca production'da kaydedilir */}
+        {process.env.NODE_ENV === "production" ? (
+          <Script id="sw-kayit" strategy="afterInteractive">
+            {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){})}`}
+          </Script>
+        ) : (
+          <Script id="sw-temizle" strategy="afterInteractive">
+            {`if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(k){k.unregister()})})}if(window.caches){caches.keys().then(function(a){a.forEach(function(n){caches.delete(n)})})}`}
+          </Script>
+        )}
       </body>
     </html>
   );

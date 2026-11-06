@@ -1,18 +1,6 @@
 "use client";
 
-const KARGO_BOLGELERI = [
-  { id: "istanbul-avr", ad: "İstanbul (Avrupa)", fiyat: 29 },
-  { id: "istanbul-anadolu", ad: "İstanbul (Anadolu)", fiyat: 34 },
-  { id: "ankara", ad: "Ankara", fiyat: 39 },
-  { id: "izmir", ad: "İzmir", fiyat: 42 },
-  { id: "bursa", ad: "Bursa", fiyat: 39 },
-  { id: "antalya", ad: "Antalya", fiyat: 45 },
-  { id: "adana", ad: "Adana", fiyat: 45 },
-  { id: "konya", ad: "Konya", fiyat: 42 },
-  { id: "diger", ad: "Diğer Şehirler", fiyat: 55 },
-];
-
-const UCRETSIZ_KARGO_LIMITI = 2000;
+import { UCRETSIZ_KARGO_LIMITI, KARGO_BOLGELERI, teslimSuresi } from "@/lib/kargo";
 
 export function KargoSecici({
   toplamTutar,
@@ -48,12 +36,13 @@ export function KargoSecici({
             <option value="">Seçiniz</option>
             {KARGO_BOLGELERI.map((b) => (
               <option key={b.id} value={b.id}>
-                {b.ad} — {b.fiyat} ₺
+                {b.ad} — {b.fiyat} ₺ · {teslimSuresi(b.gun)}
               </option>
             ))}
           </select>
           <p className="mt-1 text-[11px] text-black/30">
-            2.000 ₺ üzeri siparişlerde kargo ücretsiz
+            2.000 ₺ üzeri siparişlerde kargo ücretsiz ·{" "}
+            <a href="/iade-degisim#kargo" target="_blank" className="underline underline-offset-2 hover:text-black">Kargo koşulları</a>
           </p>
         </>
       )}
@@ -61,4 +50,4 @@ export function KargoSecici({
   );
 }
 
-export { KARGO_BOLGELERI, UCRETSIZ_KARGO_LIMITI };
+export { UCRETSIZ_KARGO_LIMITI };

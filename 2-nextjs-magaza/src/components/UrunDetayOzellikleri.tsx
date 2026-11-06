@@ -9,6 +9,7 @@ import { VaryasyonSecici, urunVaryasyonlari } from "./VaryasyonSecici";
 import { SepeteEkleButonu } from "./SepeteEkleButonu";
 import { indirimliFiyat } from "@/lib/backoffice";
 import { GeriSayim } from "./GeriSayim";
+import { TeslimatBilgisi } from "./TeslimatBilgisi";
 import { imgUrl } from "@/lib/img";
 
 export function UrunDetayOzellikleri({
@@ -194,10 +195,14 @@ export function UrunDetayOzellikleri({
             />
           ) : (
             <button disabled className="h-12 w-full max-w-xs cursor-not-allowed bg-black/10 text-sm font-bold text-black/30">
-              Önce {gercekVaryantlar.length > 0 ? "bir seçenek" : varyasyonlar.filter((v) => !secimler[v.ad]).map((v) => v.ad).join(" ve ")} seçiniz
+              Önce {gercekVaryantlar.length > 0
+                ? (gercekVaryantlar[0]?.type === "beden" ? "bir beden" : "bir seçenek")
+                : varyasyonlar.filter((v) => !secimler[v.ad]).map((v) => v.ad).join(" ve ")} seçiniz
             </button>
           )}
         </div>
+
+        <TeslimatBilgisi fiyat={netFiyat} stokta={urun.in_stock} />
       </div>
     </>
   );

@@ -61,8 +61,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Statik varlıklar: stale-while-revalidate (anında önbellek, arka planda güncelleme —
-  // dev'de hash'siz chunk adları değiştiğinde bir sonraki yüklemede taze sürüm gelir)
+  // Statik varlıklar: stale-while-revalidate (anında önbellek, arka planda güncelleme).
+  // Yalnızca production'da kayıtlıdır; orada parça adları içerik hash'i taşır.
   if (url.origin === location.origin) {
     event.respondWith(
       caches.match(request).then((cached) => {

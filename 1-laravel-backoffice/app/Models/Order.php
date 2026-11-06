@@ -5,10 +5,14 @@ namespace App\Models;
 use App\Traits\BelongsToCompany;
 use App\Traits\RecordsActivity;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Order extends Model
 {
     use BelongsToCompany, RecordsActivity;
+
+    /** Cayma hakkı: teslimden itibaren gün sayısı (Mesafeli Satış Sözleşmesi md. 5) */
+    public const IADE_SURESI_GUN = 14;
 
     protected $fillable = [
         'company_id',
@@ -29,6 +33,7 @@ class Order extends Model
         'items',
         'notes',
         'paid_at',
+        'delivered_at',
         'expires_at',
         'invoice_id',
     ];
@@ -42,8 +47,30 @@ class Order extends Model
             'tax_amount' => 'decimal:2',
             'total' => 'decimal:2',
             'paid_at' => 'datetime',
+            'delivered_at' => 'datetime',
             'expires_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Teslim anı hangi yoldan olursa olsun (panel, API) iade süresinin başlangıcı olarak damgalanır
+        static::updating(function (Order $order) {
+            if ($order->isDirty('status') && $order->status === 'delivered' && ! $order->delivered_at) {
+                $order->delivered_at = now();
+            }
+        });
+    }
+
+    /** İade talebi için son gün (teslim tarihinden 14 gün sonra, gün sonu). */
+    public function iadeSonTarihi(): ?Carbon
+    {
+        return $this->delivered_at?->copy()->addDays(self::IADE_SURESI_GUN)->endOfDay();
+    }
+
+    public function iadeSuresiDoldu(): bool
+    {
+        return $this->iadeSonTarihi()?->isPast() ?? false;
     }
 
     public function contact()

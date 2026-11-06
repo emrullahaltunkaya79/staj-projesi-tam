@@ -459,6 +459,9 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col gap-2">
                 <a href="/hakkinda" className="hover:text-white transition">Hakkında</a>
                 <a href="/iletisim" className="hover:text-white transition">İletişim</a>
+                <a href="/sss" className="hover:text-white transition">Sıkça Sorulan Sorular</a>
+                <a href="/iade-degisim" className="hover:text-white transition">İade ve Değişim</a>
+                <a href="/iade-degisim#kargo" className="hover:text-white transition">Kargo ve Teslimat</a>
               </div>
             </div>
             <div className="flex-[2] min-w-[220px]">
@@ -468,7 +471,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col gap-2">
                 <span>⛓️ CSPR ile kripto ödeme</span>
                 <span>🔒 Token ile korunan güvenli API</span>
-                <a href="/sozlesme/mesafeli-satis" className="hover:text-white transition">↩️ 14 gün koşulsuz iade — Mesafeli Satış Sözleşmesi</a>
+                <a href="/iade-degisim" className="hover:text-white transition">↩️ 14 gün içinde ücretsiz iade — İade ve kargo koşulları</a>
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">

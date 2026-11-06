@@ -42,6 +42,11 @@ export default async function SiparisSayfasi({
   const aktifIndex = adimlar.indexOf(s.status);
   const iptal = s.status === "cancelled";
   const iadeDurumu = IADE_DURUM[s.status];
+  const iadeSon = s.iade_son_tarih ? new Date(s.iade_son_tarih) : null;
+  const iadeKalanGun = iadeSon ? Math.ceil((iadeSon.getTime() - Date.now()) / 86_400_000) : null;
+  const iadeSuresiDoldu = iadeKalanGun !== null && iadeKalanGun <= 0;
+  const tarih = (d: Date) =>
+    new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", timeZone: "Europe/Istanbul" }).format(d);
 
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10">
@@ -131,7 +136,22 @@ export default async function SiparisSayfasi({
             </a>
           )}
           {s.status === "delivered" && (
-            <IadeButonu orderNo={s.order_no} />
+            iadeSuresiDoldu ? (
+              <p className="border border-black/15 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-black/60">
+                İade süresi {iadeSon && tarih(iadeSon)} tarihinde doldu. Kusurlu ürünlerde garanti haklarınız devam eder —{" "}
+                <a href="/iade-degisim" className="font-bold text-black underline underline-offset-2">iade ve garanti koşulları</a>.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {iadeSon && (
+                  <p className="text-xs text-black/60">
+                    ↩️ İade hakkınız: <b className="text-black">{iadeKalanGun} gün</b> kaldı ({tarih(iadeSon)} tarihine kadar) ·{" "}
+                    <a href="/iade-degisim" className="font-bold text-black underline underline-offset-2">İade koşulları</a>
+                  </p>
+                )}
+                <IadeButonu orderNo={s.order_no} />
+              </div>
+            )
           )}
           {s.tracking_no && (
             <div className="border-t border-black/15 pt-4 text-sm">

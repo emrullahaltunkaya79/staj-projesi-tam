@@ -11,10 +11,10 @@ type Mesaj = {
 
 const OTOMATIK_YANITLAR = [
   { eslesen: ["kargo", "teslim", "ne zaman"], yanit: "📦 Kargo bilgisi: 14:00'a kadar verilen siparişler aynı gün çıkar. Kargo süresi 1-3 iş günü. 2.000₺ üzeri ücretsiz!" },
-  { eslesen: ["iade", "geri", "iptal"], yanit: "↩️ İade: 14 gün koşulsuz iade hakkınız var. Sipariş sayfanızdan 'İptal Et' ile bekleyen siparişi hemen iptal edebilirsiniz." },
+  { eslesen: ["iade", "geri", "iptal"], yanit: "↩️ İade: Teslimden itibaren 14 gün içinde ücretsiz iade hakkınız var — sipariş sayfanızdaki 'İade Talebi Oluştur' ile başlatın, kalan süreniz de orada yazar. Ödenmemiş siparişi 'İptal Et' ile hemen iptal edebilirsiniz. Tüm koşullar: İade, Değişim ve Kargo sayfası." },
   { eslesen: ["cspr", "kripto", "casper"], yanit: "⛓️ CSPR ile ödeme: Sipariş verdikten sonra 'CSPR ile Öde' butonuna tıklayın, QR kodu Casper Wallet ile okutun. Ödeme zincirde görüldüğünde otomatik onaylanır." },
   { eslesen: ["kupon", "indirim", "kampanya"], yanit: "🎁 Aktif kuponlar: ILKSIPARIS (%15, min 200₺), KAMPANYA10 (%10, min 500₺), FREEKARGO (ücretsiz kargo), MEBULA50 (50₺, min 400₺)" },
-  { eslegen: ["fiyat", "pahalı", "ucuz"], yanit: "💰 Tüm fiyatlar KDV dahildir. Toplu alımlarda özel fiyat için bize yazın: merhaba@hepsibirarada.test" },
+  { eslesen: ["fiyat", "pahalı", "ucuz"], yanit: "💰 Tüm fiyatlar KDV dahildir. Toplu alımlarda özel fiyat için bize yazın: merhaba@hepsibirarada.test" },
   { eslesen: ["stok", "var mı", "tükendi"], yanit: "📦 Stok bilgisi ürün sayfasında canlı gösterilir. 'Son X adet' rozetini görüyorsanız acele edin — stok gerçek zamanlı güncellenir!" },
 ];
 

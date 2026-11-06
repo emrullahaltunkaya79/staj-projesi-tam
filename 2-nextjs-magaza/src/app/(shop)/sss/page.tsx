@@ -44,11 +44,11 @@ const SORULAR = [
     maddeler: [
       {
         s: "İade koşulları nelerdir?",
-        c: "14 gün içinde koşulsuz iade hakkınız vardır. Ürünün kullanılmamış ve orijinal ambalajında olması yeterlidir. İade sürecinde kargo ücreti tarafımıza aittir.",
+        c: "Teslim tarihinden itibaren 14 gün içinde gerekçe göstermeden iade hakkınız vardır. Ürünün kullanılmamış ve yeniden satılabilir durumda olması yeterlidir; incelemek için ambalajı açmanız iade hakkınızı etkilemez. İade kargo ücreti tarafımıza aittir.",
       },
       {
         s: "İade süreci nasıl işler?",
-        c: "Sipariş sayfanızdan iade talebi oluşturun. İade faturası kesilir, ürün stoğa geri alınır ve ödemeniz CSPR adresinize iade edilir. Süreç genellikle 3-5 iş günü tamamlanır.",
+        c: "Sipariş sayfanızdan iade talebi oluşturun — kalan iade süreniz de orada yazar. Ürün kontrol edilip onaylandığında stoğa geri alınır ve ödemeniz 3-5 iş günü içinde ödeme yönteminize iade edilir (CSPR ödemelerinde ödeme günündeki TL karşılığı üzerinden).",
       },
     ],
   },
@@ -75,6 +75,14 @@ export default function SSS() {
           <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Sıkça Sorulan Sorular</h1>
           <p className="mt-2 text-sm text-black/40">Sıkça sorulan sorular ve yanıtları</p>
         </div>
+
+        <a href="/iade-degisim" className="mt-8 flex items-center justify-between gap-4 rounded-xl border border-black/10 bg-[#f8f8f8] px-5 py-4 transition hover:border-black/30">
+          <span>
+            <span className="block text-[13px] font-black text-black">İade, değişim ve kargo koşulları</span>
+            <span className="mt-0.5 block text-[12px] text-black/50">Adım adım iade süreci, kargo ücretleri ve teslim süreleri tek sayfada</span>
+          </span>
+          <span className="shrink-0 text-sm font-bold text-black">→</span>
+        </a>
 
         <div className="mt-10 space-y-10">
           {SORULAR.map((grup) => (

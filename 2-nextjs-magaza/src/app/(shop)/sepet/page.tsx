@@ -4,6 +4,7 @@ import Link from "next/link";
 import { sepet } from "@/components/CartProvider";
 import { OdemeAdimlari } from "@/components/OdemeAdimlari";
 import { BosDurum } from "@/components/BosDurum";
+import { SepetOnerileri, UcretsizKargoCubugu } from "@/components/SepetOnerileri";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
@@ -51,9 +52,12 @@ export default function SepetSayfasi() {
                   </button>
                 </div>
               ))}
+
+              <SepetOnerileri />
             </div>
 
             <aside className="h-fit border-t border-black/20 pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
+              <UcretsizKargoCubugu />
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between text-black/60"><span>Ara Toplam</span><span className="font-semibold text-black tabular-nums">{fmt(araToplam)} ₺</span></div>
                 <div className="flex justify-between text-black/60"><span>KDV (%20)</span><span className="font-semibold text-black tabular-nums">{fmt(kdv)} ₺</span></div>
@@ -64,6 +68,10 @@ export default function SepetSayfasi() {
               </Link>
               <p className="mt-3 text-center text-[11px] font-semibold text-black/55">
                 Üyelik gerekmez — misafir olarak hızlıca tamamlayabilirsiniz.
+              </p>
+              <p className="mt-1.5 text-center text-[11px] text-black/45">
+                14 gün içinde ücretsiz iade ·{" "}
+                <Link href="/iade-degisim" className="font-semibold underline underline-offset-2 hover:text-black">İade ve kargo koşulları</Link>
               </p>
               <p className="mt-4 text-[11px] leading-relaxed text-black/40">
                 Siparişi onayladığınızda ürünler arka ofiste 30 dakika rezerve tutulur.

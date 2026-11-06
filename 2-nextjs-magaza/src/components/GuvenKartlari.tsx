@@ -19,7 +19,7 @@ const KARTLAR = [
   {
     ikon: RotateCcw,
     baslik: "14 Gün İade",
-    aciklama: "Koşulsuz iade hakkı",
+    aciklama: "Gerekçesiz iade, kargo ücreti bizden",
   },
 ];
 

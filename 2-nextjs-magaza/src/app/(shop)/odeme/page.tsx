@@ -329,6 +329,13 @@ export default function OdemeSayfasi() {
                     className="mt-8 h-12 w-full rounded-full bg-black text-sm font-bold text-white transition hover:bg-black/80 active:scale-95 disabled:opacity-50">
               {gonderiliyor ? "Gönderiliyor…" : "Siparişi Onayla — Stoğu Rezerve Et"}
             </button>
+            <p className="mt-3 text-center text-[11px] leading-relaxed text-black/45">
+              Siparişi onaylayarak{" "}
+              <a href="/sozlesme/mesafeli-satis" target="_blank" className="font-semibold underline underline-offset-2 hover:text-black">Mesafeli Satış Sözleşmesi</a>
+              {" "}ve{" "}
+              <a href="/iade-degisim" target="_blank" className="font-semibold underline underline-offset-2 hover:text-black">İade Koşulları</a>
+              &apos;nı kabul etmiş olursunuz.
+            </p>
           </aside>
         </form>
 

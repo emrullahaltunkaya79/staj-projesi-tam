@@ -22,7 +22,7 @@ export default function MesafeliSatisSozlesmesi() {
       <h2>3. Ürün ve Teslimat</h2>
       <ul>
         <li>Ürünler, ödemenin onaylanmasından sonra en geç 3 iş günü içinde kargoya verilir.</li>
-        <li>Termosifon edilemeyen ürünler için Alıcı&apos;ya bilgi verilir ve ödeme iade edilir.</li>
+        <li>Temin edilemeyen ürünler için Alıcı&apos;ya bilgi verilir ve ödeme iade edilir.</li>
         <li>Teslimat, Alıcı&apos;nın checkout sırasında belirttiği adrese yapılır; kargo süresi teslimat adresine göre 1-5 iş günüdür.</li>
         <li>2.000 ₺ üzeri siparişlerde kargo ücretsizdir.</li>
       </ul>
@@ -37,9 +37,10 @@ export default function MesafeliSatisSozlesmesi() {
       <h2>5. Cayma Hakkı (14 Gün)</h2>
       <ul>
         <li>Alıcı, ürünü teslim aldığı tarihten itibaren <strong>14 gün içinde hiçbir gerekçe göstermeksizin cayma hakkına sahiptir.</strong></li>
-        <li>Cayma hakkının kullanılması için ürünün kullanılmamış, ambalajının açılmamış ve yeniden satılabilir durumda olması gerekir.</li>
+        <li>Cayma hakkının kullanılması için ürünün kullanılmamış ve yeniden satılabilir durumda olması gerekir; ürünü incelemek amacıyla ambalajın açılması cayma hakkını ortadan kaldırmaz.</li>
         <li>İade talebi, &quot;Siparişlerim&quot; sayfasından oluşturulabilir. İade onayından sonra ürün bedeli 14 gün içinde Alıcı&apos;nın ödeme yöntemine iade edilir.</li>
         <li>Kripto ödemelerde iade, ödeme tarihindeki TL karşılığı üzerinden yapılır.</li>
+        <li>İade adımları, kargo ücretleri ve teslim sürelerinin ayrıntısı <a href="/iade-degisim">İade, Değişim ve Kargo</a> sayfasındadır.</li>
       </ul>
 
       <h2>6. Cayma Hakkının Kullanılamayacağı Durumlar</h2>

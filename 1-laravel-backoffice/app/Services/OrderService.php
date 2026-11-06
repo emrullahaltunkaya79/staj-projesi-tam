@@ -294,6 +294,12 @@ class OrderService
             ]);
         }
 
+        if ($order->iadeSuresiDoldu()) {
+            throw ValidationException::withMessages([
+                'order' => 'İade süresi doldu: talep teslimden itibaren '.Order::IADE_SURESI_GUN.' gün içinde oluşturulabilir.',
+            ]);
+        }
+
         $order->update(['status' => 'return_requested']);
 
         return $order;
