@@ -6,6 +6,8 @@ export type AuthUser = {
   id: number;
   name: string;
   email: string;
+  role?: string;
+  phone?: string | null;
   contact_id: number;
   email_verified?: boolean;
 };
@@ -41,12 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Token geçerli mi kontrol et
         fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
           .then((r) => (r.ok ? r.json() : Promise.reject()))
-          .then((d) => setKullanici(d.data))
+          .then((d) => {
+            setKullanici(d.data);
+            localStorage.setItem(USER_KEY, JSON.stringify(d.data));
+          })
           .catch(() => {
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(USER_KEY);
             setKullanici(null);
-          });
+          })
+          .finally(() => window.dispatchEvent(new Event("hba-oturum")));
       }
     } catch {}
   }, []);
@@ -62,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(TOKEN_KEY, d.data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(d.data.user));
     setKullanici(d.data.user);
+    window.dispatchEvent(new Event("hba-oturum"));
     return d.data.user;
   };
 
@@ -76,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(TOKEN_KEY, d.data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(d.data.user));
     setKullanici(d.data.user);
+    window.dispatchEvent(new Event("hba-oturum"));
     return { kullanici: d.data.user, dogrulamaKodu: d.data.dogrulama_kodu ?? "" };
   };
 
@@ -92,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (guncel) {
       setKullanici(guncel);
       localStorage.setItem(USER_KEY, JSON.stringify(guncel));
+      window.dispatchEvent(new Event("hba-oturum"));
     }
   };
 
@@ -103,6 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     setKullanici(null);
+    window.dispatchEvent(new Event("hba-oturum"));
   };
 
   return (

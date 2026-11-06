@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siparisYetkisi } from "@/lib/oturum";
 
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, ctx: { params: Promise<{ no: string }> }) {
+  const { no } = await ctx.params;
   const memo = request.nextUrl.searchParams.get("memo") ?? "";
 
-  if (!memo) return NextResponse.json({ status: "unknown", paid: false });
+  if (!memo || !(await siparisYetkisi(request, no))) {
+    return NextResponse.json({ status: "unknown", paid: false });
+  }
 
   try {
     const yanit = await fetch(`${BASE}/cspr-payments/${encodeURIComponent(memo)}`, {

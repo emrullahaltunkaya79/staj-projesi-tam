@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Zap } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
+import { kdvDahil } from "@/lib/fiyat";
 import { GeriSayim } from "./GeriSayim";
 import { SepeteEkleButonu } from "./SepeteEkleButonu";
 
@@ -43,10 +44,10 @@ export function GununFirsati({ urun }: { urun: Urun }) {
             {urun.brand && <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-white/50">{urun.brand}</p>}
 
             <div className="mt-2.5 flex flex-wrap items-baseline gap-2.5">
-              <span className="text-3xl font-black tabular-nums">{fmt(fiyat)} ₺</span>
+              <span className="text-3xl font-black tabular-nums">{fmt(kdvDahil(fiyat))} ₺</span>
               {indirim > 0 && (
                 <>
-                  <span className="text-base tabular-nums text-white/40 line-through">{fmt(urun.sale_price)} ₺</span>
+                  <span className="text-base tabular-nums text-white/40 line-through">{fmt(kdvDahil(urun.sale_price))} ₺</span>
                   <span className="rounded-full bg-white/95 px-2.5 py-0.5 text-[11px] font-black text-black">%{indirim} indirim</span>
                 </>
               )}

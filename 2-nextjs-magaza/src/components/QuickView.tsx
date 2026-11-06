@@ -6,6 +6,7 @@ import Link from "next/link";
 import { X, Loader2 } from "lucide-react";
 import { sepet, type SepetOgesi } from "./CartProvider";
 import { sepeteUcur } from "@/lib/sepetFx";
+import { kdvDahil } from "@/lib/fiyat";
 
 type Ozet = {
   id: number;
@@ -126,10 +127,10 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
               <h2 className="mt-0.5 text-xl font-black leading-tight">{ozet.name}</h2>
 
               <div className="mt-4 flex flex-wrap items-baseline gap-2">
-                <span className="text-2xl font-black tabular-nums text-[var(--marka)]">{fmt(fiyat)} ₺</span>
+                <span className="text-2xl font-black tabular-nums text-[var(--marka)]">{fmt(kdvDahil(fiyat))} ₺</span>
                 {(ozet.discount_percent ?? 0) > 0 && (
                   <>
-                    <span className="text-sm tabular-nums text-black/40 line-through">{fmt(ozet.sale_price)} ₺</span>
+                    <span className="text-sm tabular-nums text-black/40 line-through">{fmt(kdvDahil(ozet.sale_price))} ₺</span>
                     <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-black text-white">%{ozet.discount_percent} indirim</span>
                   </>
                 )}

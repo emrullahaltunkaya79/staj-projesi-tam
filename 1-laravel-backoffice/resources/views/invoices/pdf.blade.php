@@ -65,9 +65,20 @@
     </tr>
 </table>
 
-{{-- Alıcı (cari) bilgileri --}}
+{{-- Alıcı (cari) bilgileri — e-ticaret kurumsal siparişlerinde fatura şirket adına --}}
+@php($kurumsal = $invoice->order?->fatura_tipi === 'kurumsal' ? $invoice->order : null)
 <div class="buyer">
     <div class="buyer-label">ALICI (CARİ)</div>
+    @if ($kurumsal)
+        <div style="margin-top: 4px;">
+            <strong>{{ $kurumsal->fatura_unvan }}</strong>
+            <span class="muted"> — VD: {{ $kurumsal->vergi_dairesi }} · VKN: {{ $kurumsal->vergi_no }}</span>
+        </div>
+        <div class="muted">
+            {{ $kurumsal->fatura_adresi ?: $kurumsal->shipping_address }}
+            @if ($kurumsal->customer_email) <br>{{ $kurumsal->customer_email }} @endif
+        </div>
+    @else
     <div style="margin-top: 4px;">
         <strong>{{ $invoice->contact->name }}</strong>
         @if ($invoice->contact->tax_number)
@@ -79,6 +90,7 @@
         @if ($invoice->contact->email) · {{ $invoice->contact->email }} @endif
         @if ($invoice->contact->address) <br>{{ $invoice->contact->address }} @endif
     </div>
+    @endif
 </div>
 
 {{-- Ürün kalemleri --}}

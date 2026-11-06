@@ -5,6 +5,9 @@ import { Yorumlar } from "@/components/Yorumlar";
 import { UrunDetayOzellikleri } from "@/components/UrunDetayOzellikleri";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
 import { BirlikteAlinanlar, type PaketUrunu } from "@/components/BirlikteAlinanlar";
+import { UrunSorulari } from "@/components/UrunSorulari";
+import { FiyatAlarmi } from "@/components/FiyatAlarmi";
+import { KarsilastirEkle, KarsilastirCubugu } from "@/components/KarsilastirCubugu";
 
 const ACIKLAMALAR: Record<string, string> = {
   Bilgisayar: "Günlük iş akışınızı hızlandıran, ergonomik ve dayanıklı bilgisayar donanımları. İki yıl garanti dahil.",
@@ -44,8 +47,6 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
   }
 
   const aciklama = ACIKLAMALAR[u.category ?? ""] ?? "Sade ve zamansız tasarım, kaliteli malzeme.";
-  const puan = 4.2 + ((u.id * 7) % 8) / 10;
-  const yorum = 37 + ((u.id * 13) % 480);
   const [ortakSatinAlmalar, tumUrunler] = await Promise.all([ayniAldilar(u.id), urunler()]);
 
   // Çapraz satış adayları katalogdan okunur: ortak satın alma listesi varyant bilgisi taşımaz
@@ -121,7 +122,15 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
         <div className="mx-auto max-w-7xl text-[13px] font-medium text-black/50">
           <a href="/" className="hover:underline underline-offset-4">Mağaza</a>
           <span className="mx-2">/</span>
-          <span>{u.category ?? "Ürünler"}</span>
+          {u.category && (
+            <>
+              <Link href={`/kategori/${encodeURIComponent(u.category)}`} className="hover:underline underline-offset-4">
+                {u.category}
+              </Link>
+              <span className="mx-2">/</span>
+            </>
+          )}
+          <span className="font-semibold text-black/70">{u.name}</span>
         </div>
       </div>
 
@@ -137,10 +146,19 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
 
           <div className="flex flex-col">
             <div className="mt-2 flex items-center gap-2 text-[13px] text-black/40">
-              <span className="flex text-amber-500">{"★".repeat(Math.round(puan))}<span className="text-black/15">{"★".repeat(5 - Math.round(puan))}</span></span>
-              <span className="font-bold text-black">{puan.toFixed(1)}</span>
-              <span>({yorum} değerlendirme)</span>
+              {u.rating_avg != null ? (
+                <>
+                  <span className="flex text-amber-500">{"★".repeat(Math.round(u.rating_avg))}<span className="text-black/15">{"★".repeat(5 - Math.round(u.rating_avg))}</span></span>
+                  <span className="font-bold text-black">{u.rating_avg.toFixed(1)}</span>
+                  <a href="#yorumlar" className="underline-offset-2 hover:underline">({u.review_count ?? 0} değerlendirme)</a>
+                </>
+              ) : (
+                <span>Henüz değerlendirme yok</span>
+              )}
             </div>
+
+            <KarsilastirEkle urun={{ id: u.id, ad: u.name, kategori: u.category, fiyat: u.final_price ?? u.sale_price, marka: u.brand ?? null, puan: u.rating_avg ?? null, stokta: u.in_stock, gorsel: u.image_url }} />
+            <FiyatAlarmi urunId={u.id} />
 
             <p className="mt-8 max-w-md text-[15px] leading-relaxed text-black/70">{aciklama}</p>
 
@@ -161,7 +179,15 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
         </div>
       </div>
       {/* Gerçek değerlendirmeler */}
-      <Yorumlar urunId={u.id} />
+      <div id="yorumlar" className="scroll-mt-36">
+        <Yorumlar urunId={u.id} />
+      </div>
+
+      {/* Ürün soru-cevap */}
+      <UrunSorulari urunId={u.id} />
+
+      {/* Karşılaştırma çubuğu (≥2 ürün seçiliyse görünür) */}
+      <KarsilastirCubugu />
 
       {/* Çapraz satış 1 — birlikte sıkça alınanlar paketi */}
       {paketGoster && (

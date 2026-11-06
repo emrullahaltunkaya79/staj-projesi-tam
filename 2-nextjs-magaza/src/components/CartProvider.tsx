@@ -54,7 +54,44 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(ANAHTAR, JSON.stringify(ogeler));
     } catch {}
+    // Hesap senkronu: oturum varsa sepeti sunucuya yaz (cihazlar arası taşınır)
+    if (hazir && localStorage.getItem("hba-token")) {
+      fetch("/api/hesap/durum", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sepet: ogeler }),
+      }).catch(() => {});
+    }
   }, [ogeler, hazir]);
+
+  // Girişte: tarayıcı sepeti ile hesaptaki sepet birleştirilir (adetler toplanır);
+  // e-posta doğrulanmamışsa yalnız yerel liste kalır
+  useEffect(() => {
+    if (!hazir || !localStorage.getItem("hba-token")) return;
+    (async () => {
+      try {
+        const meRaw = localStorage.getItem("hba-user");
+        const dogrulanmis = meRaw ? (JSON.parse(meRaw).email_verified ?? null) : null;
+        if (dogrulanmis === false) return;
+
+        const yanit = await fetch("/api/hesap/durum");
+        if (!yanit.ok) return;
+        const sonuc = await yanit.json();
+        const sunucu: SepetOgesi[] = sonuc.data?.sepet ?? [];
+        setOgeler((yerel) => {
+          const harita = new Map<string, SepetOgesi>();
+          const anahtar = (o: SepetOgesi) => `${o.id}-${o.varyantId ?? 0}`;
+          for (const o of [...sunucu, ...yerel]) {
+            const mevcut = harita.get(anahtar(o));
+            if (mevcut) harita.set(anahtar(o), { ...mevcut, adet: Math.max(mevcut.adet, o.adet) });
+            else harita.set(anahtar(o), o);
+          }
+          const birlesik = [...harita.values()];
+          return JSON.stringify(birlesik) === JSON.stringify(yerel) ? yerel : birlesik;
+        });
+      } catch {}
+    })();
+  }, [hazir]);
 
   const deger = useMemo<SepetBaglami>(() => {
     const araToplam = Math.round(ogeler.reduce((t, o) => t + o.fiyat * o.adet, 0) * 100) / 100;

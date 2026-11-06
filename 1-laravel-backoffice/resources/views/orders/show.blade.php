@@ -149,6 +149,7 @@
                 <div class="flex justify-between"><dt class="text-slate-500">Sipariş No</dt><dd class="font-semibold">{{ $order->order_no }}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500">Müşteri</dt><dd>{{ $order->customer_name ?: ($order->contact->name ?? '—') }}</dd></div>
                 @if ($order->customer_email)<div class="flex justify-between"><dt class="text-slate-500">E-posta</dt><dd class="text-xs">{{ $order->customer_email }}</dd></div>@endif
+                @if ($order->customer_phone)<div class="flex justify-between"><dt class="text-slate-500">Telefon</dt><dd class="text-xs">{{ $order->customer_phone }}</dd></div>@endif
                 @if ($order->invoice)
                     <div class="flex justify-between"><dt class="text-slate-500">Fatura</dt><dd><a href="{{ route('faturalar.show', $order->invoice_id) }}" class="font-semibold text-indigo-600">{{ $order->invoice->invoice_no }}</a></dd></div>
                 @endif
@@ -169,6 +170,29 @@
             @if ($order->shipping_address)
                 <div class="mt-3 rounded-lg bg-slate-50 dark:bg-slate-700 p-3 text-xs text-slate-600 dark:text-slate-300">
                     <span class="font-semibold">Teslim Adresi:</span><br>{{ $order->shipping_address }}
+                </div>
+            @endif
+            @if ($order->fatura_tipi === 'kurumsal' || $order->fatura_adresi)
+                <div class="mt-3 rounded-lg border border-indigo-100 bg-indigo-50/60 p-3 text-xs text-slate-700 dark:border-indigo-900 dark:bg-indigo-950/30 dark:text-slate-300">
+                    <span class="font-semibold">{{ $order->fatura_tipi === 'kurumsal' ? 'Kurumsal Fatura' : 'Fatura Adresi' }}:</span><br>
+                    @if ($order->fatura_tipi === 'kurumsal')
+                        {{ $order->fatura_unvan }}<br>
+                        VD: {{ $order->vergi_dairesi }} · VKN/TCKN: {{ $order->vergi_no }}<br>
+                    @endif
+                    {{ $order->fatura_adresi ?: $order->shipping_address }}
+                </div>
+            @endif
+            @if ($order->iade_talebi)
+                <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                    <span class="font-semibold">{{ $order->iade_talebi['kismi'] ? 'Kısmi İade Talebi' : 'İade Talebi' }}</span>
+                    — {{ $order->iade_talebi['neden_etiketi'] }}
+                    @if (! empty($order->iade_talebi['aciklama']))<br><em>“{{ $order->iade_talebi['aciklama'] }}”</em>@endif
+                    <ul class="mt-1.5 list-disc pl-4">
+                        @foreach ($order->iade_talebi['kalemler'] as $kalem)
+                            <li>{{ $kalem['product_name'] }} × {{ (float) $kalem['quantity'] }}</li>
+                        @endforeach
+                    </ul>
+                    <div class="mt-1.5 font-semibold">İade tutarı: {{ number_format((float) $order->iade_tutari, 2, ',', '.') }} ₺</div>
                 </div>
             @endif
         </div>

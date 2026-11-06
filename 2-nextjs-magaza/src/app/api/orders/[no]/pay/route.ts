@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ode } from "@/lib/backoffice";
+import { siparisYetkisi } from "@/lib/oturum";
 
-export async function POST(_request: NextRequest, ctx: { params: Promise<{ no: string }> }) {
+export async function POST(request: NextRequest, ctx: { params: Promise<{ no: string }> }) {
   const { no } = await ctx.params;
+  if (!(await siparisYetkisi(request, no))) {
+    return NextResponse.json({ hata: "Bu sipariş üzerinde işlem yetkiniz yok." }, { status: 403 });
+  }
 
   try {
     const sonuc = await ode(no);

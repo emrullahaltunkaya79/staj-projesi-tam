@@ -83,6 +83,16 @@ class AuthController extends Controller
                 ->onlyInput('email');
         }
 
+        // Mağaza müşteri hesapları aynı tabloda; ön muhasebe paneline giremez
+        if (Auth::user()->role === 'musteri') {
+            Auth::logout();
+            $request->session()->invalidate();
+
+            return back()
+                ->withErrors(['email' => 'Bu bir mağaza müşteri hesabıdır; ön muhasebe paneline giriş yapamaz.'])
+                ->onlyInput('email');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

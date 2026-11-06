@@ -13,7 +13,8 @@ export function KargoTakip() {
     e.preventDefault();
     const temiz = no.trim().toUpperCase();
     if (!temiz) return;
-    router.push(`/siparis/${encodeURIComponent(temiz)}`);
+    // Sipariş sayfası erişim korumalı — sorgulama formuna yönlendir
+    router.push(`/siparis-sorgula?no=${encodeURIComponent(temiz)}`);
   };
 
   return (

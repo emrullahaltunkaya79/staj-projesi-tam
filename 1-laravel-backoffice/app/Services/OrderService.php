@@ -149,7 +149,13 @@ class OrderService
                 'external_ref' => $data['external_ref'] ?? null,
                 'customer_email' => $data['customer_email'] ?? null,
                 'customer_name' => $data['customer_name'] ?? $contact->name,
+                'customer_phone' => $data['customer_phone'] ?? null,
                 'shipping_address' => $data['shipping_address'] ?? null,
+                'fatura_tipi' => $data['fatura_tipi'] ?? 'bireysel',
+                'fatura_unvan' => $data['fatura_unvan'] ?? null,
+                'vergi_dairesi' => $data['vergi_dairesi'] ?? null,
+                'vergi_no' => $data['vergi_no'] ?? null,
+                'fatura_adresi' => $data['fatura_adresi'] ?? null,
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'tax_rate' => $taxRate,
@@ -281,10 +287,21 @@ class OrderService
         });
     }
 
+    public const IADE_NEDENLERI = [
+        'fikir_degisti' => 'Fikrimi değiştirdim',
+        'hasarli' => 'Ürün hasarlı veya kusurlu geldi',
+        'yanlis_urun' => 'Yanlış ürün gönderildi',
+        'aciklamaya_uymuyor' => 'Ürün açıklamaya uymuyor',
+        'diger' => 'Diğer',
+    ];
+
     /**
-     * Müşteri iade talebi oluşturur (yalnızca teslim edilmiş siparişler).
+     * Müşteri iade talebi (teslimden itibaren 14 gün). Kalem verilirse ürün bazlı kısmi iade;
+     * verilmezse siparişin tamamı iade edilir.
+     *
+     * @param  array{neden?: string, aciklama?: ?string, kalemler?: array<int, array{sira: int, adet: float}>}  $talep
      */
-    public function requestReturn(Order $order, int $companyId): Order
+    public function requestReturn(Order $order, int $companyId, array $talep = []): Order
     {
         $order = Order::where('company_id', $companyId)->where('id', $order->id)->lockForUpdate()->first();
 
@@ -300,13 +317,60 @@ class OrderService
             ]);
         }
 
-        $order->update(['status' => 'return_requested']);
+        $siparisKalemleri = array_values($order->items ?? []);
+        $istenen = collect($talep['kalemler'] ?? [])
+            ->groupBy(fn ($k) => (int) $k['sira'])
+            ->map(fn ($grup, $sira) => ['sira' => $sira, 'adet' => (float) $grup->sum('adet')]);
+
+        if ($istenen->isEmpty()) {
+            $istenen = collect($siparisKalemleri)->map(fn ($k, $sira) => ['sira' => $sira, 'adet' => (float) $k['quantity']]);
+        }
+
+        $kalemler = [];
+        foreach ($istenen as $istek) {
+            $kalem = $siparisKalemleri[$istek['sira']] ?? null;
+            if (! $kalem || $istek['adet'] <= 0 || $istek['adet'] > (float) $kalem['quantity']) {
+                throw ValidationException::withMessages(['kalemler' => 'Geçersiz iade kalemi veya adedi.']);
+            }
+
+            $kalemler[] = [
+                'sira' => $istek['sira'],
+                'product_id' => $kalem['product_id'],
+                'variant_id' => $kalem['variant_id'] ?? null,
+                'product_name' => $kalem['product_name'],
+                'quantity' => $istek['adet'],
+                'unit_price' => (float) $kalem['unit_price'],
+            ];
+        }
+
+        $tamami = count($kalemler) === count($siparisKalemleri)
+            && collect($kalemler)->every(fn ($k) => $k['quantity'] >= (float) $siparisKalemleri[$k['sira']]['quantity']);
+
+        // Tam iadede tutar sipariş toplamıdır; kısmide kalemlerin KDV dahil toplamı
+        $tutar = $tamami
+            ? (float) $order->total
+            : round(collect($kalemler)->sum(fn ($k) => $k['unit_price'] * $k['quantity']) * (1 + (float) $order->tax_rate / 100), 2);
+
+        $neden = $talep['neden'] ?? 'belirtilmedi';
+
+        $order->update([
+            'status' => 'return_requested',
+            'iade_tutari' => $tutar,
+            'iade_talebi' => [
+                'neden' => $neden,
+                'neden_etiketi' => self::IADE_NEDENLERI[$neden] ?? 'Belirtilmedi',
+                'aciklama' => $talep['aciklama'] ?? null,
+                'kismi' => ! $tamami,
+                'kalemler' => $kalemler,
+                'tarih' => now()->toIso8601String(),
+            ],
+        ]);
 
         return $order;
     }
 
     /**
-     * Satıcı iadeyi onaylar: stok geri alınır, cari bakiye düzeltilir, para iadesi kaydedilir.
+     * Satıcı iadeyi onaylar: talep edilen kalemlerin stoğu geri alınır, cari bakiye iade tutarı kadar düzeltilir.
      */
     public function approveReturn(Order $order, int $companyId): Order
     {
@@ -319,21 +383,37 @@ class OrderService
                 ]);
             }
 
-            // Faturalı ise stokları geri al ve cari bakiyeyi düzelt (iptal ile aynı mantık)
-            if ($order->invoice_id) {
-                $order->load('invoice.items');
-                foreach ($order->invoice->items as $item) {
-                    if ($item->product_id) {
-                        Product::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
+            $kalemler = $order->iade_talebi['kalemler'] ?? null;
+
+            if ($kalemler) {
+                // Stok ödeme anında düşmüştü (fatura); yalnızca iade edilen adetler geri alınır
+                if ($order->invoice_id) {
+                    foreach ($kalemler as $kalem) {
+                        Product::where('id', $kalem['product_id'])->increment('stock_quantity', $kalem['quantity']);
+                    }
+                    $order->contact->decrement('balance', (float) $order->iade_tutari);
+                }
+                foreach ($kalemler as $kalem) {
+                    if (! empty($kalem['variant_id'])) {
+                        ProductVariant::where('id', $kalem['variant_id'])->increment('stock_quantity', (int) $kalem['quantity']);
                     }
                 }
-                $order->contact->decrement('balance', $order->invoice->total);
-            }
+            } else {
+                // Kalem bilgisi olmayan eski talepler: siparişin tamamı
+                if ($order->invoice_id) {
+                    $order->load('invoice.items');
+                    foreach ($order->invoice->items as $item) {
+                        if ($item->product_id) {
+                            Product::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
+                        }
+                    }
+                    $order->contact->decrement('balance', $order->invoice->total);
+                }
 
-            // Varyant stoklarını geri al
-            foreach ($order->items as $item) {
-                if (! empty($item['variant_id'])) {
-                    ProductVariant::where('id', $item['variant_id'])->increment('stock_quantity', (int) $item['quantity']);
+                foreach ($order->items as $item) {
+                    if (! empty($item['variant_id'])) {
+                        ProductVariant::where('id', $item['variant_id'])->increment('stock_quantity', (int) $item['quantity']);
+                    }
                 }
             }
 

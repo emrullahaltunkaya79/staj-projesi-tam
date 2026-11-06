@@ -14,6 +14,7 @@ import {
   Store,
   Menu,
   Lock,
+  MessagesSquare,
 } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { authToken } from "@/components/AuthProvider";
@@ -24,6 +25,7 @@ const MENU = [
   { href: "/satici/siparisler", label: "Siparişler", ikon: ShoppingCart },
   { href: "/satici/raporlar", label: "Raporlar", ikon: BarChart3 },
   { href: "/satici/bildirimler", label: "Bildirimler", ikon: Bell },
+  { href: "/satici/sorular", label: "Sorular", ikon: MessagesSquare },
   { href: "/satici/yorumlar", label: "Yorumlar", ikon: MessageSquare },
   { href: "/satici/kuponlar", label: "Kuponlar", ikon: Ticket },
 ];

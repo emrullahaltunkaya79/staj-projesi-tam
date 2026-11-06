@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AccountApiController;
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Controllers\Api\V1\AuthApiController;
 use App\Http\Controllers\Api\V1\CouponApiController;
 use App\Http\Controllers\Api\V1\ProductApiController;
+use App\Http\Controllers\Api\V1\QuestionApiController;
 use App\Http\Controllers\Api\V1\SellerStatsController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,13 +27,27 @@ Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/resend-verification', [AuthApiController::class, 'resendVerification'])->name('api.auth.resend');
 });
 
-// Auth (token gerektirir) — görsel proxy'si sayfa başına ~75 istek atar, limit buna göre yüksek
-Route::middleware(['auth:sanctum', 'throttle:300,1'])
+// Müşteri hesabı — müşterinin kendi token'ıyla
+Route::middleware(['auth:sanctum', 'throttle:120,1'])
     ->prefix('v1')
     ->group(function () {
         Route::get('/auth/me', [AuthApiController::class, 'me'])->name('api.auth.me');
         Route::post('/auth/logout', [AuthApiController::class, 'logout'])->name('api.auth.logout');
 
+        Route::put('/hesap/profil', [AccountApiController::class, 'profil'])->name('api.hesap.profil');
+        Route::put('/hesap/sifre', [AccountApiController::class, 'sifre'])->name('api.hesap.sifre');
+        Route::get('/hesap/adresler', [AccountApiController::class, 'adresler'])->name('api.hesap.adresler');
+        Route::post('/hesap/adresler', [AccountApiController::class, 'adresEkle'])->name('api.hesap.adres-ekle');
+        Route::delete('/hesap/adresler/{id}', [AccountApiController::class, 'adresSil'])->whereNumber('id')->name('api.hesap.adres-sil');
+        Route::get('/hesap/durum', [AccountApiController::class, 'durum'])->name('api.hesap.durum');
+        Route::put('/hesap/durum', [AccountApiController::class, 'durumKaydet'])->name('api.hesap.durum-kaydet');
+    });
+
+// Mağaza sunucusu ve panel — müşteri token'ları bu uçlara erişemez (başkasının siparişi, ürün CRUD vb.)
+// Görsel proxy'si sayfa başına ~75 istek atar, limit buna göre yüksek
+Route::middleware(['auth:sanctum', 'musteri.engelle', 'throttle:300,1'])
+    ->prefix('v1')
+    ->group(function () {
         // Ürün kataloğu
         Route::get('/products', [ApiController::class, 'products'])->name('api.products');
         Route::get('/products/{id}', [ApiController::class, 'productShow'])->whereNumber('id')->name('api.products.show');
@@ -79,6 +95,15 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])
         Route::get('/products/{id}/also-bought', [ApiController::class, 'alsoBought'])->whereNumber('id')->name('api.products.also-bought');
         Route::get('/reviews/latest', [ApiController::class, 'latestReviews'])->name('api.reviews.latest');
         Route::post('/stock-alerts', [ApiController::class, 'stockAlert'])->name('api.stock-alerts');
+        Route::post('/price-alerts', [ApiController::class, 'priceAlert'])->name('api.price-alerts');
+
+        // Ürün soru-cevap
+        Route::get('/products/{id}/sorular', [QuestionApiController::class, 'index'])->whereNumber('id')->name('api.sorular.urun');
+        Route::post('/products/{id}/sorular', [QuestionApiController::class, 'store'])->whereNumber('id')->name('api.sorular.ekle');
+        Route::get('/sorular', [QuestionApiController::class, 'satici'])->name('api.sorular.satici');
+        Route::patch('/sorular/{id}/cevap', [QuestionApiController::class, 'cevapla'])->whereNumber('id')->name('api.sorular.cevap');
+        Route::delete('/sorular/{id}', [QuestionApiController::class, 'sil'])->whereNumber('id')->name('api.sorular.sil');
+
         Route::post('/newsletter', [ApiController::class, 'newsletterSubscribe'])->name('api.newsletter');
         Route::get('/bildirimler', [ApiController::class, 'bildirimKayitlari'])->name('api.bildirimler');
         Route::post('/iletisim', [ApiController::class, 'iletisimKayit'])->name('api.iletisim.kayit');

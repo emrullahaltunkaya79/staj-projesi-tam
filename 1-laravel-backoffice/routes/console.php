@@ -29,3 +29,6 @@ Schedule::command('backup:run --only-db')->weeklyOn(1, '03:00');
 
 // Stok bildirimi e-postaları: stoğa giren ürünlerin bekleyen kayıtlarına mail atar (her 15 dakikada)
 Schedule::command('stok:bildirim-gonder')->everyFifteenMinutes();
+
+// Fiyat alarmı e-postaları: fiyatı takip fiyatının altına inen ürünler (her 15 dakikada)
+Schedule::command('fiyat:alarm-gonder')->everyFifteenMinutes();

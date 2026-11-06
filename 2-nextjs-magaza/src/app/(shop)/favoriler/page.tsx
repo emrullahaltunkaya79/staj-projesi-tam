@@ -8,6 +8,7 @@ import { KalpButonu } from "@/components/KalpButonu";
 import { sepet } from "@/components/CartProvider";
 import { sepeteUcur } from "@/lib/sepetFx";
 import { Trash2, ShoppingCart } from "lucide-react";
+import { kdvDahil } from "@/lib/fiyat";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
@@ -65,7 +66,7 @@ export default function FavorilerSayfasi() {
                       <h3 className="text-[14px] font-bold text-black">{f.ad}</h3>
                       {f.kategori && <p className="text-xs text-black/30">{f.kategori}</p>}
                     </div>
-                    <span className="shrink-0 text-[14px] font-bold tabular-nums text-black/70">{fmt(f.fiyat)} ₺</span>
+                    <span className="shrink-0 text-[14px] font-bold tabular-nums text-black/70">{fmt(kdvDahil(f.fiyat))} ₺</span>
                   </div>
                 </Link>
                 <button

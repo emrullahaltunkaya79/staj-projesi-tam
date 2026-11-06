@@ -44,6 +44,12 @@ class Invoice extends Model
         return $this->belongsTo(Contact::class);
     }
 
+    /** E-ticaret siparişinden kesildiyse kaynak sipariş (kurumsal fatura bilgisi için). */
+    public function order()
+    {
+        return $this->hasOne(Order::class);
+    }
+
     public function warehouse()
     {
         return $this->belongsTo(\App\Models\Warehouse::class);

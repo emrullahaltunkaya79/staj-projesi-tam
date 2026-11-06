@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Check, Truck } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { UCRETSIZ_KARGO_LIMITI } from "@/lib/kargo";
+import { kdvDahil } from "@/lib/fiyat";
 
 type Oneri = {
   id: number;
@@ -72,7 +73,7 @@ export function SepetOnerileri() {
                 {o.ad}
               </Link>
               <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                <span className="text-[13px] font-bold tabular-nums text-black">{fmt(o.fiyat)} ₺</span>
+                <span className="text-[13px] font-bold tabular-nums text-black">{fmt(kdvDahil(o.fiyat))} ₺</span>
                 <button
                   type="button"
                   disabled={eklendi}

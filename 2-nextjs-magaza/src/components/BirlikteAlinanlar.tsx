@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Plus, Check } from "lucide-react";
 import { sepet } from "./CartProvider";
+import { kdvDahil } from "@/lib/fiyat";
 
 export type PaketUrunu = {
   id: number;
@@ -103,7 +104,7 @@ export function BirlikteAlinanlar({
                       {anaUrun && <span className="font-bold text-black">Bu ürün: </span>}
                       <span className="text-black/75">{u.ad}</span>
                     </span>
-                    <span className="shrink-0 font-bold tabular-nums text-black">{fmt(u.fiyat)} ₺</span>
+                    <span className="shrink-0 font-bold tabular-nums text-black">{fmt(kdvDahil(u.fiyat))} ₺</span>
                   </label>
                 </li>
               );
@@ -113,7 +114,7 @@ export function BirlikteAlinanlar({
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-4">
             <p className="text-[13px] text-black/55">
               {paket.length} ürün toplamı:{" "}
-              <span className="text-[17px] font-black tabular-nums text-black">{fmt(toplam)} ₺</span>
+              <span className="text-[17px] font-black tabular-nums text-black">{fmt(kdvDahil(toplam))} ₺</span>
             </p>
             {eklendi ? (
               <Link href="/sepet" className="flex h-11 items-center gap-1.5 rounded-full bg-emerald-600 px-5 text-[13px] font-bold text-white transition hover:bg-emerald-700">

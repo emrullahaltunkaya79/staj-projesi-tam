@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { kdvDahil } from "@/lib/fiyat";
 
 const ANAHTAR = "hba-son-goruntulenen";
 
@@ -49,7 +50,7 @@ export function SonGoruntulenenler({ suAnki }: { suAnki?: Kayit }) {
               </div>
               <p className="line-clamp-2 min-h-[32px] text-xs font-semibold leading-snug text-black/70 group-hover:text-black">{k.ad}</p>
               <p className="text-sm font-black tabular-nums">
-                {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(k.fiyat)} ₺
+                {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(kdvDahil(k.fiyat))} ₺
               </p>
             </Link>
           ))}

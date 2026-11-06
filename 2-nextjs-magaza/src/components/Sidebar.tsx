@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
+import { kdvDahil } from "@/lib/fiyat";
 import { urunRenkleri, urunBoyutlari, facetSecenekleri, RENKLER, BEDEN_SIRASI } from "@/lib/facetler";
 import { useMemo } from "react";
 
@@ -24,8 +25,9 @@ export const bosFiltreler: Filtreler = { marka: null, minFiyat: "", maxFiyat: ""
 export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
   let sonuc = urunler;
   if (f.marka) sonuc = sonuc.filter((u) => u.brand === f.marka);
-  if (f.minFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) >= Number(f.minFiyat));
-  if (f.maxFiyat) sonuc = sonuc.filter((u) => indirimliFiyat(u) <= Number(f.maxFiyat));
+  // Müşteri KDV dahil fiyat görür ve girer; karşılaştırma da KDV dahil yapılır
+  if (f.minFiyat) sonuc = sonuc.filter((u) => kdvDahil(indirimliFiyat(u)) >= Number(f.minFiyat));
+  if (f.maxFiyat) sonuc = sonuc.filter((u) => kdvDahil(indirimliFiyat(u)) <= Number(f.maxFiyat));
   if (f.sadeceStok) sonuc = sonuc.filter((u) => u.in_stock);
   if (f.renkler.length > 0)
     sonuc = sonuc.filter((u) => {

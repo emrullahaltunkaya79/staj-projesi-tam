@@ -3,6 +3,8 @@
  * Tüm katalog/stok/sipariş verisi tek kaynaktan (arka ofis) gelir.
  */
 
+import { KDV_ORANI } from "./fiyat";
+
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
 
@@ -49,9 +51,22 @@ export function indirimliFiyat(u: Pick<Urun, "sale_price" | "discount_percent" |
 
 export type Siparis = {
   order_no: string;
+  /** Sipariş erişim anahtarı — yalnızca sunucuda karşılaştırılır, tarayıcıya gönderilmez */
+  access_key?: string;
   status: string;
   status_label?: string;
+  customer_name?: string | null;
+  customer_email?: string | null;
+  customer_phone?: string | null;
+  shipping_address?: string | null;
+  fatura?: { tipi: string; unvan: string | null; vergi_dairesi: string | null; vergi_no: string | null; adres: string | null };
+  subtotal?: number;
+  tax_rate?: number;
+  tax_amount?: number;
   total: number;
+  iade_talebi?: IadeTalebi | null;
+  iade_tutari?: number | null;
+  created_at?: string;
   expires_at?: string | null;
   delivered_at?: string | null;
   /** Teslimden itibaren 14 günlük iade hakkının son anı */
@@ -59,7 +74,16 @@ export type Siparis = {
   invoice_no?: string | null;
   tracking_no?: string | null;
   tracking_url?: string | null;
-  items: { product_id: number; product_name: string; quantity: number; unit_price: number; line_total: number }[];
+  items: { product_id: number; product_name: string; quantity: number; unit_price: number; line_total: number; variant_id?: number | null }[];
+};
+
+export type IadeTalebi = {
+  neden: string;
+  neden_etiketi: string;
+  aciklama: string | null;
+  kismi: boolean;
+  kalemler: { sira: number; product_name: string; quantity: number; unit_price: number }[];
+  tarih: string;
 };
 
 /** Base64 data URI'ler sayfa boyutunu ~24MB'a çıkarıyordu; görsel /api/img/{id} proxy'sinden akar. */
@@ -150,15 +174,18 @@ export async function siparis(orderNo: string): Promise<Siparis | null> {
   }
 }
 
-/** Idempotent müşteri + external_ref'li sipariş oluşturur. */
-export async function siparisOlustur(veri: {
+export type SiparisVerisi = {
   name: string;
   email: string;
+  phone: string;
   address: string;
-  taxRate: number;
   items: { product_id: number; quantity: number; variant_id?: number }[];
   externalRef: string;
-}): Promise<{ orderNo: string; message: string }> {
+  fatura: { tipi: "bireysel" | "kurumsal"; unvan?: string; vergiDairesi?: string; vergiNo?: string; adres?: string };
+};
+
+/** Idempotent müşteri + external_ref'li sipariş oluşturur. KDV oranı mağazada sabittir (%20). */
+export async function siparisOlustur(veri: SiparisVerisi): Promise<{ orderNo: string; accessKey: string; message: string }> {
   const musteri = await istek("/customers", {
     method: "POST",
     body: JSON.stringify({ name: veri.name, email: veri.email, type: "musteri" }),
@@ -168,12 +195,18 @@ export async function siparisOlustur(veri: {
     method: "POST",
     body: JSON.stringify({
       contact_id: musteri.data.contact_id,
-      tax_rate: veri.taxRate,
+      tax_rate: KDV_ORANI,
       items: veri.items,
       shipping_address: veri.address,
       external_ref: veri.externalRef,
       customer_email: veri.email,
       customer_name: veri.name,
+      customer_phone: veri.phone,
+      fatura_tipi: veri.fatura.tipi,
+      ...(veri.fatura.tipi === "kurumsal"
+        ? { fatura_unvan: veri.fatura.unvan, vergi_dairesi: veri.fatura.vergiDairesi, vergi_no: veri.fatura.vergiNo }
+        : {}),
+      ...(veri.fatura.adres ? { fatura_adresi: veri.fatura.adres } : {}),
     }),
   });
 
@@ -181,7 +214,7 @@ export async function siparisOlustur(veri: {
     throw new Error(sonuc.message ?? "Sipariş oluşturulamadı.");
   }
 
-  return { orderNo: sonuc.data.order_no, message: sonuc.message };
+  return { orderNo: sonuc.data.order_no, accessKey: sonuc.data.access_key, message: sonuc.message };
 }
 
 export async function ode(orderNo: string): Promise<{ message: string; invoice_no?: string }> {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function IptalButonu({ orderNo }: { orderNo: string }) {
+export function IptalButonu({ orderNo, erisim }: { orderNo: string; erisim: string | null }) {
   const router = useRouter();
   const [calisiyor, setCalisiyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
@@ -15,7 +15,10 @@ export function IptalButonu({ orderNo }: { orderNo: string }) {
     setHata(null);
 
     try {
-      const yanit = await fetch(`/api/orders/${orderNo}/cancel`, { method: "POST" });
+      const yanit = await fetch(`/api/orders/${orderNo}/cancel`, {
+        method: "POST",
+        headers: erisim ? { "x-siparis-anahtari": erisim } : {},
+      });
       const sonuc = await yanit.json();
       if (!yanit.ok) throw new Error(sonuc.hata ?? "İptal edilemedi.");
       router.refresh();

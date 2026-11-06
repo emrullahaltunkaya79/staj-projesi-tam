@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { oturumlaSenkron } from "@/lib/hesapSenkron";
 
 export type FavoriUrun = {
   id: number;
@@ -25,6 +26,7 @@ const ANAHTAR = "hba-favoriler";
 export function FavoriProvider({ children }: { children: React.ReactNode }) {
   const [favoriler, setFavoriler] = useState<FavoriUrun[]>([]);
   const [hazir, setHazir] = useState(false);
+  const [giris, setGiris] = useState<{ girisYapmis: boolean; dogrulanmis: boolean | null }>({ girisYapmis: false, dogrulanmis: null });
 
   useEffect(() => {
     try {
@@ -34,12 +36,31 @@ export function FavoriProvider({ children }: { children: React.ReactNode }) {
     setHazir(true);
   }, []);
 
+  // Oturum bilgisi: AuthProvider bağlamından gelir (bu sağlayıcı onun içinde ağaçlanır)
+  useEffect(() => {
+    const dinle = () => {
+      const kullaniciRaw = localStorage.getItem("hba-user");
+      setGiris({ girisYapmis: !!kullaniciRaw, dogrulanmis: kullaniciRaw ? JSON.parse(kullaniciRaw).email_verified ?? null : null });
+    };
+    dinle();
+    window.addEventListener("hba-oturum", dinle);
+    return () => window.removeEventListener("hba-oturum", dinle);
+  }, []);
+
+  // Girişte: tarayıcıdaki liste ile hesaptaki liste birleştirilir (cihazlar arası)
+  useEffect(() => {
+    if (!hazir || !giris.girisYapmis) return;
+    oturumlaSenkron("favoriler", favoriler, setFavoriler, null, giris.dogrulanmis);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hazir, giris.girisYapmis]);
+
   useEffect(() => {
     if (!hazir) return;
     try {
       localStorage.setItem(ANAHTAR, JSON.stringify(favoriler));
     } catch {}
-  }, [favoriler, hazir]);
+    if (hazir && giris.girisYapmis) sunucuyaYaz("favoriler", favoriler);
+  }, [favoriler, hazir, giris.girisYapmis]);
 
   const deger: FavoriBaglami = {
     favoriler,
@@ -52,6 +73,22 @@ export function FavoriProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <Baglam.Provider value={deger}>{children}</Baglam.Provider>;
+}
+
+let yazimZamanlayici: ReturnType<typeof setTimeout> | null = null;
+
+/** Değişiklikleri 800 ms sonra sunucuya yazar; giriş yoksa sessizce atlar. */
+function sunucuyaYaz(alan: "favoriler" | "sepet", veri: unknown) {
+  const token = localStorage.getItem("hba-token");
+  if (!token) return;
+  if (yazimZamanlayici) clearTimeout(yazimZamanlayici);
+  yazimZamanlayici = setTimeout(() => {
+    fetch("/api/hesap/durum", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [alan]: veri }),
+    }).catch(() => {});
+  }, 800);
 }
 
 export function favori() {

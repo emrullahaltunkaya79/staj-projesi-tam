@@ -1,12 +1,27 @@
-import { siparis } from "@/lib/backoffice";
+import Link from "next/link";
+import { siparisErisimi } from "@/lib/oturum";
 import { CsprPanel } from "./CsprPanel";
 
-export default async function CsprOdemeSayfasi({ params }: { params: Promise<{ no: string }> }) {
-  const { no } = await params;
-  const s = await siparis(no);
+export const metadata = { title: "CSPR ile Öde — HepsiBirarada", referrer: "no-referrer" as const };
 
-  if (!s) {
-    return <div className="py-20 text-center text-sm text-black/50">Sipariş bulunamadı.</div>;
+export default async function CsprOdemeSayfasi({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ no: string }>;
+  searchParams: Promise<{ k?: string }>;
+}) {
+  const { no } = await params;
+  const { k } = await searchParams;
+  const { siparis: s, izinli } = await siparisErisimi(no, k ?? null);
+
+  if (!s || !izinli) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-sm text-black/50">{s ? "Bu siparişin ödeme sayfasına erişim yetkiniz yok." : "Sipariş bulunamadı."}</p>
+        <Link href="/siparis-sorgula" className="mt-3 inline-block text-sm font-bold underline underline-offset-4">Sipariş sorgula →</Link>
+      </div>
+    );
   }
 
   return (
@@ -16,7 +31,7 @@ export default async function CsprOdemeSayfasi({ params }: { params: Promise<{ n
           <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">CSPR ile Öde</h1>
           <p className="mt-2 font-mono text-sm text-black/50">{s.order_no} · {new Intl.NumberFormat("tr-TR").format(s.total)} ₺</p>
         </div>
-        <CsprPanel orderNo={s.order_no} />
+        <CsprPanel orderNo={s.order_no} erisim={k ?? null} />
       </div>
     </div>
   );

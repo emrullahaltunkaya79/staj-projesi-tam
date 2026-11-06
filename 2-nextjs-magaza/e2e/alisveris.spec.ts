@@ -50,7 +50,10 @@ test.describe("Alışveriş hunisi", () => {
     await expect(page.getByRole("button", { name: /Siparişi Onayla/ })).toBeVisible({ timeout: 30_000 });
     await page.getByPlaceholder("Ayşe Yılmaz").fill("E2E Test Kullanıcı");
     await page.getByPlaceholder("ayse@ornek.com").fill(`e2e-${Date.now()}@test.local`);
-    await page.getByPlaceholder("Mahalle, cadde, no, ilçe / il").fill("E2E Test Mahallesi, Cadde No 1, İstanbul");
+    await page.getByPlaceholder("0532 123 45 67").fill("0532 111 22 33");
+    await page.getByLabel("İl *").selectOption("İstanbul");
+    await page.getByLabel("İlçe *").selectOption("Kadıköy");
+    await page.getByPlaceholder("Mahalle, cadde, sokak, bina ve daire no").fill("E2E Test Mahallesi, Cadde No 1");
 
     // Tıkla ve aynı anda navigasyonu bekle
     await Promise.all([

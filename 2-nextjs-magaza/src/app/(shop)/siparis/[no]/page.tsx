@@ -1,12 +1,21 @@
-import { siparis } from "@/lib/backoffice";
 import { OdemeButonu } from "./OdemeButonu";
 import { IptalButonu } from "./IptalButonu";
-import { IadeButonu } from "./IadeButonu";
+import { IadeFormu } from "./IadeFormu";
 import { Konfeti } from "@/components/Konfeti";
 import { OdemeAdimlari } from "@/components/OdemeAdimlari";
+import Link from "next/link";
+import { siparisErisimi } from "@/lib/oturum";
 import { KolayUyelik } from "@/components/KolayUyelik";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
+
+export const metadata = {
+  title: "Sipariş — HepsiBirarada",
+  // Bağlantıdaki erişim anahtarı dış sitelere (kargo takibi vb.) referrer ile sızmasın
+  referrer: "no-referrer" as const,
+  robots: { index: false, follow: false },
+};
+
 const ADIMLAR: Record<string, string> = {
   pending: "Bekliyor",
   paid: "Ödendi",
@@ -24,16 +33,37 @@ export default async function SiparisSayfasi({
   searchParams,
 }: {
   params: Promise<{ no: string }>;
-  searchParams: Promise<{ yeni?: string }>;
+  searchParams: Promise<{ yeni?: string; k?: string }>;
 }) {
   const { no } = await params;
-  const { yeni } = await searchParams;
-  const s = await siparis(no);
+  const { yeni, k } = await searchParams;
 
-  if (!s) {
+  // Sipariş numarası sıralı (ORD-000001…) olduğu için tek başına yetmez:
+  // erişim anahtarı, sahibi olunmuş oturum ya da satıcı girişi gerekir
+  const { siparis: s, izinli } = await siparisErisimi(no, k ?? null);
+
+  if (!s || !izinli) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center px-5">
-        <p className="text-sm text-black/50">Sipariş bulunamadı.</p>
+      <div className="px-5 pb-24 pt-16 sm:px-10">
+        <div className="mx-auto max-w-md text-center">
+          <p className="text-3xl">🔒</p>
+          <h1 className="mt-3 text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">
+            {s ? "Bu siparişi görme yetkiniz yok" : "Sipariş bulunamadı"}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-black/55">
+            {s
+              ? "Sipariş sayfası yalnızca sipariş sahibine açıktır. Onay e-postasındaki bağlantıyı kullanın veya sipariş numarası + e-posta ile sorgulayın."
+              : "Numarayı kontrol edin veya sipariş numarası + e-posta ile sorgulayın."}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href="/siparis-sorgula" className="flex h-11 items-center rounded-full bg-black px-6 text-sm font-bold text-white transition hover:bg-black/80">
+              Sipariş sorgula
+            </Link>
+            <Link href="/siparislerim" className="flex h-11 items-center rounded-full border border-black/15 px-6 text-sm font-bold text-black/70 transition hover:border-black hover:text-black">
+              Siparişlerim
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -45,6 +75,8 @@ export default async function SiparisSayfasi({
   const iadeSon = s.iade_son_tarih ? new Date(s.iade_son_tarih) : null;
   const iadeKalanGun = iadeSon ? Math.ceil((iadeSon.getTime() - Date.now()) / 86_400_000) : null;
   const iadeSuresiDoldu = iadeKalanGun !== null && iadeKalanGun <= 0;
+  // Sipariş satırları KDV hariç saklanır; müşteriye KDV dahil gösterilir
+  const brut = (tutar: number) => Math.round(tutar * (100 + (s.tax_rate ?? 20))) / 100;
   const tarih = (d: Date) =>
     new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", timeZone: "Europe/Istanbul" }).format(d);
 
@@ -66,11 +98,49 @@ export default async function SiparisSayfasi({
           <div className="mt-5"><OdemeAdimlari aktif={3} /></div>
         </div>
 
+        {/* Teslimat ve fatura bilgileri */}
+        {(s.customer_name || s.customer_phone || s.shipping_address) && (
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border border-black/10 p-4 text-[13px]">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40">Teslimat</p>
+              <p className="mt-1.5 font-semibold text-black">{s.customer_name}</p>
+              {s.customer_phone && <p className="text-black/60">{s.customer_phone}</p>}
+              {s.customer_email && <p className="text-black/60">{s.customer_email}</p>}
+              {s.shipping_address && <p className="mt-1.5 leading-relaxed text-black/70">{s.shipping_address}</p>}
+            </div>
+            <div className="rounded-xl border border-black/10 p-4 text-[13px]">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40">
+                Fatura {s.fatura?.tipi === "kurumsal" ? "(Kurumsal)" : ""}
+              </p>
+              {s.fatura?.tipi === "kurumsal" ? (
+                <>
+                  <p className="mt-1.5 font-semibold text-black">{s.fatura.unvan}</p>
+                  <p className="text-black/60">VD: {s.fatura.vergi_dairesi} · {s.fatura.vergi_no}</p>
+                  <p className="mt-1.5 leading-relaxed text-black/70">{s.fatura.adres || s.shipping_address}</p>
+                </>
+              ) : (
+                <p className="mt-1.5 leading-relaxed text-black/60">Bireysel fatura — teslimat adresine kesilir.</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {iadeDurumu ? (
           <div className={`mt-8 border px-5 py-4 text-sm font-bold ${s.status === "returned" ? "border-black bg-neutral-50 text-black" : "border-amber-300 bg-amber-50 text-amber-700"}`}>
-            ↩️ {iadeDurumu}
+            ↩️ {iadeDurumu}{s.iade_talebi?.kismi ? " (kısmi iade)" : ""}
             {s.status === "return_requested" && (
-              <p className="mt-1 text-xs font-medium text-amber-600/80">Talebiniz satıcı tarafından inceleniyor — onaylandığında ürün bedeli 14 gün içinde iade edilir.</p>
+              <p className="mt-1 text-xs font-medium text-amber-600/80">Talebiniz satıcı tarafından inceleniyor — onaylandığında ürün bedeli 3-5 iş günü içinde iade edilir.</p>
+            )}
+            {s.iade_talebi && (
+              <div className="mt-3 border-t border-current/15 pt-3 text-xs font-medium opacity-90">
+                <p>Neden: {s.iade_talebi.neden_etiketi}{s.iade_talebi.aciklama ? ` — “${s.iade_talebi.aciklama}”` : ""}</p>
+                <ul className="mt-1 list-disc pl-4">
+                  {s.iade_talebi.kalemler.map((kalem) => (
+                    <li key={kalem.sira}>{kalem.product_name} × {kalem.quantity}</li>
+                  ))}
+                </ul>
+                {s.iade_tutari != null && <p className="mt-1 font-bold">İade tutarı: {fmt(s.iade_tutari)} ₺</p>}
+              </div>
             )}
           </div>
         ) : iptal ? (
@@ -100,27 +170,31 @@ export default async function SiparisSayfasi({
         )}
 
         <div className="mt-10 divide-y divide-black/10 border-y border-black/15">
-          {s.items.map((k, i) => (
+          {s.items.map((kalem, i) => (
             <div key={i} className="flex items-baseline justify-between gap-4 py-4">
               <div>
-                <p className="text-sm font-semibold">{k.product_name}</p>
-                <p className="mt-0.5 text-xs text-black/40 tabular-nums">{k.quantity} adet × {fmt(k.unit_price)} ₺</p>
+                <p className="text-sm font-semibold">{kalem.product_name}</p>
+                <p className="mt-0.5 text-xs text-black/40 tabular-nums">{kalem.quantity} adet × {fmt(brut(kalem.unit_price))} ₺</p>
               </div>
-              <span className="text-sm font-bold tabular-nums">{fmt(k.line_total)} ₺</span>
+              <span className="text-sm font-bold tabular-nums">{fmt(brut(kalem.line_total))} ₺</span>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 flex items-baseline justify-between">
-          <span className="text-sm font-medium text-black/60">Toplam</span>
-          <span className="text-3xl font-black tabular-nums">{fmt(s.total)} ₺</span>
+        <div className="mt-6 space-y-1 border-t border-black/10 pt-4 text-[13px] text-black/60">
+          {s.subtotal != null && <div className="flex justify-between"><span>KDV hariç tutar</span><span className="tabular-nums">{fmt(s.subtotal)} ₺</span></div>}
+          {s.tax_amount != null && <div className="flex justify-between"><span>KDV (%{s.tax_rate})</span><span className="tabular-nums">{fmt(s.tax_amount)} ₺</span></div>}
+          <div className="flex items-baseline justify-between pt-2">
+            <span className="text-sm font-medium text-black/60">Toplam (KDV dahil)</span>
+            <span className="text-3xl font-black tabular-nums text-black">{fmt(s.total)} ₺</span>
+          </div>
         </div>
 
         <div className="mt-10 space-y-4">
           {s.status === "pending" && !iptal && (
             <div className="flex flex-col gap-3">
-              <OdemeButonu orderNo={s.order_no} />
-              <IptalButonu orderNo={s.order_no} />
+              <OdemeButonu orderNo={s.order_no} erisim={k ?? null} />
+              <IptalButonu orderNo={s.order_no} erisim={k ?? null} />
             </div>
           )}
           {s.status !== "pending" && s.status !== "cancelled" && !iadeDurumu && (
@@ -130,7 +204,7 @@ export default async function SiparisSayfasi({
             </div>
           )}
           {s.invoice_no && (
-            <a href={`/api/orders/${s.order_no}/invoice-pdf`}
+            <a href={`/api/orders/${s.order_no}/invoice-pdf${k ? `?k=${encodeURIComponent(k)}` : ""}`}
                className="inline-flex h-10 items-center justify-center rounded-full bg-black px-6 text-xs font-bold text-white transition hover:bg-black/80 active:scale-95">
               📄 Faturayı İndir (PDF)
             </a>
@@ -149,7 +223,7 @@ export default async function SiparisSayfasi({
                     <a href="/iade-degisim" className="font-bold text-black underline underline-offset-2">İade koşulları</a>
                   </p>
                 )}
-                <IadeButonu orderNo={s.order_no} />
+                <IadeFormu orderNo={s.order_no} erisim={k ?? null} kalemler={s.items} />
               </div>
             )
           )}

@@ -6,6 +6,7 @@ use App\Traits\BelongsToCompany;
 use App\Traits\RecordsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -22,7 +23,13 @@ class Order extends Model
         'external_ref',
         'customer_email',
         'customer_name',
+        'customer_phone',
         'shipping_address',
+        'fatura_tipi',
+        'fatura_unvan',
+        'vergi_dairesi',
+        'vergi_no',
+        'fatura_adresi',
         'tracking_no',
         'carrier',
         'status',
@@ -32,16 +39,23 @@ class Order extends Model
         'total',
         'items',
         'notes',
+        'iade_talebi',
+        'iade_tutari',
         'paid_at',
         'delivered_at',
         'expires_at',
         'invoice_id',
     ];
 
+    /** Erişim anahtarı yalnızca güvenilir API istemcisine (mağaza sunucusu) açıkça döndürülür. */
+    protected $hidden = ['access_key'];
+
     protected function casts(): array
     {
         return [
             'items' => 'array',
+            'iade_talebi' => 'array',
+            'iade_tutari' => 'decimal:2',
             'tax_rate' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'tax_amount' => 'decimal:2',
@@ -54,6 +68,10 @@ class Order extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (Order $order) {
+            $order->access_key ??= Str::random(40);
+        });
+
         // Teslim anı hangi yoldan olursa olsun (panel, API) iade süresinin başlangıcı olarak damgalanır
         static::updating(function (Order $order) {
             if ($order->isDirty('status') && $order->status === 'delivered' && ! $order->delivered_at) {

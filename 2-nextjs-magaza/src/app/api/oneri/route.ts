@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { kdvDahil } from "@/lib/fiyat";
 
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
         id: u.id,
         name: u.name,
         brand: u.brand ?? null,
-        fiyat: u.final_price ?? u.sale_price,
+        fiyat: kdvDahil(u.final_price ?? u.sale_price),
         image: u.image_url ? `/api/img/${u.id}` : null,
       }),
     );

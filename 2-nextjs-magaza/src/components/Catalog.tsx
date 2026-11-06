@@ -1,5 +1,6 @@
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
+import { kdvDahil } from "@/lib/fiyat";
 import { imgUrl } from "@/lib/img";
 import Link from "next/link";
 import { KalpButonu } from "./KalpButonu";
@@ -63,9 +64,9 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             </span>
           </div>
         <div className="flex shrink-0 flex-col items-end">
-          <span className="text-[15px] font-black tabular-nums text-black sm:text-[17px]">{fmt(fiyat)} ₺</span>
+          <span className="text-[15px] font-black tabular-nums text-black sm:text-[17px]">{fmt(kdvDahil(fiyat))} ₺</span>
           {indirim > 0 && (
-            <span className="text-xs tabular-nums text-black/40 line-through">{fmt(urun.sale_price)} ₺</span>
+            <span className="text-xs tabular-nums text-black/40 line-through">{fmt(kdvDahil(urun.sale_price))} ₺</span>
           )}
         </div>
       </div>

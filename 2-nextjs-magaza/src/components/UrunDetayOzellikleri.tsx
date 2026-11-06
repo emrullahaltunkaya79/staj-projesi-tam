@@ -11,6 +11,7 @@ import { indirimliFiyat } from "@/lib/backoffice";
 import { GeriSayim } from "./GeriSayim";
 import { TeslimatBilgisi } from "./TeslimatBilgisi";
 import { imgUrl } from "@/lib/img";
+import { kdvDahil } from "@/lib/fiyat";
 
 export function UrunDetayOzellikleri({
   urun,
@@ -82,16 +83,17 @@ export function UrunDetayOzellikleri({
         </p>
 
         <div className="mt-8 flex flex-wrap items-baseline gap-3">
-          <span className="text-3xl font-black tabular-nums text-black">{fmt(netFiyat)} ₺</span>
+          <span className="text-3xl font-black tabular-nums text-black">{fmt(kdvDahil(netFiyat))} ₺</span>
           {indirim > 0 && (
             <>
-              <span className="text-lg tabular-nums text-black/40 line-through">{fmt(urun.sale_price)} ₺</span>
+              <span className="text-lg tabular-nums text-black/40 line-through">{fmt(kdvDahil(urun.sale_price))} ₺</span>
               <span className="rounded-full bg-red-600 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">%{indirim} indirim</span>
               <span className="flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold text-red-600">
                 ⏳ bugün <GeriSayim kompakt /> kadar
               </span>
             </>
           )}
+          <span className="text-[11px] font-medium text-black/40">KDV dahil</span>
         </div>
 
         <p className="mt-3 text-sm font-medium">
@@ -202,7 +204,7 @@ export function UrunDetayOzellikleri({
           )}
         </div>
 
-        <TeslimatBilgisi fiyat={netFiyat} stokta={urun.in_stock} />
+        <TeslimatBilgisi fiyat={kdvDahil(netFiyat)} stokta={urun.in_stock} />
       </div>
     </>
   );

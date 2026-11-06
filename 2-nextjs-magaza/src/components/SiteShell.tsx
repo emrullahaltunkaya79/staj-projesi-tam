@@ -350,6 +350,10 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
                       <ShoppingCart className="h-4 w-4" /> Siparişlerim
                     </a>
+                    <a href="/hesabim" onClick={() => setMenuAcik(false)}
+                       className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
+                      <User className="h-4 w-4" /> Hesabım
+                    </a>
                     <button type="button" onClick={() => { cikis(); setMenuAcik(false); }}
                             className="flex w-full items-center gap-3 border-t border-black/10 px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50">
                       <LogOut className="h-4 w-4" /> Çıkış Yap

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Star, Zap } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
+import { kdvDahil } from "@/lib/fiyat";
 import { imgUrl } from "@/lib/img";
 import { GeriSayim } from "./GeriSayim";
 import { KartaEkleButonu } from "./KartaEkleButonu";
@@ -111,8 +112,8 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
                       )}
                     </div>
                     <div className="mt-1 flex items-baseline gap-1.5">
-                      <span className="text-[15px] font-black tabular-nums text-black">{fmt(fiyat)} ₺</span>
-                      {indirim > 0 && <span className="text-[11px] tabular-nums text-black/35 line-through">{fmt(u.sale_price)} ₺</span>}
+                      <span className="text-[15px] font-black tabular-nums text-black">{fmt(kdvDahil(fiyat))} ₺</span>
+                      {indirim > 0 && <span className="text-[11px] tabular-nums text-black/35 line-through">{fmt(kdvDahil(u.sale_price))} ₺</span>}
                     </div>
                   </div>
                 </Link>

@@ -14,17 +14,19 @@ type OdemeBilgisi = {
   qr_data_uri: string;
 };
 
-export function CsprPanel({ orderNo }: { orderNo: string }) {
+export function CsprPanel({ orderNo, erisim }: { orderNo: string; erisim: string | null }) {
   const router = useRouter();
   const [bilgi, setBilgi] = useState<OdemeBilgisi | null>(null);
   const [hata, setHata] = useState<string | null>(null);
   const [kalan, setKalan] = useState("--:--");
   const [kopya, setKopya] = useState("");
+  const siparisBag = `/siparis/${orderNo}${erisim ? `?k=${encodeURIComponent(erisim)}` : ""}`;
+  const basliklar: Record<string, string> = erisim ? { "x-siparis-anahtari": erisim } : {};
 
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`/api/orders/${orderNo}/cspr`, { method: "POST" });
+        const r = await fetch(`/api/orders/${orderNo}/cspr`, { method: "POST", headers: erisim ? { "x-siparis-anahtari": erisim } : {} });
         const s = await r.json();
         if (!r.ok) throw new Error(s.hata ?? "Talimat alınamadı.");
         setBilgi(s.data);
@@ -32,7 +34,7 @@ export function CsprPanel({ orderNo }: { orderNo: string }) {
         setHata(e instanceof Error ? e.message : "Beklenmeyen hata.");
       }
     })();
-  }, [orderNo]);
+  }, [orderNo, erisim]);
 
   // geri sayım
   useEffect(() => {
@@ -51,12 +53,13 @@ export function CsprPanel({ orderNo }: { orderNo: string }) {
     if (!bilgi) return;
     const t = setInterval(async () => {
       try {
-        const r = await fetch(`/api/orders/${orderNo}/cspr/status?memo=${encodeURIComponent(bilgi.memo)}`);
+        const r = await fetch(`/api/orders/${orderNo}/cspr/status?memo=${encodeURIComponent(bilgi.memo)}`, { headers: basliklar });
         const s = await r.json();
-        if (s.paid) router.push(`/siparis/${orderNo}`);
+        if (s.paid) router.push(siparisBag);
       } catch {}
     }, 5000);
     return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bilgi, orderNo, router]);
 
   const kopyala = (metin: string, etiket: string) => {
@@ -71,7 +74,7 @@ export function CsprPanel({ orderNo }: { orderNo: string }) {
       <div className="mt-8 border-l-4 border-amber-500 bg-amber-50 px-5 py-4">
         <p className="text-sm font-bold text-amber-800">Ödeme talimatı alınamadı</p>
         <p className="mt-1 text-xs text-amber-700">{hata}</p>
-        <a href={`/siparis/${orderNo}`} className="mt-3 inline-block text-xs font-bold underline underline-offset-4">← Siparişe dön</a>
+        <a href={siparisBag} className="mt-3 inline-block text-xs font-bold underline underline-offset-4">← Siparişe dön</a>
       </div>
     );
   }
@@ -128,7 +131,7 @@ export function CsprPanel({ orderNo }: { orderNo: string }) {
         Ödeme zincirde görüldüğünde siparişiniz otomatik onaylanır ve faturanız kesilir.
       </p>
 
-      <a href={`/siparis/${orderNo}`} className="block text-center text-xs font-bold text-black/40 transition hover:text-black">← Siparişe dön</a>
+      <a href={siparisBag} className="block text-center text-xs font-bold text-black/40 transition hover:text-black">← Siparişe dön</a>
     </div>
   );
 }

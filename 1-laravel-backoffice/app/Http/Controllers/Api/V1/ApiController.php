@@ -85,6 +85,12 @@ class ApiController extends Controller
             return response()->json(['message' => 'Ürün bulunamadı.'], 404);
         }
 
+        $puan = \DB::table('product_reviews')
+            ->where('product_id', $product->id)
+            ->where('is_approved', true)
+            ->selectRaw('ROUND(AVG(rating), 1) as oran, COUNT(*) as adet')
+            ->first();
+
         return response()->json([
             'data' => [
                 'id' => $product->id,
@@ -104,6 +110,8 @@ class ApiController extends Controller
                 'reserved_quantity' => $product->reserved_quantity,
                 'available_quantity' => $product->availableQuantity(),
                 'in_stock' => $product->availableQuantity() > 0,
+                'rating_avg' => $puan && $puan->adet > 0 ? (float) $puan->oran : null,
+                'review_count' => (int) ($puan->adet ?? 0),
                 'image_count' => $product->images->count(),
                 'image_url' => $product->images->isNotEmpty() ? 'ok' : null,
                 'variants' => $product->variants->sortBy(fn ($v) => $v->siraAnahtari())->map(fn ($v) => [
@@ -197,11 +205,22 @@ class ApiController extends Controller
             'customer_email' => ['nullable', 'email'],
             'customer_name' => ['nullable', 'string', 'max:255'],
             'shipping_address' => ['nullable', 'string', 'max:500'],
+            'customer_phone' => ['nullable', 'string', 'max:30'],
+            'fatura_tipi' => ['nullable', 'in:bireysel,kurumsal'],
+            'fatura_unvan' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:255'],
+            'vergi_dairesi' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:100'],
+            'vergi_no' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'digits_between:10,11'],
+            'fatura_adresi' => ['nullable', 'string', 'max:500'],
             'tax_rate' => ['required', 'numeric', 'in:0,1,10,20'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'items.*.variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
+        ], [
+            'fatura_unvan.required_if' => 'Kurumsal faturada şirket unvanı zorunludur.',
+            'vergi_dairesi.required_if' => 'Kurumsal faturada vergi dairesi zorunludur.',
+            'vergi_no.required_if' => 'Kurumsal faturada vergi numarası zorunludur.',
+            'vergi_no.digits_between' => 'Vergi numarası 10 (VKN) veya 11 (TCKN) haneli olmalıdır.',
         ]);
 
         $order = $orderService->create($request->user()->company_id, $validated);
@@ -215,6 +234,7 @@ class ApiController extends Controller
             'data' => [
                 'order_id' => $order->id,
                 'order_no' => $order->order_no,
+                'access_key' => $order->access_key,
                 'status' => $order->status,
                 'expires_at' => $order->expires_at?->toIso8601String(),
                 'total' => (float) $order->total,
@@ -250,10 +270,14 @@ class ApiController extends Controller
         return response()->json([
             'data' => $orders->map(fn ($o) => [
                 'order_no' => $o->order_no,
+                'access_key' => $o->access_key,
                 'status' => $o->status,
                 'status_label' => $o->statusLabel(),
                 'total' => (float) $o->total,
                 'customer_name' => $o->customer_name,
+                'customer_email' => $o->customer_email,
+                'iade_talebi' => $o->iade_talebi,
+                'iade_tutari' => $o->iade_tutari !== null ? (float) $o->iade_tutari : null,
                 'invoice_no' => $o->invoice?->invoice_no,
                 'created_at' => $o->created_at->toIso8601String(),
                 'tracking_no' => $o->tracking_no,
@@ -276,10 +300,28 @@ class ApiController extends Controller
         return response()->json([
             'data' => [
                 'order_no' => $order->order_no,
+                'access_key' => $order->access_key,
                 'external_ref' => $order->external_ref,
                 'status' => $order->status,
                 'status_label' => $order->statusLabel(),
+                'customer_name' => $order->customer_name,
+                'customer_email' => $order->customer_email,
+                'customer_phone' => $order->customer_phone,
+                'shipping_address' => $order->shipping_address,
+                'fatura' => [
+                    'tipi' => $order->fatura_tipi ?? 'bireysel',
+                    'unvan' => $order->fatura_unvan,
+                    'vergi_dairesi' => $order->vergi_dairesi,
+                    'vergi_no' => $order->vergi_no,
+                    'adres' => $order->fatura_adresi,
+                ],
+                'subtotal' => (float) $order->subtotal,
+                'tax_rate' => (float) $order->tax_rate,
+                'tax_amount' => (float) $order->tax_amount,
                 'total' => (float) $order->total,
+                'iade_talebi' => $order->iade_talebi,
+                'iade_tutari' => $order->iade_tutari !== null ? (float) $order->iade_tutari : null,
+                'created_at' => $order->created_at?->toIso8601String(),
                 'paid_at' => $order->paid_at?->toIso8601String(),
                 'delivered_at' => $order->delivered_at?->toIso8601String(),
                 'iade_son_tarih' => $order->iadeSonTarihi()?->toIso8601String(),
@@ -410,7 +452,15 @@ class ApiController extends Controller
             ->where('order_no', $orderNo)
             ->firstOrFail();
 
-        $orderService->requestReturn($order, $request->user()->company_id);
+        $talep = $request->validate([
+            'neden' => ['nullable', 'in:'.implode(',', array_keys(OrderService::IADE_NEDENLERI))],
+            'aciklama' => ['nullable', 'string', 'max:500'],
+            'kalemler' => ['nullable', 'array'],
+            'kalemler.*.sira' => ['required', 'integer', 'min:0'],
+            'kalemler.*.adet' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $orderService->requestReturn($order, $request->user()->company_id, $talep);
 
         return response()->json([
             'message' => 'İade talebiniz alındı. Ekibimiz inceleyip onaylayacak.',
@@ -630,6 +680,43 @@ class ApiController extends Controller
     }
 
     /**
+     * Fiyat düşünce haber ver: kayıt anındaki KDV dahil fiyatın altına inince e-posta gider.
+     * POST /api/v1/price-alerts  { email, product_id }
+     */
+    public function priceAlert(Request $request): JsonResponse
+    {
+        $veri = $request->validate([
+            'email' => ['required', 'email', 'max:120'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+        ], ['email.email' => 'Geçerli bir e-posta adresi girin.']);
+
+        $urun = Product::findOrFail($veri['product_id']);
+        $kdvDahil = round($urun->finalPrice() * 1.2, 2);
+
+        $kayit = \DB::table('price_alerts')
+            ->where('email', $veri['email'])
+            ->where('product_id', $urun->id)
+            ->whereNull('notified_at')
+            ->first();
+
+        if ($kayit) {
+            \DB::table('price_alerts')->where('id', $kayit->id)->update(['takip_fiyati' => $kdvDahil, 'updated_at' => now()]);
+        } else {
+            \DB::table('price_alerts')->insert([
+                'product_id' => $urun->id,
+                'email' => $veri['email'],
+                'takip_fiyati' => $kdvDahil,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Fiyat alarmı kuruldu — fiyat '.number_format($kdvDahil, 2, ',', '.').' ₺ altına inince haber vereceğiz.',
+        ]);
+    }
+
+    /**
      * Ana sayfa sosyal kanıt vitrini — son onaylı yüksek puanlı yorumlar.
      * GET /api/v1/reviews/latest
      */
@@ -808,12 +895,31 @@ class ApiController extends Controller
                 'products.name as urun_adi',
             ]);
 
+        $fiyat = \DB::table('price_alerts')
+            ->join('products', 'products.id', '=', 'price_alerts.product_id')
+            ->orderByDesc('price_alerts.created_at')
+            ->limit(100)
+            ->get([
+                'price_alerts.email',
+                'price_alerts.takip_fiyati',
+                'price_alerts.notified_at',
+                'price_alerts.created_at',
+                'products.name as urun_adi',
+            ]);
+
         return response()->json([
             'data' => [
                 'bulten' => $bulten,
                 'stok' => $stok->map(fn ($k) => [
                     'email' => $k->email,
                     'urun' => $k->urun_adi,
+                    'gonderildi' => $k->notified_at !== null,
+                    'tarih' => $k->created_at,
+                ]),
+                'fiyat' => $fiyat->map(fn ($k) => [
+                    'email' => $k->email,
+                    'urun' => $k->urun_adi,
+                    'takip_fiyati' => (float) $k->takip_fiyati,
                     'gonderildi' => $k->notified_at !== null,
                     'tarih' => $k->created_at,
                 ]),
