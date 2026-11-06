@@ -8,6 +8,7 @@ import { sepet } from "@/components/CartProvider";
 import { auth } from "@/components/AuthProvider";
 import { OdemeAdimlari } from "@/components/OdemeAdimlari";
 import { AuthModal } from "@/components/AuthModal";
+import { PaketFirsati } from "@/components/PaketFirsati";
 import { ILLER, ISTANBUL_ILCELERI, kargoBolgesi, telefonDuzelt } from "@/lib/adres";
 import { KARGO_BOLGELERI, UCRETSIZ_KARGO_LIMITI, teslimSuresi } from "@/lib/kargo";
 import { kdvDahil } from "@/lib/fiyat";
@@ -328,6 +329,9 @@ export default function OdemeSayfasi() {
             </section>
 
             {hata && <div className="border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{hata}</div>}
+
+            {/* Son teklif: birlikte alınanlardan paket */}
+            <PaketFirsati />
 
             {/* Kupon kodu */}
             <div className="rounded-xl border border-black/10 bg-[#f8f8f8] p-4">
