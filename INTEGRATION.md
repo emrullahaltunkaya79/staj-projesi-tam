@@ -12,7 +12,7 @@
 ## 2. Arka Ofis Kurulumu (port 8000)
 
 ```bash
-cd 1-arka-ofis
+cd 1-laravel-backoffice
 
 composer install
 cp .env.example .env

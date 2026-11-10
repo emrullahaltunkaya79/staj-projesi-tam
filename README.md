@@ -11,7 +11,7 @@
 ```
 sataj/
 ├── README.md                    ← Bu dosya
-├── 1-arka-ofis/                 ← Laravel Ön Muhasebe (ana API)
+├── 1-laravel-backoffice/                 ← Laravel Ön Muhasebe (ana API)
 ├── 2-nextjs-magaza/             ← Next.js E-Ticaret Mağaza (ana vitrin)
 ├── 3-laravel-magaza/            ← Laravel Livewire Mağaza (yedek vitrin)
 └── INTEGRATION.md               ← Entegrasyon rehberi
@@ -19,7 +19,7 @@ sataj/
 
 ---
 
-## 🏢 1-arka-ofis — Ön Muhasebe API (Laravel 11)
+## 🏢 1-laravel-backoffice — Ön Muhasebe API (Laravel 11)
 
 **Ne yapar?** Tüm sistemin beyni. Muhasebe + stok + sipariş yönetimi + e-ticaret API'si.
 
