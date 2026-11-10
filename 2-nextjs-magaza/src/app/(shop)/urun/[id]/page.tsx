@@ -135,7 +135,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
       </div>
 
       <section className="px-5 pb-24 sm:px-10">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2 [&>*]:min-w-0">
           <UrunDetayOzellikleri urun={u} />
       <SonGoruntulenenler suAnki={{
         id: u.id,

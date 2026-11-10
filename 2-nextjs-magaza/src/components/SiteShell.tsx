@@ -291,7 +291,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          <div className="order-2 flex items-center gap-4 sm:order-3">
+          <div className="order-2 flex flex-wrap items-center justify-end gap-2 sm:order-3 sm:gap-4">
             {/* Dil değiştirici */}
             <button
               type="button"
