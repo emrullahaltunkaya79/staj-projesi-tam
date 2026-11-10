@@ -44,7 +44,7 @@
         @else
             <div class="space-y-3">
                 @foreach ($orders as $o)
-                    <a href="{{ route('shop.order', $o['order_no']) }}"
+                    <a href="{{ route('shop.sorgula', ['no' => $o['order_no']]) }}"
                        class="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md">
                         <div class="flex h-11 w-11 items-center justify-center rounded-xl {{ $durumRenk[$o['status']] ?? 'bg-slate-100 text-slate-500' }} text-lg">
                             @if ($o['status'] === 'shipped') 🚚 @elseif ($o['status'] === 'cancelled') ✕ @elseif ($o['status'] === 'delivered') ✅ @else 🧾 @endif

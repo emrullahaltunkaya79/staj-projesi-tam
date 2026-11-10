@@ -9,9 +9,26 @@ use RuntimeException;
 class OrderController extends Controller
 {
     /**
+     * Erişim kapısı: sipariş numarası sıralı (ORD-000001…) olduğu için tek başına yetmez.
+     * Siparişe özel erişim anahtarı (?k=) gerekir — anahtar yalnızca sipariş sahibine
+     * (checkout yönlendirmesi / doğru e-postalı sorgulama) verilir.
+     */
+    private function erisimKontrol(Request $request, array $order): void
+    {
+        $anahtar = (string) $request->query('k', (string) $request->input('k', ''));
+        $beklenen = (string) ($order['access_key'] ?? '');
+
+        if ($beklenen !== '' && hash_equals($beklenen, $anahtar)) {
+            return;
+        }
+
+        abort(403, 'Bu siparişi görüntüleme yetkiniz yok. Sipariş numarası ve e-posta ile sorgulayabilirsiniz.');
+    }
+
+    /**
      * Sipariş takip: durum, kalemeler, kargo linki.
      */
-    public function show(string $orderNo)
+    public function show(Request $request, string $orderNo)
     {
         try {
             $order = ApiClient::make()->order($orderNo)['data'] ?? [];
@@ -20,8 +37,9 @@ class OrderController extends Controller
         }
 
         abort_if(empty($order), 404, 'Sipariş bulunamadı.');
+        $this->erisimKontrol($request, $order);
 
-        return view('shop.order', ['order' => $order]);
+        return view('shop.order', ['order' => $order, 'k' => (string) $request->query('k', $request->input('k', ''))]);
     }
 
     /**
@@ -29,6 +47,14 @@ class OrderController extends Controller
      */
     public function pay(Request $request, string $orderNo)
     {
+        try {
+            $order = ApiClient::make()->order($orderNo)['data'] ?? [];
+        } catch (RuntimeException $e) {
+            abort(503, $e->getMessage());
+        }
+        abort_if(empty($order), 404, 'Sipariş bulunamadı.');
+        $this->erisimKontrol($request, $order);
+
         try {
             $result = ApiClient::make()->pay($orderNo);
 
@@ -51,6 +77,14 @@ class OrderController extends Controller
      */
     public function cancel(Request $request, string $orderNo)
     {
+        try {
+            $order = ApiClient::make()->order($orderNo)['data'] ?? [];
+        } catch (RuntimeException $e) {
+            abort(503, $e->getMessage());
+        }
+        abort_if(empty($order), 404, 'Sipariş bulunamadı.');
+        $this->erisimKontrol($request, $order);
+
         try {
             $result = ApiClient::make()->cancel($orderNo, 'müşteri talebi (web)');
 

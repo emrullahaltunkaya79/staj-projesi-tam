@@ -19,8 +19,9 @@ class Checkout extends Component
     #[Validate('required|string|min:10|max:500', message: 'Teslim adresi zorunludur.')]
     public string $address = '';
 
-    #[Validate('required|string|in:0,1,10,20')]
-    public string $taxRate = '20';
+    #[Validate('required', message: 'Cep telefonu zorunludur.')]
+    #[Validate('regex:/^0?5\d{9}$/', message: 'Geçerli bir cep telefonu girin (05XX XXX XX XX). Kargo firması teslimatta arar.')]
+    public string $phone = '';
 
     public bool $submitting = false;
 
@@ -67,12 +68,13 @@ class Checkout extends Component
 
             $order = $client->createOrder([
                 'contact_id' => $contactId,
-                'tax_rate' => (int) $this->taxRate,
+                'tax_rate' => 20, // fiyatlar KDV dahil gösterilir; arka ofisle aynı oran
                 'items' => $items,
                 'shipping_address' => $this->address,
                 'external_ref' => $externalRef,
                 'customer_email' => $this->email,
                 'customer_name' => $this->name,
+                'customer_phone' => preg_replace('/\s+/', '', $this->phone),
             ]);
 
             $orderNo = $order['data']['order_no'] ?? null;
@@ -83,7 +85,12 @@ class Checkout extends Component
             Cart::clear();
             $this->dispatch('cart-updated');
 
-            return redirect()->route('shop.order', ['orderNo' => $orderNo, 'yeni' => 1]);
+            return redirect()->route('shop.order', [
+                'orderNo' => $orderNo,
+                'yeni' => 1,
+                // Sipariş sayfası erişim korumalı — sahibi anahtarla açar
+                'k' => $order['data']['access_key'] ?? '',
+            ]);
         } catch (RuntimeException $e) {
             $this->addError('api', $e->getMessage());
             $this->submitting = false;

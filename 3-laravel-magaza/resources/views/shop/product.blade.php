@@ -33,11 +33,12 @@
                 $urunNet = $product['final_price'] ?? ($product['sale_price'] ?? 0);
             @endphp
             <div class="mt-5 flex flex-wrap items-baseline gap-3">
-                <span class="text-4xl font-black tabular-nums {{ $urunIndirim > 0 ? 'text-rose-600' : 'text-slate-900' }}">{{ $fmt($urunNet) }}</span>
+                <span class="text-4xl font-black tabular-nums {{ $urunIndirim > 0 ? 'text-rose-600' : 'text-slate-900' }}">{{ $fmt($urunNet * 1.2) }}</span>
                 @if ($urunIndirim > 0)
-                    <span class="text-lg tabular-nums text-slate-400 line-through">{{ $fmt($product['sale_price']) }}</span>
+                    <span class="text-lg tabular-nums text-slate-400 line-through">{{ $fmt($product['sale_price'] * 1.2) }}</span>
                     <span class="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">%{{ $urunIndirim }} indirim</span>
                 @endif
+                <span class="self-center text-[11px] font-medium text-slate-400">KDV dahil</span>
             </div>
 
             <div class="mt-4 flex items-center gap-2">

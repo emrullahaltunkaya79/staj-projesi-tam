@@ -24,14 +24,14 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <a href="{{ route('shop.product', $id) }}" class="block truncate text-[15px] font-bold text-slate-800 hover:text-indigo-600">{{ $item['name'] }}</a>
-                            <div class="mt-0.5 text-sm text-slate-400">{{ $fmt($item['price']) }} / {{ $item['unit'] ?? 'adet' }}</div>
+                            <div class="mt-0.5 text-sm text-slate-400">{{ $fmt($item['price'] * 1.2) }} / {{ $item['unit'] ?? 'adet' }}</div>
                         </div>
                         <div class="flex h-10 items-center rounded-xl border border-slate-300 bg-white">
                             <button type="button" wire:click="decrease({{ $id }})" class="h-full w-9 font-bold text-slate-500 hover:text-indigo-600">−</button>
                             <span class="w-10 text-center text-sm font-bold tabular-nums">{{ $item['qty'] }}</span>
                             <button type="button" wire:click="increase({{ $id }})" class="h-full w-9 font-bold text-slate-500 hover:text-indigo-600">+</button>
                         </div>
-                        <div class="w-24 text-right text-[15px] font-black tabular-nums text-slate-900">{{ $fmt($item['price'] * $item['qty']) }}</div>
+                        <div class="w-24 text-right text-[15px] font-black tabular-nums text-slate-900">{{ $fmt($item['price'] * $item['qty'] * 1.2) }}</div>
                         <button type="button" wire:click="remove({{ $id }})" title="Sepetten çıkar" class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-300 transition hover:bg-red-50 hover:text-red-500">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
@@ -42,9 +42,9 @@
             <div class="h-fit rounded-2xl border border-slate-200 bg-white p-5 lg:sticky lg:top-24">
                 <div class="text-sm font-bold text-slate-800">Sipariş Özeti</div>
                 <div class="mt-4 space-y-2.5 text-sm">
-                    <div class="flex justify-between text-slate-500"><span>Ara Toplam</span><span class="font-semibold tabular-nums text-slate-700">{{ $fmt($subtotal) }}</span></div>
-                    <div class="flex justify-between text-slate-500"><span>KDV (%20)</span><span class="font-semibold tabular-nums text-slate-700">{{ $fmt($tax) }}</span></div>
-                    <div class="flex justify-between border-t border-slate-100 pt-3 text-base font-black text-slate-900"><span>Toplam</span><span class="tabular-nums">{{ $fmt($total) }}</span></div>
+                    <div class="flex justify-between text-slate-700"><span>Ürünler (KDV dahil)</span><span class="font-semibold tabular-nums text-slate-900">{{ $fmt($total) }}</span></div>
+                    <div class="flex justify-between text-[12px] text-slate-400"><span>KDV tutarı (%20 dahil)</span><span class="tabular-nums">{{ $fmt($tax) }}</span></div>
+                    <div class="flex justify-between border-t border-slate-100 pt-3 text-base font-black text-slate-900"><span>Ödenecek (Kargo hariç)</span><span class="tabular-nums">{{ $fmt($total) }}</span></div>
                 </div>
                 <a href="{{ route('shop.checkout') }}"
                    class="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-500 active:scale-[.98]">

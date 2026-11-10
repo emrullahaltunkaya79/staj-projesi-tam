@@ -1,8 +1,8 @@
 @php
     $fmt = fn ($v) => number_format((float) $v, 2, ',', '.').' ₺';
     $subtotal = \App\Services\Cart::subtotal();
-    $tax = \App\Services\Cart::tax((int) $taxRate);
-    $total = \App\Services\Cart::total((int) $taxRate);
+    $tax = \App\Services\Cart::tax(20);
+    $total = \App\Services\Cart::total(20);
     $adet = \App\Services\Cart::count();
 @endphp
 
@@ -37,13 +37,11 @@
                     @error('address') <p class="mt-1 text-xs font-semibold text-red-500">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-xs font-bold text-slate-500">KDV Oranı</label>
-                    <select wire:model="taxRate" class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm focus:border-indigo-500 focus:outline-none">
-                        <option value="20">%20 (Standart)</option>
-                        <option value="10">%10 (Orta)</option>
-                        <option value="1">%1 (Düşük)</option>
-                        <option value="0">KDV Yok</option>
-                    </select>
+                    <label class="mb-1.5 block text-xs font-bold text-slate-500">Cep Telefonu *</label>
+                    <input type="tel" wire:model="phone" placeholder="0532 123 45 67"
+                           class="w-full rounded-xl border {{ $errors->has('phone') ? 'border-red-400' : 'border-slate-300' }} bg-white px-3.5 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                    @error('phone') <p class="mt-1 text-xs font-semibold text-red-500">{{ $message }}</p> @enderror
+                    <p class="mt-1 text-[11px] text-slate-400">Kargo firması teslimatta bu numarayı arar.</p>
                 </div>
             </div>
 
@@ -81,9 +79,9 @@
             @endforeach
         </div>
         <div class="mt-4 space-y-2.5 border-t border-slate-100 pt-4 text-sm">
-            <div class="flex justify-between text-slate-500"><span>Ara Toplam</span><span class="font-semibold tabular-nums text-slate-700">{{ $fmt($subtotal) }}</span></div>
-            <div class="flex justify-between text-slate-500"><span>KDV (%{{ $taxRate }})</span><span class="font-semibold tabular-nums text-slate-700">{{ $fmt($tax) }}</span></div>
-            <div class="flex justify-between border-t border-slate-100 pt-3 text-base font-black text-slate-900"><span>Toplam</span><span class="tabular-nums">{{ $fmt($total) }}</span></div>
+            <div class="flex justify-between text-slate-700"><span>Ürünler (KDV dahil)</span><span class="font-semibold tabular-nums text-slate-900">{{ $fmt($total) }}</span></div>
+            <div class="flex justify-between text-[12px] text-slate-400"><span>KDV tutarı (%20 dahil)</span><span class="tabular-nums">{{ $fmt($tax) }}</span></div>
+            <div class="flex justify-between border-t border-slate-100 pt-3 text-base font-black text-slate-900"><span>Ödenecek</span><span class="tabular-nums">{{ $fmt($total) }}</span></div>
         </div>
         <button type="button" wire:click="submit" wire:loading.attr="disabled"
                 class="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-500 active:scale-[.98] disabled:opacity-60">

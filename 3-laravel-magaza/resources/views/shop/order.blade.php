@@ -69,8 +69,8 @@
                         <tr class="border-b border-slate-50 last:border-0">
                             <td class="px-5 py-3.5 font-semibold text-slate-700">{{ $item['product_name'] ?? 'Ürün' }}</td>
                             <td class="px-3 py-3.5 text-center text-slate-400">{{ ($item['quantity'] + 0) }} adet</td>
-                            <td class="px-3 py-3.5 text-right text-slate-400 tabular-nums">{{ $fmt($item['unit_price'] ?? 0) }}</td>
-                            <td class="px-5 py-3.5 text-right font-bold tabular-nums text-slate-800">{{ $fmt($item['line_total'] ?? 0) }}</td>
+                            <td class="px-3 py-3.5 text-right text-slate-400 tabular-nums">{{ $fmt(($item['unit_price'] ?? 0) * 1.2) }}</td>
+                            <td class="px-5 py-3.5 text-right font-bold tabular-nums text-slate-800">{{ $fmt(($item['line_total'] ?? 0) * 1.2) }}</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -83,8 +83,9 @@
                 <div class="text-sm font-bold text-slate-800">Ödeme</div>
                 @if ($order['status'] === 'pending')
                     <div class="mt-2 text-xs text-amber-600 font-semibold">Rezerv {{ \Carbon\Carbon::parse($order['expires_at'])->format('H:i') }}'e kadar geçerli</div>
-                    <a href="{{ route('shop.payment', $order['order_no']) }}" class="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-500 active:scale-[.98]">⛓️ CSPR ile Öde</a><form method="POST" action="{{ route('shop.order.pay', $order['order_no']) }}" class="mt-2 hidden">
+                    <a href="{{ route('shop.payment', array_filter(['orderNo' => $order['order_no'], 'k' => $k])) }}" class="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-500 active:scale-[.98]">⛓️ CSPR ile Öde</a><form method="POST" action="{{ route('shop.order.pay', $order['order_no']) }}" class="mt-2 hidden">
                         @csrf
+                        <input type="hidden" name="k" value="{{ $k }}">
                         <button type="submit" class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-500 active:scale-[.98]">
                             ⛓️ CSPR ile Öde
                         </button>
@@ -92,6 +93,7 @@
                     <form method="POST" action="{{ route('shop.order.cancel', $order['order_no']) }}" class="mt-2"
                           onsubmit="return confirm('Siparişi iptal etmek istediğinize emin misiniz?');">
                         @csrf
+                        <input type="hidden" name="k" value="{{ $k }}">
                         <button type="submit" class="h-10 w-full rounded-xl border border-slate-200 text-xs font-semibold text-slate-400 transition hover:border-red-200 hover:text-red-500">Siparişi İptal Et</button>
                     </form>
                 @elseif ($order['status'] !== 'cancelled')

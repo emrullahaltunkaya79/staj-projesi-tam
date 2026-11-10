@@ -4,6 +4,8 @@
     // Gerçek ürün bazlı indirim (arka ofis discount_percent)
     $indirim = (int) ($p['discount_percent'] ?? 0);
     $netFiyat = $p['final_price'] ?? $p['sale_price'];
+    // Müşteriye fiyatlar KDV dahil gösterilir (arka ofis fiyatları KDV hariç tutar)
+    $kdv = fn ($v) => (float) $v * 1.2;
 @endphp
 <div class="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-3 transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl">
     @if ($puanDeger >= 4.8 && $musait > 0)

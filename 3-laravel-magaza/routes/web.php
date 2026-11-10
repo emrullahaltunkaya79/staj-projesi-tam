@@ -14,6 +14,7 @@ Route::get('/urun/{id}', [ShopController::class, 'product'])->name('shop.product
 
 Route::get('/sepet', CartPage::class)->name('shop.cart');
 Route::get('/siparislerim', MyOrders::class)->name('shop.myorders');
+Route::get('/siparis-sorgula', \App\Livewire\SiparisSorgula::class)->name('shop.sorgula');
 Route::get('/odeme', Checkout::class)->name('shop.checkout');
 
 Route::get('/siparis/{orderNo}', [OrderController::class, 'show'])->name('shop.order');

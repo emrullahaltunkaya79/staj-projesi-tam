@@ -4,7 +4,7 @@
 @section('content')
     <div class="mx-auto max-w-2xl">
         <div class="mb-4 text-sm text-slate-400">
-            <a href="{{ route('shop.order', $orderNo) }}" class="font-semibold text-indigo-500 hover:text-indigo-600">← Siparişe dön</a>
+            <a href="{{ route('shop.order', array_filter(['orderNo' => $orderNo, 'k' => $k])) }}" class="font-semibold text-indigo-500 hover:text-indigo-600">← Siparişe dön</a>
         </div>
 
         @if ($error)
@@ -63,6 +63,8 @@
                         </p>
 
                         <form method="POST" action="{{ route('shop.order.pay', $orderNo) }}" class="border-t border-slate-100 pt-3">
+                        @csrf
+                        <input type="hidden" name="k" value="{{ $k }}">
                             @csrf
                             <button type="submit" class="text-[11px] font-semibold text-slate-300 underline-offset-2 hover:text-indigo-400 hover:underline">
                                 Demo: ödemeyi manuel onayla (test)
@@ -106,7 +108,7 @@
                 const r = await fetch(`/siparis/${ORDER_NO}/odeme/durum?memo=${encodeURIComponent(MEMO)}`);
                 const d = await r.json();
                 if (d.paid) {
-                    location.href = '{{ route('shop.order', $orderNo) }}';
+                    location.href = '{{ route('shop.order', array_filter(['orderNo' => $orderNo, 'k' => $k])) }}';
                 }
             } catch (e) { /* sessiz */ }
         }

@@ -1,5 +1,6 @@
 import { sellerSiparisler } from "@/lib/seller";
 import { IadeOnayButonu } from "@/components/seller/IadeOnayButonu";
+import { KargoFormu } from "@/components/seller/KargoFormu";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Siparişler — Satıcı Paneli" };
@@ -56,6 +57,7 @@ export default async function SaticiSiparisler() {
                     <td className="px-3 py-3 text-right font-black tabular-nums text-slate-900">{fmt(s.total)}</td>
                     <td className="px-5 py-3 text-right">
                       {s.status === "return_requested" && <IadeOnayButonu orderNo={s.order_no} />}
+                      {["paid", "preparing"].includes(s.status) && <KargoFormu orderNo={s.order_no} />}
                     </td>
                   </tr>
                 );

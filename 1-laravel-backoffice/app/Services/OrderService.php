@@ -478,6 +478,13 @@ class OrderService
                 }
                 $order->update(['status' => 'cancelled', 'notes' => ($order->notes ? $order->notes.' — ' : '').'Ödeme zaman aşımı (otomatik iptal)']);
                 $released++;
+
+                // Mağazayı da haberdar et — diğer iptal yollarıyla aynı davranış
+                $this->webhookService->orderCancelled(
+                    $order->order_no,
+                    (string) ($order->external_ref ?? ''),
+                    'Ödeme zaman aşımı (otomatik iptal)',
+                );
             });
         }
 
