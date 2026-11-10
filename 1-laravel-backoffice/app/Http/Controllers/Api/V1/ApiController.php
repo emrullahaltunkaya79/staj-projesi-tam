@@ -226,6 +226,9 @@ class ApiController extends Controller
             'vergi_no.digits_between' => 'Vergi numarası 10 (VKN) veya 11 (TCKN) haneli olmalıdır.',
         ]);
 
+        // unit_price: yalnızca güvenilir mağaza sunucusu kupon/kargo ayarlaması için gönderir;
+        // müşteri token'ları bu uca zaten erişemez (BlockCustomerTokens → 403)
+
         $order = $orderService->create($request->user()->company_id, $validated);
 
         $mevcut = $orderService->lastCreateWasExisting;

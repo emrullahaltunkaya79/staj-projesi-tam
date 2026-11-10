@@ -233,6 +233,23 @@ class MagazaGuvenligiVeHesapTest extends TestCase
     }
 
     /** @test */
+    public function musteri_tokeniyle_unit_price_li_siparis_olusturulamaz(): void
+    {
+        // Fiyatlandırma güvenilir mağaza sunucusunda yapılır; müşteri token'ı sipariş
+        // ucuna hiç erişemez — unit_price ile fiyat manipülasyonu da mümkün değildir.
+        $magaza = User::factory()->create();
+        Sanctum::actingAs($this->musteri($magaza), ['ecommerce']);
+
+        $this->postJson('/api/v1/orders', [
+            'contact_id' => 1,
+            'tax_rate' => 20,
+            'items' => [['product_id' => 1, 'quantity' => 1, 'unit_price' => 0.01]],
+        ])->assertForbidden();
+
+        $this->assertSame(0, Order::count());
+    }
+
+    /** @test */
     public function magaza_musterisi_on_muhasebe_paneline_giremez(): void
     {
         $magaza = User::factory()->create();
