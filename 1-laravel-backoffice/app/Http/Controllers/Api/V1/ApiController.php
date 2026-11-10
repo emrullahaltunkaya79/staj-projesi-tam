@@ -206,6 +206,7 @@ class ApiController extends Controller
             'customer_name' => ['nullable', 'string', 'max:255'],
             'shipping_address' => ['nullable', 'string', 'max:500'],
             'customer_phone' => ['nullable', 'string', 'max:30'],
+            'notes' => ['nullable', 'string', 'max:1000'],
             'fatura_tipi' => ['nullable', 'in:bireysel,kurumsal'],
             'fatura_unvan' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:255'],
             'vergi_dairesi' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:100'],
@@ -215,6 +216,8 @@ class ApiController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
+            // Mağaza kupon/kargo ayarlamalarını kalemlere işleyip gönderir (indirimli satış fiyatı)
+            'items.*.unit_price' => ['nullable', 'numeric', 'min:0.01'],
             'items.*.variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
         ], [
             'fatura_unvan.required_if' => 'Kurumsal faturada şirket unvanı zorunludur.',

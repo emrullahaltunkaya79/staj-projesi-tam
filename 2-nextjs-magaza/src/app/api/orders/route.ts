@@ -19,12 +19,14 @@ export async function POST(request: NextRequest) {
       email: String(govde.email),
       phone: String(govde.phone),
       address: String(govde.address),
-      items: (govde.items as { product_id: number; quantity: number; variant_id?: number }[]).map((i) => ({
+      items: (govde.items as { product_id: number; quantity: number; variant_id?: number; unit_price?: number }[]).map((i) => ({
         product_id: Number(i.product_id),
         quantity: Number(i.quantity),
         ...(i.variant_id ? { variant_id: Number(i.variant_id) } : {}),
+        ...(i.unit_price != null ? { unit_price: Number(i.unit_price) } : {}),
       })),
       externalRef: String(govde.externalRef ?? `NEXT-${Date.now()}`),
+      notes: govde.notes ? String(govde.notes) : undefined,
       fatura: {
         tipi: kurumsal ? "kurumsal" : "bireysel",
         ...(kurumsal

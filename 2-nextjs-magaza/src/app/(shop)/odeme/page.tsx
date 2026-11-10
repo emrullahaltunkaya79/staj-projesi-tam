@@ -120,6 +120,11 @@ export default function OdemeSayfasi() {
 
     const teslimatAdresi = `${acikAdres.trim()}, ${ilce.trim()} / ${il}`;
 
+    // Kupon indirimi ve kargo ücreti arka ofis siparişine işlenir: kalem fiyatları
+    // ödenecek toplama ölçeklenir (arka ofis KDV hariç hesaplar, oran korunur);
+    // kupon kodu + tutarı notes ile kalıcı kayda geçer.
+    const oran = genelToplam > 0 ? odenecekTutar / genelToplam : 1;
+
     setGonderiliyor(true);
     try {
       const yanit = await fetch("/api/orders", {
@@ -130,8 +135,17 @@ export default function OdemeSayfasi() {
           email,
           phone: tel,
           address: teslimatAdresi,
-          items: ogeler.map((o) => ({ product_id: o.id, quantity: o.adet, ...(o.varyantId ? { variant_id: o.varyantId } : {}) })),
+          items: ogeler.map((o) => ({
+            product_id: o.id,
+            quantity: o.adet,
+            unit_price: Math.round(o.fiyat * oran * 10000) / 10000,
+            ...(o.varyantId ? { variant_id: o.varyantId } : {}),
+          })),
           externalRef: `NEXT-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+          notes: [
+            kupon ? `Kupon ${kupon.code}: -${fmt(kupon.discount)} TL` : null,
+            toplamKargo > 0 ? `Kargo: ${fmt(toplamKargo)} TL (${bolge?.ad ?? "-"})` : null,
+          ].filter(Boolean).join(" | ") || undefined,
           fatura: {
             tipi: faturaTipi,
             ...(faturaTipi === "kurumsal" ? { unvan, vergiDairesi, vergiNo } : {}),

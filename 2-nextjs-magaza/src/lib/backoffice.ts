@@ -179,8 +179,10 @@ export type SiparisVerisi = {
   email: string;
   phone: string;
   address: string;
-  items: { product_id: number; quantity: number; variant_id?: number }[];
+  /** unit_price verilirse arka ofis ürün fiyatını değil bunu kullanır (kupon/kargo ayarlaması) */
+  items: { product_id: number; quantity: number; variant_id?: number; unit_price?: number }[];
   externalRef: string;
+  notes?: string;
   fatura: { tipi: "bireysel" | "kurumsal"; unvan?: string; vergiDairesi?: string; vergiNo?: string; adres?: string };
 };
 
@@ -197,6 +199,7 @@ export async function siparisOlustur(veri: SiparisVerisi): Promise<{ orderNo: st
       contact_id: musteri.data.contact_id,
       tax_rate: KDV_ORANI,
       items: veri.items,
+      notes: veri.notes,
       shipping_address: veri.address,
       external_ref: veri.externalRef,
       customer_email: veri.email,
