@@ -90,6 +90,8 @@ export async function POST(request: NextRequest) {
       items,
       externalRef: String(govde.externalRef ?? `NEXT-${Date.now()}`),
       notes: notesNotlari || undefined,
+      hediyePaket: Boolean(govde.hediyePaket),
+      hediyeNotu: govde.hediyeNotu ? String(govde.hediyeNotu).slice(0, 300) : null,
       fatura: {
         tipi: govde.fatura?.tipi === "kurumsal" ? "kurumsal" : "bireysel",
         ...(govde.fatura?.tipi === "kurumsal"

@@ -28,7 +28,12 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
+
+// Google ile giriş (mağaza müşterileri) — oturum gerekmez
+Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
 // Misafir - kimlik doğrulama
 Route::middleware('guest')->group(function () {

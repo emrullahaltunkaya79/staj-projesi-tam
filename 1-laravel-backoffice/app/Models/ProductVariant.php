@@ -13,6 +13,8 @@ class ProductVariant extends Model
         'product_id',
         'name',
         'type',
+        'renk',
+        'beden',
         'sku',
         'stock_quantity',
     ];
@@ -31,18 +33,25 @@ class ProductVariant extends Model
 
     private const BEDEN_SIRASI = ['XXS', 'XS', 'S', 'S/M', 'M', 'M/L', 'L', 'L/XL', 'XL', 'XXL', '3XL'];
 
-    /** Listeleme sırası: bedenler küçükten büyüğe (S → XL, 36 → 44), renkler ada göre. */
+    /** Listeleme sırası: kombiler renk→beden; bedenler küçükten büyüğe; renkler ada göre. */
     public function siraAnahtari(): string
     {
-        if ($this->type !== 'beden') {
-            return 'd'.$this->name;
+        if ($this->type === 'kombi') {
+            $b = array_search(mb_strtoupper((string) $this->beden), self::BEDEN_SIRASI, true);
+            $b = $b === false ? 99 : $b;
+
+            return sprintf('a%02d%s', $b, mb_strtolower((string) $this->renk));
         }
 
-        $sira = array_search(mb_strtoupper($this->name), self::BEDEN_SIRASI, true);
-        if ($sira !== false) {
-            return sprintf('a%02d', $sira);
+        if ($this->type === 'beden') {
+            $sira = array_search(mb_strtoupper($this->name), self::BEDEN_SIRASI, true);
+            if ($sira !== false) {
+                return sprintf('a%02d', $sira);
+            }
+
+            return is_numeric($this->name) ? sprintf('b%07.2f', (float) $this->name) : 'c'.$this->name;
         }
 
-        return is_numeric($this->name) ? sprintf('b%07.2f', (float) $this->name) : 'c'.$this->name;
+        return 'd'.$this->name;
     }
 }

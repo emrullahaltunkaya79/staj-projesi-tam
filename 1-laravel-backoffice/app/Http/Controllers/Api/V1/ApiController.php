@@ -9,6 +9,7 @@ use App\Models\Contact;
 use App\Models\Product;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 
 /**
@@ -118,6 +119,8 @@ class ApiController extends Controller
                     'id' => $v->id,
                     'name' => $v->name,
                     'type' => $v->type ?? 'renk',
+                    'renk' => $v->renk,
+                    'beden' => $v->beden,
                     'stock_quantity' => $v->stock_quantity,
                     'in_stock' => $v->stock_quantity > 0,
                 ])->values(),
@@ -207,6 +210,8 @@ class ApiController extends Controller
             'shipping_address' => ['nullable', 'string', 'max:500'],
             'customer_phone' => ['nullable', 'string', 'max:30'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'hediye_paket' => ['nullable', 'boolean'],
+            'hediye_notu' => ['nullable', 'string', 'max:300'],
             'fatura_tipi' => ['nullable', 'in:bireysel,kurumsal'],
             'fatura_unvan' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:255'],
             'vergi_dairesi' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:100'],
@@ -228,6 +233,11 @@ class ApiController extends Controller
 
         // unit_price: yalnızca güvenilir mağaza sunucusu kupon/kargo ayarlaması için gönderir;
         // müşteri token'ları bu uca zaten erişemez (BlockCustomerTokens → 403)
+
+        // Hediye paketi seçildiyse not zorunludur (karta yazılır)
+        if (! empty($validated['hediye_paket']) && blank($validated['hediye_notu'] ?? null)) {
+            throw ValidationException::withMessages(['hediye_notu' => 'Hediye paketi için hediye notu yazın.']);
+        }
 
         $order = $orderService->create($request->user()->company_id, $validated);
 
@@ -867,12 +877,14 @@ class ApiController extends Controller
         ]);
     }
 
-    /** Mağaza filtreleri için varyant özeti: ad, tür (renk | beden), stok durumu. */
+    /** Mağaza filtreleri için varyant özeti: ad, tür (renk | beden | kombi), öznitelikler ve stok durumu. */
     private function varyantOzeti(Product $urun): array
     {
         return $urun->variants->sortBy(fn ($v) => $v->siraAnahtari())->map(fn ($v) => [
             'ad' => $v->name,
             'tur' => $v->type ?? 'renk',
+            'renk' => $v->renk,
+            'beden' => $v->beden,
             'stokta' => $v->stock_quantity > 0,
         ])->values()->all();
     }

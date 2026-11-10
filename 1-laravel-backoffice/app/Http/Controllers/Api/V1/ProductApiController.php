@@ -174,9 +174,11 @@ class ProductApiController extends Controller
     {
         $reviews = ProductReview::where('product_id', $id)
             ->where('is_approved', true)
+            ->withCount('votes')
             ->latest()
             ->take(20)
-            ->get(['id', 'user_name', 'rating', 'comment', 'image_path', 'created_at']);
+            ->get(['id', 'user_name', 'rating', 'comment', 'image_path', 'created_at'])
+            ->map(fn ($r) => array_merge($r->toArray(), ['faydali' => (int) $r->votes_count]));
 
         $ortalamа = ProductReview::where('product_id', $id)
             ->where('is_approved', true)
@@ -185,9 +187,36 @@ class ProductApiController extends Controller
         return response()->json([
             'data' => [
                 'ortalam_puan' => round((float) $ortalamа, 1),
-                'yorum_sayisi' => $reviews->count(),
+                'yorum_sayisi' => ProductReview::where('product_id', $id)->where('is_approved', true)->count(),
                 'yorumlar' => $reviews,
             ],
+        ]);
+    }
+
+    /**
+     * Yorum "faydalı oldu" oyu — müşteri token'ıyla, oy tekrar tıklanınca geri alınır.
+     * POST /api/v1/reviews/{review}/faydali
+     */
+    public function faydaliToggle(Request $request, int $reviewId): JsonResponse
+    {
+        $review = ProductReview::find($reviewId);
+        abort_if(! $review, 404, 'Yorum bulunamadı.');
+
+        $mevcut = \App\Models\ReviewVote::where('review_id', $reviewId)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if ($mevcut) {
+            $mevcut->delete();
+            $oyVerildi = false;
+        } else {
+            \App\Models\ReviewVote::create(['review_id' => $reviewId, 'user_id' => $request->user()->id]);
+            $oyVerildi = true;
+        }
+
+        return response()->json([
+            'message' => $oyVerildi ? 'Oyunuz kaydedildi.' : 'Oyunuz kaldırıldı.',
+            'data' => ['oy_verildi' => $oyVerildi, 'faydali' => \App\Models\ReviewVote::where('review_id', $reviewId)->count()],
         ]);
     }
 

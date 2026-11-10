@@ -18,6 +18,11 @@ class ProductReview extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function votes()
+    {
+        return $this->hasMany(ReviewVote::class, 'review_id');
+    }
+
     protected function casts(): array
     {
         return [

@@ -25,6 +25,7 @@ Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/reset-password', [AuthApiController::class, 'resetPassword'])->name('api.auth.reset');
     Route::post('/auth/verify-email', [AuthApiController::class, 'verifyEmail'])->name('api.auth.verify');
     Route::post('/auth/resend-verification', [AuthApiController::class, 'resendVerification'])->name('api.auth.resend');
+    Route::post('/auth/google/exchange', [AuthApiController::class, 'googleExchange'])->name('api.auth.google-exchange');
 });
 
 // Müşteri hesabı — müşterinin kendi token'ıyla
@@ -33,6 +34,8 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])
     ->group(function () {
         Route::get('/auth/me', [AuthApiController::class, 'me'])->name('api.auth.me');
         Route::post('/auth/logout', [AuthApiController::class, 'logout'])->name('api.auth.logout');
+
+        Route::post('/reviews/{review}/faydali', [ProductApiController::class, 'faydaliToggle'])->whereNumber('review')->name('api.reviews.faydali');
 
         Route::put('/hesap/profil', [AccountApiController::class, 'profil'])->name('api.hesap.profil');
         Route::put('/hesap/sifre', [AccountApiController::class, 'sifre'])->name('api.hesap.sifre');

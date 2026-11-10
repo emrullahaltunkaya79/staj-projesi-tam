@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, Loader2, MessageSquare } from "lucide-react";
+import { Star, Loader2, MessageSquare, ThumbsUp } from "lucide-react";
+import { auth } from "./AuthProvider";
 
 type Yorum = {
   id: number;
@@ -9,11 +10,15 @@ type Yorum = {
   rating: number;
   comment: string | null;
   created_at: string;
+  faydali?: number;
   gorsel?: string | null;
 };
 
 export function Yorumlar({ urunId }: { urunId: number }) {
+  const { girisYapmis } = auth();
   const [yorumlar, setYorumlar] = useState<Yorum[]>([]);
+  const [oyVerilenler, setOyVerilenler] = useState<Set<number>>(new Set());
+  const [oyMesaji, setOyMesaji] = useState<string | null>(null);
   const [ortalam, setOrtalam] = useState(0);
   const [sayi, setSayi] = useState(0);
   const [puan, setPuan] = useState(5);
@@ -24,7 +29,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   const [foto, setFoto] = useState<File | null>(null);
   const [fotoOnizleme, setFotoOnizleme] = useState<string | null>(null);
 
-  useEffect(() => {
+  const yorumlariYukle = () =>
     fetch(`/api/products/${urunId}/reviews`)
       .then((r) => r.json())
       .then((d) => {
@@ -33,7 +38,34 @@ export function Yorumlar({ urunId }: { urunId: number }) {
         setSayi(d.data?.yorum_sayisi ?? 0);
       })
       .catch(() => {});
+
+  useEffect(() => {
+    yorumlariYukle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urunId]);
+
+  const oyVer = async (id: number) => {
+    if (!girisYapmis) {
+      setOyMesaji("Oy vermek için giriş yapın.");
+      setTimeout(() => setOyMesaji(null), 3000);
+      return;
+    }
+    try {
+      const r = await fetch(`/api/reviews/${id}/faydali`, { method: "POST" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.hata ?? "Oy kaydedilemedi.");
+      setYorumlar((liste) => liste.map((y) => (y.id === id ? { ...y, faydali: d.data?.faydali ?? y.faydali } : y)));
+      setOyVerilenler((s) => {
+        const yeni = new Set(s);
+        if (yeni.has(id)) yeni.delete(id);
+        else yeni.add(id);
+        return yeni;
+      });
+    } catch (err) {
+      setOyMesaji(err instanceof Error ? err.message : "Oy kaydedilemedi.");
+      setTimeout(() => setOyMesaji(null), 3000);
+    }
+  };
 
   const gonder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,6 +205,20 @@ export function Yorumlar({ urunId }: { urunId: number }) {
                       </div>
                     </div>
                     {y.comment && <p className="mt-2 pl-11 text-sm leading-relaxed text-black/70">{y.comment}</p>}
+                    <div className="mt-2 pl-11">
+                      <button
+                        type="button"
+                        onClick={() => oyVer(y.id)}
+                        className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold transition ${
+                          oyVerilenler.has(y.id)
+                            ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                            : "border-black/10 text-black/45 hover:border-black/40 hover:text-black"
+                        }`}
+                      >
+                        <ThumbsUp className="h-3 w-3" /> Faydalı {y.faydali ? `(${y.faydali})` : ""}
+                      </button>
+                      {oyMesaji && <span className="ml-2 text-[11px] font-semibold text-amber-600">{oyMesaji}</span>}
+                    </div>
                     {y.gorsel && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <button

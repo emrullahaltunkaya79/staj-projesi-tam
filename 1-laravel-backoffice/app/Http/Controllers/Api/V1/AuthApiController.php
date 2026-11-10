@@ -8,9 +8,11 @@ use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthApiController extends Controller
@@ -300,6 +302,22 @@ class AuthApiController extends Controller
         ])->save();
 
         return response()->json(['message' => 'E-postanız doğrulandı.']);
+    }
+
+    /**
+     * Google girişi tek kullanımlık kodunu token ile değiştirir (mağaza sunucusu çağırır).
+     * POST /api/v1/auth/google/exchange { code }
+     */
+    public function googleExchange(Request $request): JsonResponse
+    {
+        $kod = (string) $request->input('code', '');
+        $payload = Cache::pull('google-kod:'.hash('sha256', $kod));
+
+        if (! $payload) {
+            return response()->json(['message' => 'Bağlantının süresi doldu — tekrar giriş yapın.'], 410);
+        }
+
+        return response()->json(['data' => $payload]);
     }
 
     /**

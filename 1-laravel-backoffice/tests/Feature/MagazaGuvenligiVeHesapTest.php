@@ -233,6 +233,78 @@ class MagazaGuvenligiVeHesapTest extends TestCase
     }
 
     /** @test */
+    public function kombi_varyantli_siparis_stogu_dusurur_ve_hediye_kaydedilir(): void
+    {
+        $user = $this->magazaSunucusu();
+        $cari = Contact::create(['company_id' => $user->company_id, 'name' => 'Kombi Testi']);
+        $urun = $this->urun($user, ['name' => 'Akıllı Saat Kombi']);
+
+        $kombi = \App\Models\ProductVariant::create([
+            'company_id' => $user->company_id,
+            'product_id' => $urun->id,
+            'name' => 'Siyah / M',
+            'type' => 'kombi',
+            'renk' => 'Siyah',
+            'beden' => 'M',
+            'stock_quantity' => 5,
+        ]);
+
+        $cevap = $this->postJson('/api/v1/orders', [
+            'contact_id' => $cari->id,
+            'tax_rate' => 20,
+            'hediye_paket' => true,
+            'hediye_notu' => 'Doğum günü için sarın lütfen',
+            'items' => [['product_id' => $urun->id, 'quantity' => 1, 'variant_id' => $kombi->id]],
+        ])->assertCreated();
+
+        $this->assertStringContainsString('(Siyah / M)', $cevap->json('data.items.0.product_name'));
+
+        $siparis = Order::where('order_no', $cevap->json('data.order_no'))->first();
+        $this->assertTrue($siparis->hediye_paket);
+        $this->assertSame('Doğum günü için sarın lütfen', $siparis->hediye_notu);
+        $this->assertSame(4, $kombi->fresh()->stock_quantity); // rezerv düşüldü
+        $this->assertStringContainsString('(Siyah / M)', $cevap->json('data.items.0.product_name'));
+    }
+
+    /** @test */
+    public function yorum_oyu_toggle_edilir_ve_misafir_oy_veremez(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create();
+        $urun = $this->urun($user);
+        $yorum = \App\Models\ProductReview::create([
+            'product_id' => $urun->id,
+            'user_id' => $user->id,
+            'user_name' => 'Ayşe',
+            'rating' => 5,
+            'comment' => 'Harika',
+            'is_approved' => true,
+        ]);
+
+        // misafir oy veremez
+        $this->postJson("/api/v1/reviews/{$yorum->id}/faydali")->assertUnauthorized();
+
+        // müşteri oy verir → tekrar → oy geri alınır
+        $musteri = User::factory()->create(['company_id' => $user->company_id, 'role' => 'musteri']);
+        Sanctum::actingAs($musteri, ['ecommerce']);
+
+        $this->postJson("/api/v1/reviews/{$yorum->id}/faydali")->assertOk()->assertJsonPath('data.oy_verildi', true);
+        $this->postJson("/api/v1/reviews/{$yorum->id}/faydali")->assertOk()->assertJsonPath('data.oy_verildi', false);
+    }
+
+    /** @test */
+    public function google_yapilandirilmamissa_dostca_yonlendirir(): void
+    {
+        $this->withoutExceptionHandling();
+
+        $cevap = $this->get('/auth/google/redirect?store=next');
+
+        $hedef = $cevap->headers->get('Location');
+        $this->assertStringContainsString('3001', $hedef);
+        $this->assertStringContainsString('googleHata', $hedef);
+    }
+
+    /** @test */
     public function musteri_tokeniyle_unit_price_li_siparis_olusturulamaz(): void
     {
         // Fiyatlandırma güvenilir mağaza sunucusunda yapılır; müşteri token'ı sipariş

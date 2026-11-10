@@ -33,12 +33,27 @@ export type Urun = {
   varyant_adlari?: string[];
   varyant_min_stok?: number | null;
   varyantlar?: VaryantOzeti[];
+  /** Ürün detay ucunun tam varyant listesi (id'li) */
+  variants?: VaryantTam[];
+};
+
+/** Detay ucundaki varyant — id ile siparişe bağlanır. */
+export type VaryantTam = {
+  id: number;
+  name: string;
+  type?: string;
+  renk?: string | null;
+  beden?: string | null;
+  stock_quantity: number;
+  in_stock: boolean;
 };
 
 /** API varyant özeti — ad, tür (renk | beden) ve stok durumu. */
 export type VaryantOzeti = {
   ad: string;
   tur: string;
+  renk?: string | null;
+  beden?: string | null;
   stokta: boolean;
 };
 
@@ -183,6 +198,8 @@ export type SiparisVerisi = {
   items: { product_id: number; quantity: number; variant_id?: number; unit_price?: number }[];
   externalRef: string;
   notes?: string;
+  hediyePaket: boolean;
+  hediyeNotu: string | null;
   fatura: { tipi: "bireysel" | "kurumsal"; unvan?: string; vergiDairesi?: string; vergiNo?: string; adres?: string };
 };
 
@@ -205,6 +222,8 @@ export async function siparisOlustur(veri: SiparisVerisi): Promise<{ orderNo: st
       customer_email: veri.email,
       customer_name: veri.name,
       customer_phone: veri.phone,
+      hediye_paket: veri.hediyePaket,
+      hediye_notu: veri.hediyeNotu,
       fatura_tipi: veri.fatura.tipi,
       ...(veri.fatura.tipi === "kurumsal"
         ? { fatura_unvan: veri.fatura.unvan, vergi_dairesi: veri.fatura.vergiDairesi, vergi_no: veri.fatura.vergiNo }

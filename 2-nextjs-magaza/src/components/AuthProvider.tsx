@@ -54,6 +54,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
           .finally(() => window.dispatchEvent(new Event("hba-oturum")));
       }
+
+      // Google girişi dönüşü: tek kullanımlık kodu token ile değiştir
+      const googleKod = new URLSearchParams(window.location.search).get("giris");
+      if (googleKod) {
+        fetch("/api/auth/google-exchange", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: googleKod }),
+        })
+          .then(async (r) => {
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.message ?? "Giriş tamamlanamadı.");
+            localStorage.setItem(TOKEN_KEY, d.data.token);
+            localStorage.setItem(USER_KEY, JSON.stringify(d.data.user));
+            setKullanici(d.data.user);
+          })
+          .catch(() => {})
+          .finally(() => {
+            window.history.replaceState({}, "", window.location.pathname);
+            window.dispatchEvent(new Event("hba-oturum"));
+          });
+      }
     } catch {}
   }, []);
 

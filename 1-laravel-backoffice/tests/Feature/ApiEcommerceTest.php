@@ -165,8 +165,8 @@ class ApiEcommerceTest extends TestCase
         $user = $this->loginUser();
         $kategori = Category::create(['company_id' => $user->company_id, 'name' => 'Elektronik']);
         $saat = $this->createProduct($user, ['name' => 'Akıllı Saat Sport', 'category_id' => $kategori->id]);
-        ProductVariant::create(['company_id' => $user->company_id, 'product_id' => $saat->id, 'name' => 'M/L', 'type' => 'beden', 'stock_quantity' => 3]);
-        ProductVariant::create(['company_id' => $user->company_id, 'product_id' => $saat->id, 'name' => 'L/XL', 'type' => 'beden', 'stock_quantity' => 0]);
+        ProductVariant::create(['company_id' => $user->company_id, 'product_id' => $saat->id, 'name' => 'M/L', 'type' => 'beden', 'beden' => 'M/L', 'stock_quantity' => 3]);
+        ProductVariant::create(['company_id' => $user->company_id, 'product_id' => $saat->id, 'name' => 'L/XL', 'type' => 'beden', 'beden' => 'L/XL', 'stock_quantity' => 0]);
 
         $cevap = $this->getJson('/api/v1/products/arama?q=saat&per_page=200');
 
@@ -174,7 +174,10 @@ class ApiEcommerceTest extends TestCase
         $this->assertSame(200, $cevap->json('meta.per_page'));
         $this->assertSame(1, $cevap->json('meta.kategoriler.Elektronik'));
         $this->assertSame(
-            [['ad' => 'M/L', 'tur' => 'beden', 'stokta' => true], ['ad' => 'L/XL', 'tur' => 'beden', 'stokta' => false]],
+            [
+                ['ad' => 'M/L', 'tur' => 'beden', 'renk' => null, 'beden' => 'M/L', 'stokta' => true],
+                ['ad' => 'L/XL', 'tur' => 'beden', 'renk' => null, 'beden' => 'L/XL', 'stokta' => false],
+            ],
             $cevap->json('data.0.varyantlar'),
         );
     }

@@ -182,6 +182,12 @@
                     {{ $order->fatura_adresi ?: $order->shipping_address }}
                 </div>
             @endif
+            @if ($order->hediye_paket)
+                <div class="mt-3 rounded-lg border border-pink-200 bg-pink-50 p-3 text-xs text-pink-800 dark:border-pink-900 dark:bg-pink-950/30 dark:text-pink-200">
+                    <span class="font-semibold">🎁 Hediye paketi istendi</span>
+                    @if ($order->hediye_notu)<br>Not: “{{ $order->hediye_notu }}”@endif
+                </div>
+            @endif
             @if ($order->iade_talebi)
                 <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
                     <span class="font-semibold">{{ $order->iade_talebi['kismi'] ? 'Kısmi İade Talebi' : 'İade Talebi' }}</span>

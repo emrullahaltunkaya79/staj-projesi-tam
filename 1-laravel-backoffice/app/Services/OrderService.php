@@ -156,6 +156,8 @@ class OrderService
                 'vergi_dairesi' => $data['vergi_dairesi'] ?? null,
                 'vergi_no' => $data['vergi_no'] ?? null,
                 'fatura_adresi' => $data['fatura_adresi'] ?? null,
+                'hediye_paket' => (bool) ($data['hediye_paket'] ?? false),
+                'hediye_notu' => $data['hediye_notu'] ?? null,
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'tax_rate' => $taxRate,

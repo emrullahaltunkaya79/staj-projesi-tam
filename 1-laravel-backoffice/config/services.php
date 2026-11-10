@@ -48,4 +48,13 @@ return [
         'rpc_url' => env('CASPER_RPC_URL', 'https://rpc.testnet.cspr.network'),
         'rate' => env('CSPR_RATE', '0.1'),
     ],
+
+    // Google ile giriş (mağaza müşterileri) — GOOGLE_REDIRECT_URI / store adresleri prod'da değişir
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/auth/google/callback'),
+        'store_next' => env('GOOGLE_STORE_NEXT', 'http://127.0.0.1:3001'),
+        'store_livewire' => env('GOOGLE_STORE_LIVEWIRE', 'http://127.0.0.1:3000'),
+    ],
 ];

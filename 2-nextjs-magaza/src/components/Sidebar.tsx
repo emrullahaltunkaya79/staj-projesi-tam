@@ -41,7 +41,9 @@ export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
     });
   if (f.bedenler.length > 0)
     sonuc = sonuc.filter((u) =>
-      f.bedenler.some((b) => (u.varyantlar ?? []).some((v) => v.tur === "beden" && v.ad === b && v.stokta)),
+      f.bedenler.some((b) =>
+        (u.varyantlar ?? []).some((v) => (v.tur === "beden" || v.tur === "kombi") && v.beden === b && v.stokta),
+      ),
     );
   return sonuc;
 }
@@ -133,7 +135,8 @@ export function Sidebar({
     const sayac = new Map<string, number>();
     for (const u of urunler) {
       for (const v of u.varyantlar ?? []) {
-        if (v.tur === "beden" && v.stokta) sayac.set(v.ad, (sayac.get(v.ad) ?? 0) + 1);
+        // düz bedenler + kombilerın beden boyutu
+        if ((v.tur === "beden" || v.tur === "kombi") && v.stokta && v.beden) sayac.set(v.beden, (sayac.get(v.beden) ?? 0) + 1);
       }
     }
     return [...sayac.entries()]

@@ -40,6 +40,8 @@ export default function OdemeSayfasi() {
   const [vergiNo, setVergiNo] = useState("");
   const [faturaAyri, setFaturaAyri] = useState(false);
   const [faturaAdresi, setFaturaAdresi] = useState("");
+  const [hediye, setHediye] = useState(false);
+  const [hediyeNotu, setHediyeNotu] = useState("");
 
   // Hesaba kayıtlı adresler (giriş yapmış müşteri)
   const [adresler, setAdresler] = useState<KayitliAdres[]>([]);
@@ -139,6 +141,8 @@ export default function OdemeSayfasi() {
             ...(o.varyantId ? { variant_id: o.varyantId } : {}),
           })),
           externalRef: `NEXT-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+          hediyePaket: hediye,
+          hediyeNotu: hediye ? hediyeNotu.trim() : null,
           couponCode: kupon?.code ?? null,
           fatura: {
             tipi: faturaTipi,
@@ -337,6 +341,22 @@ export default function OdemeSayfasi() {
             </section>
 
             {hata && <div className="border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{hata}</div>}
+
+            {/* Hediye seçenekleri */}
+            <div className="rounded-xl border border-pink-200 bg-pink-50/50 p-4">
+              <label className="flex cursor-pointer items-center gap-2.5 text-[13px] font-bold text-pink-900">
+                <input type="checkbox" checked={hediye} onChange={(e) => setHediye(e.target.checked)} className="h-4 w-4 accent-pink-600" />
+                🎁 Hediye paketi ile gönder (ücretsiz)
+              </label>
+              {hediye && (
+                <div className="mt-3">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-pink-800/60">Hediye notunuz *</label>
+                  <textarea required maxLength={300} rows={2} value={hediyeNotu} onChange={(e) => setHediyeNotu(e.target.value)}
+                            placeholder="Hediye kartına yazılacak not — alıcıya panelde ve faturada görünür"
+                            className="w-full border border-pink-200 bg-white px-3 py-2 text-sm focus:border-pink-400 focus:outline-none" />
+                </div>
+              )}
+            </div>
 
             {/* Son teklif: birlikte alınanlardan paket */}
             <PaketFirsati />
