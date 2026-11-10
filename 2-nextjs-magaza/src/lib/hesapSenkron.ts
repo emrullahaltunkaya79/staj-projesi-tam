@@ -4,8 +4,6 @@
  * doğrulanmamış hesaplar sahiplik iddia edemez) — yalnız yerel liste kullanılır.
  */
 
-export type SenkronOgeleri = { id: number }[];
-
 export async function oturumlaSenkron<T extends { id: number }>(
   alan: "favoriler" | "sepet",
   yerel: T[],

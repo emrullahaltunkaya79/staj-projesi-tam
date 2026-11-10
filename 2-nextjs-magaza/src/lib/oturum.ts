@@ -8,11 +8,6 @@ export async function oturumKullanicisi() {
   return tokenKullanicisi((await cookies()).get(OTURUM_CEREZI)?.value);
 }
 
-export async function saticiYetkisi() {
-  const kullanici = await oturumKullanicisi();
-  return saticiMi(kullanici) ? kullanici : null;
-}
-
 function esit(a: string, b: string): boolean {
   const x = Buffer.from(a);
   const y = Buffer.from(b);
