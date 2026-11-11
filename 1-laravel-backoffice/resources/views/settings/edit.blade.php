@@ -108,6 +108,49 @@
         </form>
     </div>
 
+    {{-- Google ile Giriş --}}
+    <div class="card mt-4 p-5">
+        <div class="mb-1 flex items-center justify-between gap-3">
+            <h3 class="font-bold text-slate-800 dark:text-slate-100">Google ile Giriş (OAuth)</h3>
+            @if (\App\Models\Setting::get('google_client_id') || config('services.google.client_id'))
+                <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">Aktif</span>
+            @else
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Kapalı</span>
+            @endif
+        </div>
+        <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            Mağazadaki "Google ile devam et" düğmesini açar. Google Cloud Console → API ve Hizmetler → Kimlik bilgileri →
+            OAuth 2.0 İstemci Kimliği (Web uygulaması) oluşturun ve <b>Yetkilendirilmiş yönlendirme URI'si</b> olarak
+            aşağıdakini kopyalayın:
+        </p>
+        <div class="mb-4 rounded-lg border border-indigo-100 bg-indigo-50/60 p-3 font-mono text-xs text-slate-700 dark:border-indigo-900 dark:bg-indigo-950/30 dark:text-slate-300">
+            {{ config('services.google.redirect') }}
+        </div>
+
+        <form method="POST" action="{{ route('ayarlar.integration') }}">
+            @csrf
+            <input type="hidden" name="google_only" value="1">
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="label" for="google_client_id">Google İstemci Kimliği (Client ID)</label>
+                    <input type="text" id="google_client_id" name="google_client_id"
+                           value="{{ old('google_client_id', \App\Models\Setting::get('google_client_id', config('services.google.client_id'))) }}"
+                           class="input font-mono text-xs" placeholder="1234567890-abc.apps.googleusercontent.com">
+                </div>
+                <div>
+                    <label class="label" for="google_client_secret">Google İstemci Gizli Anahtarı (Client Secret)</label>
+                    <input type="password" id="google_client_secret" name="google_client_secret"
+                           value="{{ old('google_client_secret', \App\Models\Setting::get('google_client_secret') ?: config('services.google.client_secret')) }}"
+                           class="input font-mono text-xs" placeholder="GOCSPU-…">
+                    <p class="mt-1 text-xs text-slate-400">Boş kaydederseniz mevcut değer korunur; .env'de tanımlıysa oradaki değer önce gelir.</p>
+                </div>
+            </div>
+            <div class="mt-5">
+                <button type="submit" class="btn-primary">Google Ayarlarını Kaydet</button>
+            </div>
+        </form>
+    </div>
+
     {{-- Yedekleme --}}
     <div class="card mt-4 p-6">
         <h3 class="mb-1 font-bold text-slate-800 dark:text-slate-100">Yedekleme</h3>

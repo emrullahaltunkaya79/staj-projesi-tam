@@ -105,12 +105,31 @@ class CompanySettingController extends Controller
     {
         abort_unless($request->user()->can('manage', \App\Models\User::class), 403);
 
+        // Google kartından gelen yalnızca-Google gönderimi: CSPR/webhook alanları istenmez
+        if ($request->boolean('google_only')) {
+            $g = $request->validate([
+                'google_client_id' => ['nullable', 'string', 'max:200'],
+                'google_client_secret' => ['nullable', 'string', 'max:200'],
+            ]);
+
+            if (! config('services.google.client_id')) {
+                \App\Models\Setting::set('google_client_id', trim((string) ($g['google_client_id'] ?? '')));
+                if ($request->filled('google_client_secret')) {
+                    \App\Models\Setting::set('google_client_secret', trim((string) $g['google_client_secret']));
+                }
+            }
+
+            return redirect()->route('ayarlar.edit')->with('success', 'Google ile giriş ayarları güncellendi.');
+        }
+
         $validated = $request->validate([
             'casper_address' => ['nullable', 'string', 'max:120'],
             'casper_network' => ['required', 'in:testnet,mainnet'],
             'casper_rate' => ['required', 'numeric', 'min:0.0001'],
             'ecommerce_webhook_url' => ['nullable', 'url', 'max:500'],
             'ecommerce_webhook_secret' => ['nullable', 'string', 'max:200'],
+            'google_client_id' => ['nullable', 'string', 'max:200'],
+            'google_client_secret' => ['nullable', 'string', 'max:200'],
         ], [
             'casper_network.required' => 'Ağ seçimi zorunludur.',
             'casper_rate.required' => 'CSPR/TL kuru zorunludur.',
@@ -124,6 +143,14 @@ class CompanySettingController extends Controller
 
         if ($request->filled('ecommerce_webhook_secret')) {
             \App\Models\Setting::set('ecommerce_webhook_secret', $validated['ecommerce_webhook_secret']);
+        }
+
+        // Google ile giriş: .env önceliklidir; env'de kimlik yoksa paneldeki değerler devreye girer
+        if (! config('services.google.client_id')) {
+            \App\Models\Setting::set('google_client_id', trim((string) ($validated['google_client_id'] ?? '')));
+            if ($request->filled('google_client_secret')) {
+                \App\Models\Setting::set('google_client_secret', trim((string) $validated['google_client_secret']));
+            }
         }
 
         return redirect()->route('ayarlar.edit')

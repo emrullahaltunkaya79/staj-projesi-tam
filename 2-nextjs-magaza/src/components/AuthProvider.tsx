@@ -33,6 +33,26 @@ const USER_KEY = "hba-user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [kullanici, setKullanici] = useState<AuthUser | null>(null);
+  const [googleUyari, setGoogleUyari] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Google girişi hata kodları — kullanıcıya anlaşılır mesajla bildirilir
+    const googleHata = new URLSearchParams(window.location.search).get("googleHata");
+    if (googleHata) {
+      const mesajlar: Record<string, string> = {
+        yapilandirma: "Google ile giriş henüz yapılandırılmadı — panel → Ayarlar → Google ile Giriş.",
+        guvenlik: "Güvenlik doğrulaması başarısız oldu, lütfen tekrar deneyin.",
+        iptal: "Google girişi iptal edildi.",
+        token: "Google oturumu alınamadı, lütfen tekrar deneyin.",
+        dogrulama: "Google e-postanız doğrulanmamış.",
+        satici: "Google girişi yalnızca müşteri hesapları içindir.",
+        kod: "Google yetkilendirmesi tamamlanamadı.",
+      };
+      setGoogleUyari(mesajlar[googleHata] ?? "Google girişi tamamlanamadı.");
+      setTimeout(() => setGoogleUyari(null), 8000);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -140,6 +160,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <Baglam.Provider value={{ kullanici, girisYapmis: !!kullanici, giris, kayit, cikis, emailDogrula }}>
       {children}
+      {googleUyari && (
+        <div className="fixed bottom-6 left-1/2 z-[90] -translate-x-1/2 rounded-full border border-amber-200 bg-amber-50 px-5 py-2.5 text-xs font-bold text-amber-800 shadow-lg" role="alert">
+          ⚠️ {googleUyari}
+        </div>
+      )}
     </Baglam.Provider>
   );
 }

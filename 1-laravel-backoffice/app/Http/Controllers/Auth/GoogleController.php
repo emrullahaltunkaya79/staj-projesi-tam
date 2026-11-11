@@ -17,13 +17,24 @@ use Illuminate\Support\Str;
  */
 class GoogleController extends Controller
 {
+    /** Kimlik çözümleme: .env önceliklidir; yoksa paneldeki "Google ile Giriş" ayarları kullanılır. */
+    private function clientId(): ?string
+    {
+        return config('services.google.client_id') ?: \App\Models\Setting::get('google_client_id');
+    }
+
+    private function clientSecret(): ?string
+    {
+        return config('services.google.client_secret') ?: \App\Models\Setting::get('google_client_secret');
+    }
+
     public function redirect(Request $request)
     {
         $store = $request->query('store') === 'livewire' ? 'livewire' : 'next';
 
-        $clientId = config('services.google.client_id');
+        $clientId = $this->clientId();
         if (! $clientId) {
-            // Kimlik bilgileri henüz girilmemiş: .env'e GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET ekleyin
+            // Kimlik bilgileri henüz girilmemiş: panel → Ayarlar → "Google ile Giriş" kartından girilir
             return redirect()->away($this->storeUrl($store, ['googleHata' => 'yapilandirma']));
         }
 
@@ -63,8 +74,8 @@ class GoogleController extends Controller
 
         $tokenYaniti = Http::asForm()->post('https://oauth2.googleapis.com/token', [
             'code' => $code,
-            'client_id' => config('services.google.client_id'),
-            'client_secret' => config('services.google.client_secret'),
+            'client_id' => $this->clientId(),
+            'client_secret' => $this->clientSecret(),
             'redirect_uri' => config('services.google.redirect'),
             'grant_type' => 'authorization_code',
         ]);
