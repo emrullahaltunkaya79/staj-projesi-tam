@@ -33,6 +33,32 @@
         </div>
 
         <div>
+            <label class="label" for="brand">Marka</label>
+            <input type="text" id="brand" name="brand" value="{{ old('brand', $product->brand) }}"
+                   class="input" placeholder="Logitech, Samsung…">
+            @error('brand') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="label" for="model">Model</label>
+            <input type="text" id="model" name="model" value="{{ old('model', $product->model) }}"
+                   class="input" placeholder="MX-2200">
+            @error('model') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="label" for="alt_kategori">Alt Kategori</label>
+            <input type="text" id="alt_kategori" name="alt_kategori" value="{{ old('alt_kategori', $product->alt_kategori) }}"
+                   class="input" placeholder="Klavye, Mouse, Monitör…" list="alt-kategori-onerileri">
+            <datalist id="alt-kategori-onerileri">
+                @foreach (\App\Models\Product::whereNotNull('alt_kategori')->distinct()->orderBy('alt_kategori')->pluck('alt_kategori') as $a)
+                    <option value="{{ $a }}">
+                @endforeach
+            </datalist>
+            @error('alt_kategori') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <label class="label" for="barcode">Barkod <span class="font-normal text-slate-400">(EAN/POS)</span></label>
             <input type="text" id="barcode" name="barcode" value="{{ old('barcode', $product->barcode) }}"
                    class="input" placeholder="8690000000000">

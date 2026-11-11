@@ -11,6 +11,8 @@ import { useMemo } from "react";
 
 export type Filtreler = {
   marka: string | null;
+  model: string | null;
+  altKategori: string | null;
   minFiyat: string;
   maxFiyat: string;
   sadeceStok: boolean;
@@ -20,11 +22,13 @@ export type Filtreler = {
   bedenler: string[];
 };
 
-export const bosFiltreler: Filtreler = { marka: null, minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [], bedenler: [] };
+export const bosFiltreler: Filtreler = { marka: null, model: null, altKategori: null, minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [], bedenler: [] };
 
 export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
   let sonuc = urunler;
   if (f.marka) sonuc = sonuc.filter((u) => u.brand === f.marka);
+  if (f.model) sonuc = sonuc.filter((u) => u.model === f.model);
+  if (f.altKategori) sonuc = sonuc.filter((u) => u.alt_kategori === f.altKategori);
   // Müşteri KDV dahil fiyat görür ve girer; karşılaştırma da KDV dahil yapılır
   if (f.minFiyat) sonuc = sonuc.filter((u) => kdvDahil(indirimliFiyat(u)) >= Number(f.minFiyat));
   if (f.maxFiyat) sonuc = sonuc.filter((u) => kdvDahil(indirimliFiyat(u)) <= Number(f.maxFiyat));
@@ -144,6 +148,16 @@ export function Sidebar({
       .map(([deger, sayi]) => ({ deger, sayi }));
   }, [urunler]);
 
+  // Alt kategori + model seçenekleri (kategorinin kendi ürünlerinden)
+  const altSecenekleri = useMemo(
+    () => facetSecenekleri(urunler.map((u) => ({ degerler: u.alt_kategori ? [u.alt_kategori] : [] })), 14),
+    [urunler],
+  );
+  const modeller = useMemo(
+    () => facetSecenekleri(urunler.map((u) => ({ degerler: u.model ? [u.model] : [] })), 12),
+    [urunler],
+  );
+
   // Kategori -> marka listesi (accordion alt satırları için)
   const kategoriMarkalari = useMemo(() => {
     const harita = new Map<string, Map<string, number>>();
@@ -174,6 +188,8 @@ export function Sidebar({
 
   const aktifFiltreSayisi =
     (filtreler.marka ? 1 : 0) +
+    (filtreler.model ? 1 : 0) +
+    (filtreler.altKategori ? 1 : 0) +
     (filtreler.minFiyat ? 1 : 0) + (filtreler.maxFiyat ? 1 : 0) + (filtreler.sadeceStok ? 1 : 0) +
     filtreler.renkler.length + filtreler.boyutlar.length + filtreler.bedenler.length;
 
@@ -282,6 +298,29 @@ export function Sidebar({
         </div>
       </Grup>
 
+      {altSecenekleri.length > 0 && (
+        <Grup baslik="Alt Kategori">
+          <div className="space-y-1 pt-1">
+            {altSecenekleri.map(({ deger, sayi }) => {
+              const secili = filtreler.altKategori === deger;
+              return (
+                <button
+                  key={deger}
+                  type="button"
+                  onClick={() => degistir({ altKategori: secili ? null : deger })}
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-medium transition ${
+                    secili ? "bg-[var(--marka)] text-white shadow-sm" : "text-black/60 hover:bg-black/5 hover:text-black"
+                  }`}
+                >
+                  <span className="truncate">{deger}</span>
+                  <span className={`text-[11px] tabular-nums ${secili ? "text-white/60" : "text-black/30"}`}>{sayi}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Grup>
+      )}
+
       <Grup baslik="Fiyat Aralığı (₺)">
         <div className="flex items-center gap-2 pt-1">
           <input
@@ -389,6 +428,29 @@ export function Sidebar({
                 >
                   {deger}
                   <span className={`ml-1 ${secili ? "text-white/50" : "text-black/30"}`}>{sayi}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Grup>
+      )}
+
+      {modeller.length > 0 && (
+        <Grup baslik="Model" varsayilanAcik={false}>
+          <div className="space-y-1 pt-1">
+            {modeller.map(({ deger, sayi }) => {
+              const secili = filtreler.model === deger;
+              return (
+                <button
+                  key={deger}
+                  type="button"
+                  onClick={() => degistir({ model: secili ? null : deger })}
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-medium transition ${
+                    secili ? "bg-[var(--marka)] text-white shadow-sm" : "text-black/60 hover:bg-black/5 hover:text-black"
+                  }`}
+                >
+                  <span className="truncate">{deger}</span>
+                  <span className={`text-[11px] tabular-nums ${secili ? "text-white/60" : "text-black/30"}`}>{sayi}</span>
                 </button>
               );
             })}

@@ -18,6 +18,9 @@ class ProductRequest extends FormRequest
             // Güncellemede ürünün kendi barkodu hariç tutulur
             'barcode' => ['nullable', 'string', 'max:64', \Illuminate\Validation\Rule::unique('products', 'barcode')->ignore($this->route('product'))],
             'name' => ['required', 'string', 'max:255'],
+            'brand' => ['nullable', 'string', 'max:120'],
+            'model' => ['nullable', 'string', 'max:120'],
+            'alt_kategori' => ['nullable', 'string', 'max:120'],
             'unit' => ['required', 'string', 'max:20'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],
