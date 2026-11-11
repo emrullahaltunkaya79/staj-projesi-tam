@@ -1,6 +1,5 @@
 import { Star, Sparkles } from "lucide-react";
 import Hero from "@/components/Hero";
-import { KategoriSeridi } from "@/components/KategoriSeridi";
 import { MarkaSeridi } from "@/components/MarkaSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
@@ -49,19 +48,6 @@ export default async function Home() {
     .map(([ad, sayi]) => ({ ad, sayi }))
     .sort((a, b) => b.sayi - a.sayi || a.ad.localeCompare(b.ad, "tr"));
 
-  // Kategori kartlarındaki açılır marka listeleri
-  const kategoriMarkalari: Record<string, { ad: string; sayi: number }[]> = {};
-  for (const u of tumu) {
-    if (!u.category || !u.brand) continue;
-    (kategoriMarkalari[u.category] ??= []);
-    const mevcut = kategoriMarkalari[u.category].find((m) => m.ad === u.brand);
-    if (mevcut) mevcut.sayi += 1;
-    else kategoriMarkalari[u.category].push({ ad: u.brand, sayi: 1 });
-  }
-  for (const liste of Object.values(kategoriMarkalari)) {
-    liste.sort((a, b) => b.sayi - a.sayi || a.ad.localeCompare(b.ad, "tr"));
-  }
-
   return (
     <div>
       <Hero />
@@ -75,21 +61,6 @@ export default async function Home() {
           urunler={flasUrunler}
           aciklama={`%${Math.max(...flasUrunler.map((u) => u.discount_percent ?? 0))}'e kadar`}
         />
-      )}
-
-      {/* 2. Kategori vitrini (kartlarda açılır markalar) */}
-      {!hata && (
-        <KategoriSeridi kategoriler={
-          Object.entries(
-            tumu.reduce<Record<string, number>>((m, u) => {
-              const ad = u.category ?? "Diğer";
-              m[ad] = (m[ad] ?? 0) + 1;
-              return m;
-            }, {}),
-          )
-            .sort((a, b) => a[0].localeCompare(b[0], "tr"))
-            .map(([ad, sayi]) => ({ ad, sayi }))
-        } markalar={kategoriMarkalari} />
       )}
 
       {/* 4. Güven verisi: çok satanlar */}
