@@ -45,10 +45,10 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             </span>
           )}
       </div>
-      <div className="mt-2 flex items-baseline justify-between gap-2">
+      <div className="mt-2 flex items-end justify-between gap-2">
         <div className="min-w-0">
             {urun.brand && (
-              <span className="mb-0.5 block text-[10px] font-black uppercase tracking-widest text-black/45">{urun.brand}</span>
+              <span className="mb-0.5 block truncate text-[10px] font-black uppercase tracking-widest text-black/45">{urun.brand}</span>
             )}
             <h3 className="line-clamp-2 min-h-[32px] text-[12.5px] font-semibold leading-tight text-black">{urun.name}</h3>
             <span className="mt-1 flex h-4 items-center gap-1 text-[11px] font-bold text-amber-500">
