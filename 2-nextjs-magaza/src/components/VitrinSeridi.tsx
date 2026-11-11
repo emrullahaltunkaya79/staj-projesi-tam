@@ -27,8 +27,8 @@ export function VitrinSeridi({
   return (
     <section className="px-5 pb-8 pt-6 sm:px-10">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-4 flex items-end justify-between gap-3 border-b border-black/20 pb-3">
-          <div className="flex min-w-0 items-baseline gap-3">
+        <div className="mb-4 flex items-center justify-between gap-3 border-b border-black/20 pb-3">
+          <div className="flex min-w-0 items-center gap-3">
             <h2 className="flex items-center gap-2 text-[15px] font-black uppercase tracking-wide sm:text-[17px]">
               <Ikon className="h-4.5 w-4.5 shrink-0 text-black/40" />
               {baslik}

@@ -7,11 +7,11 @@ export function MarkaSeridi({ markalar }: { markalar: { ad: string; sayi: number
   return (
     <section className="px-5 pb-8 pt-6 sm:px-10">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-3 flex items-baseline justify-between border-b border-black/20 pb-2.5">
+        <div className="mb-4 flex items-center justify-between border-b border-black/20 pb-3">
           <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Markalar</h2>
           <span className="text-[13px] font-medium text-black/30">{markalar.length} marka</span>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {markalar.map((m) => (
             <Link
               key={m.ad}

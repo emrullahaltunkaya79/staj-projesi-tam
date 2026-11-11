@@ -7,6 +7,8 @@ import { test, expect } from "@playwright/test";
 test.describe("Alışveriş hunisi", () => {
   test("ana sayfa ürün kartları ve indirim rozetleri", async ({ page }) => {
     await page.goto("/");
+    // loading.tsx iskeleti goto'yu erken döndürür — gerçek kartlar gelmeden sayma
+    await page.waitForSelector("a[href^='/urun/']", { timeout: 30_000 });
     const kartSayisi = await page.locator("a[href^='/urun/']").count();
     // Katalog sayfalı: ilk yüklemede 24 katalog kartı + şerit kartları
     expect(kartSayisi).toBeGreaterThanOrEqual(50);
@@ -36,10 +38,12 @@ test.describe("Alışveriş hunisi", () => {
     await page.goto("/urun/6");
     await page.waitForLoadState("domcontentloaded");
 
-    const ekle = page.getByTestId("ana-sepete-ekle");
+    // .page-enter: gerçek gövde — React'in gizli Suspense kopyası (#S:0) bu kapsamın dışında kalır
+    const govde = page.locator(".page-enter");
+    const ekle = govde.getByTestId("ana-sepete-ekle");
     await ekle.waitFor({ state: "visible", timeout: 20_000 });
     await ekle.click();
-    await expect(page.getByRole("button", { name: "✓ Sepete Eklendi" })).toBeVisible();
+    await expect(govde.getByRole("button", { name: "✓ Sepete Eklendi" })).toBeVisible();
 
     // Sepet
     await page.goto("/sepet");

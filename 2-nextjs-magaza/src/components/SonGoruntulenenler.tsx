@@ -30,10 +30,13 @@ export function SonGoruntulenenler({ suAnki }: { suAnki?: Kayit }) {
   if (liste.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-5 pb-8 pt-4 sm:px-10">
-      <div className="border-t border-black/10 pt-8">
-        <h2 className="text-lg font-black tracking-tight">Yakında İnceledikleriniz</h2>
-        <div className="mt-5 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <section className="px-5 pb-8 pt-6 sm:px-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-4 flex items-center justify-between border-b border-black/20 pb-3">
+          <h2 className="text-[15px] font-black uppercase tracking-wide sm:text-[17px]">Yakında İnceledikleriniz</h2>
+          <span className="text-[13px] font-medium text-black/30">{liste.length} ürün</span>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {liste.map((k) => (
             <Link
               key={k.id}

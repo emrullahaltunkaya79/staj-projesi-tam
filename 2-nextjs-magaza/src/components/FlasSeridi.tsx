@@ -30,8 +30,8 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
         {/* Başlık satırı */}
         <div className="mb-4 flex items-center justify-between gap-3 border-b border-orange-300 pb-3">
           <div className="flex min-w-0 items-center gap-3">
-            <h2 className="flex items-center gap-2 text-[16px] font-black uppercase tracking-wide text-orange-600 sm:text-[18px]">
-              <Zap className="h-5 w-5 shrink-0 fill-orange-500" />
+            <h2 className="flex items-center gap-2 text-[15px] font-black uppercase tracking-wide text-orange-600 sm:text-[17px]">
+              <Zap className="h-4.5 w-4.5 shrink-0 fill-orange-500" />
               Flaş İndirimler
             </h2>
             {aciklama && <span className="truncate text-[13px] font-medium text-black/40">{aciklama}</span>}
