@@ -4,7 +4,6 @@ import { MarkaSeridi } from "@/components/MarkaSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
 import { FlasSeridi } from "@/components/FlasSeridi";
-import { GununFirsati } from "@/components/GununFirsati";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
 import { urunler, indirimliFiyat, type Urun } from "@/lib/backoffice";
 
@@ -30,12 +29,6 @@ export default async function Home() {
   // En Çok Satanlar: arka ofis fatura satırlarından hesaplanan bayrak
   const cokSatanlar = tumu.filter((u) => u.is_bestseller).slice(0, 12);
 
-  // Günün Fırsatı: stok azalmış, indirimi yüksek ürün (yoksa en yüksek indirimli)
-  const gununFirsatiUrun =
-    tumu
-      .filter((u) => u.in_stock && (u.discount_percent ?? 0) >= 20 && u.available_quantity <= 10)
-      .sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0))[0] ?? flasUrunler[0];
-
   // Yeni Gelenler: en son eklenen ürünler
   const yeniGelenler = [...tumu].sort((a, b) => b.id - a.id).slice(0, 12);
 
@@ -51,9 +44,6 @@ export default async function Home() {
   return (
     <div>
       <Hero />
-
-      {/* Günün Fırsatı — tek büyük fırsat bloğu */}
-      {!hata && gununFirsatiUrun && <GununFirsati urun={gununFirsatiUrun} />}
 
       {/* 1. Kampanya vitrini — geri sayımlı flaş indirimler */}
       {!hata && flasUrunler.length > 0 && (
