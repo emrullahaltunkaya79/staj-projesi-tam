@@ -79,9 +79,9 @@ class UrunGorselIndir extends Command
     private const DOSYALAR = [
         'Kablosuz Mouse MX-2200 Sessiz Tıklama' => 'File:A black wireless computer mouse.jpg',
         'Gaming Mouse RGB 8000 DPI 7 Tuş' => 'File:2023 Mysz komputerowa Logitech G903 Lightspeed.jpg',
-        '27″ QHD Monitör 165Hz 1ms IPS' => 'File:Computer monitor samsung.jpg',
+        '27″ QHD Monitör 165Hz 1ms IPS' => 'File:Computer monitor.jpg',
         '24″ IPS Full HD Monitör HDMI+VGA' => 'File:LG L194WT-SF LCD monitor.jpg',
-        'USB-C Hub 7 Port 4K HDMI + SD Kart' => 'File:2023 Hub USB 2.0.jpg',
+        'USB-C Hub 7 Port 4K HDMI + SD Kart' => 'File:Powered USB hub with 7 ports.jpg',
         'Web Kamera 1080p Otomatik Odak Mikrofonlu' => 'File:USB webcam for PC.jpg',
         'Laptop Çantası 15.6″ Su Geçirmez Fermuarlı' => 'File:Laptop bag.jpg',
         'Mekanik Klavye TKL RGB Kırmızı Switch' => 'File:Beautiful Mechanical Keyboard.jpg',
@@ -94,7 +94,7 @@ class UrunGorselIndir extends Command
         'Zımba Makinesi + 24/6 Tel Seti Metal' => 'File:Stapler office.jpg',
         'Ergonomik Ofis Sandalyesi Bel Desteği' => 'File:Buerostuhl (fcm).jpg',
         'Masa Lambası LED 3 Mod Dokunmatik' => 'File:Bankers lamp (10806062373).jpg',
-        'Masa Organizer 5 Bölmeli Ahap' => 'File:Pens on my desk in Tuntorp.jpg',
+        'Masa Organizer 5 Bölmeli Ahap' => 'File:Organizers desk (42399682924).jpg',
         'Tencere Seti 7 Parça Granit Kaplama' => 'File:Brass Sauce Pans and Pots in Italian Restaurant kitchen - panoramio.jpg',
         'Seramik Vazo 24 cm El Yapımı' => 'File:A cut glass vase on white.jpg',
         'LED Avize Modern 60 cm Üçlü' => 'File:Geometric white pendant lamp chandelier.jpg',
@@ -111,7 +111,7 @@ class UrunGorselIndir extends Command
         'Aksiyon Kamera 4K 30fps Su Geçirmez Kutulu' => 'File:GoPro Hero 10 Black with battery door open.jpg',
         'Soundbar 2.1 Bluetooth 200W Subwooferlı' => 'File:SAMSUNG SOUNDBAR HW-J250.jpg',
         'Projektör Full HD 1080p 6500 Lümen' => 'File:InFocus IN34.jpg',
-        'Boynuz Masaj Aleti Shiatsu Şarjlı' => 'File:Physion Massage Gun.jpg',
+        'Boynuz Masaj Aleti Shiatsu Şarjlı' => 'File:Using a percution massage gun to do a foot massage.jpg',
         'Dijital Tartı Cam 180 kg Şarjlı' => 'File:Dretec digital bathroom scale BS-164.jpg',
     ];
 
