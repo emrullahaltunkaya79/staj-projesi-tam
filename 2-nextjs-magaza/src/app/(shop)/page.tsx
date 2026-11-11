@@ -1,6 +1,5 @@
 import { Star, Sparkles } from "lucide-react";
 import Hero from "@/components/Hero";
-import { MarkaSeridi } from "@/components/MarkaSeridi";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
 import { FlasSeridi } from "@/components/FlasSeridi";
@@ -31,15 +30,6 @@ export default async function Home() {
 
   // Yeni Gelenler: en son eklenen ürünler
   const yeniGelenler = [...tumu].sort((a, b) => b.id - a.id).slice(0, 12);
-
-  // Markalar: ürün sayısına göre en çok ürünü olanlar önde (şeritte ilk 20)
-  const markaSayilari = tumu.reduce<Record<string, number>>((m, u) => {
-    if (u.brand) m[u.brand] = (m[u.brand] ?? 0) + 1;
-    return m;
-  }, {});
-  const tumMarkalar = Object.entries(markaSayilari)
-    .map(([ad, sayi]) => ({ ad, sayi }))
-    .sort((a, b) => b.sayi - a.sayi || a.ad.localeCompare(b.ad, "tr"));
 
   return (
     <div>
@@ -75,9 +65,6 @@ export default async function Home() {
           aciklama="Kataloğa en son eklenenler"
         />
       )}
-
-      {/* 4. Markalar — keşfin kapanışı */}
-      {!hata && <MarkaSeridi markalar={tumMarkalar.slice(0, 20)} />}
 
       {/* Son baktıklarınız */}
       <SonGoruntulenenler />
