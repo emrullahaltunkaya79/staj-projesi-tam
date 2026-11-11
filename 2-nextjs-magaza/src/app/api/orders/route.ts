@@ -8,6 +8,10 @@ const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
+/** Ödeme yöntemi kuralları — yalnızca sunucu uygular (istemciden gelen tutar okunmaz) */
+const KAPIDA_BEDEL = 25; // Kapıda ödeme hizmet bedeli (₺, KDV dahil)
+const HAVALE_INDIRIM_ORANI = 0.02; // Havale/EFT iskonto oranı
+
 /**
  * Sipariş fiyatlandırması GÜVENİLİR SUNUCUDA yapılır: müşteri yalnızca ürün/sepet
  * bilgisi + kupon kodu gönderir. Kalem fiyatları arka ofis verisinden hesaplanır;
@@ -67,9 +71,13 @@ export async function POST(request: NextRequest) {
       if (d.data?.type === "free_shipping") kargo = 0;
     }
 
-    // 4) Ödenecek tutar (KDV dahil) → kalem net fiyatları bu tutara ölçeklenir;
+    // 4) Ödeme yöntemi: kapıda ödeme +hizmet bedeli, havale/EFT −%2 indirim (sunucu uygular)
+    const yontem = ["cspr", "kapida", "havale"].includes(String(govde.odemeYontemi)) ? String(govde.odemeYontemi) : "cspr";
+
+    // 5) Ödenecek tutar (KDV dahil) → kalem net fiyatları bu tutara ölçeklenir;
     //    böylece arka ofisteki sipariş/fatura tutarı müşterinin ödediğiyle birebir olur.
-    const odenecek = Math.max(0, genelToplamDahil - indirim) + kargo;
+    const havaleIndirimi = yontem === "havale" ? Math.round((genelToplamDahil - indirim) * HAVALE_INDIRIM_ORANI * 100) / 100 : 0;
+    const odenecek = Math.max(0, genelToplamDahil - indirim - havaleIndirimi) + kargo + (yontem === "kapida" ? KAPIDA_BEDEL : 0);
     const oran = genelToplamDahil > 0 ? odenecek / genelToplamDahil : 1;
     const items = satirlar.map((s) => {
       const urun = harita.get(s.product_id)!;
@@ -79,6 +87,8 @@ export async function POST(request: NextRequest) {
 
     const notesNotlari = [
       ...(couponCode ? [`Kupon ${couponCode}: -${fmt(indirim)} TL`] : []),
+      ...(havaleIndirimi > 0 ? [`Havale indirimi: -${fmt(havaleIndirimi)} TL`] : []),
+      ...(yontem === "kapida" ? [`Kapıda ödeme bedeli: +${fmt(KAPIDA_BEDEL)} TL`] : []),
       ...(kargo > 0 && bolge ? [`Kargo: ${fmt(kargo)} TL (${bolge.ad})`] : []),
     ].join(" | ");
 
@@ -92,6 +102,7 @@ export async function POST(request: NextRequest) {
       notes: notesNotlari || undefined,
       hediyePaket: Boolean(govde.hediyePaket),
       hediyeNotu: govde.hediyeNotu ? String(govde.hediyeNotu).slice(0, 300) : null,
+      odemeYontemi: yontem as "cspr" | "kapida" | "havale",
       fatura: {
         tipi: govde.fatura?.tipi === "kurumsal" ? "kurumsal" : "bireysel",
         ...(govde.fatura?.tipi === "kurumsal"

@@ -158,6 +158,7 @@ class OrderService
                 'fatura_adresi' => $data['fatura_adresi'] ?? null,
                 'hediye_paket' => (bool) ($data['hediye_paket'] ?? false),
                 'hediye_notu' => $data['hediye_notu'] ?? null,
+                'payment_method' => in_array($data['payment_method'] ?? 'cspr', ['cspr', 'kapida', 'havale'], true) ? ($data['payment_method'] ?? 'cspr') : 'cspr',
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'tax_rate' => $taxRate,
@@ -165,7 +166,8 @@ class OrderService
                 'total' => $total,
                 'items' => $snapshot,
                 'notes' => $data['notes'] ?? null,
-                'expires_at' => now()->addMinutes(30), // ödeme zaman aşımı
+                // CSPR: 30 dakikalık ödeme penceresi · kapıda/havale: satıcı onayı için 48 saat rezerv
+                'expires_at' => now()->addMinutes(($data['payment_method'] ?? 'cspr') === 'cspr' ? 30 : 2880),
             ]);
 
             $order->update(['order_no' => 'ORD-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT)]);
@@ -435,6 +437,11 @@ class OrderService
 
             if (! $order) {
                 throw ValidationException::withMessages(['order' => 'Sipariş bulunamadı.']);
+            }
+
+            // Kapıda ödeme: tahsilat kapıda yapılır, fatura sevk ile kesilir — sipariş beklemeden kargolanabilir
+            if ($order->status === 'pending' && $order->payment_method === 'kapida') {
+                $order = $this->markPaid($order, $companyId);
             }
 
             if (! in_array($order->status, ['paid', 'preparing', 'shipped'])) {

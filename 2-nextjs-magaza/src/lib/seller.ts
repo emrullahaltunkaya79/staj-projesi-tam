@@ -76,7 +76,7 @@ export async function sellerUrunler(): Promise<SellerUrun[]> {
 }
 
 export async function sellerSiparisler(): Promise<
-  { order_no: string; status: string; status_label: string; total: number; customer_name: string | null; invoice_no: string | null; created_at: string }[]
+  { order_no: string; status: string; status_label: string; payment_method?: string; odeme_yontemi?: string; total: number; customer_name: string | null; invoice_no: string | null; created_at: string }[]
 > {
-  return (await api<{ order_no: string; status: string; status_label: string; total: number; customer_name: string | null; invoice_no: string | null; created_at: string }[]>("/orders?limit=50")) ?? [];
+  return (await api<{ order_no: string; status: string; status_label: string; payment_method?: string; odeme_yontemi?: string; total: number; customer_name: string | null; invoice_no: string | null; created_at: string }[]>("/orders?limit=50")) ?? [];
 }

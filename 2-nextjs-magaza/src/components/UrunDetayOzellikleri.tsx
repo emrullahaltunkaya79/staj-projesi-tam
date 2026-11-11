@@ -12,6 +12,7 @@ import { GeriSayim } from "./GeriSayim";
 import { TeslimatBilgisi } from "./TeslimatBilgisi";
 import { KarsilastirEkle } from "./KarsilastirCubugu";
 import { FiyatAlarmi } from "./FiyatAlarmi";
+import { UrunPaylas } from "./UrunPaylas";
 import { imgUrl } from "@/lib/img";
 import { kdvDahil } from "@/lib/fiyat";
 
@@ -295,6 +296,9 @@ export function UrunDetayOzellikleri({
         {/* Karşılaştır + fiyat alarmı */}
         <KarsilastirEkle urun={{ id: urun.id, ad: urun.name, kategori: urun.category, fiyat: urun.final_price ?? urun.sale_price, marka: urun.brand ?? null, puan: ratingAvg, stokta: urun.in_stock, gorsel: urun.image_url }} />
         <FiyatAlarmi urunId={urun.id} />
+
+        {/* Paylaş */}
+        <UrunPaylas urunAd={urun.name} />
 
         {/* Açıklama */}
         <p className="mt-6 max-w-md text-[15px] leading-relaxed text-black/70">{aciklama}</p>

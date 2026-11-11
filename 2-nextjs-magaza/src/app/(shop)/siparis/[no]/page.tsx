@@ -27,6 +27,11 @@ const IADE_DURUM: Record<string, string> = {
   return_requested: "İade Talebiniz Alındı",
   returned: "İade Tamamlandı — Para İadesi Yapıldı",
 };
+const ODEME_YONTEM: Record<string, string> = {
+  cspr: "⛓️ Online (CSPR)",
+  kapida: "🚚 Kapıda Ödeme",
+  havale: "🏦 Havale / EFT",
+};
 
 export default async function SiparisSayfasi({
   params,
@@ -70,6 +75,7 @@ export default async function SiparisSayfasi({
 
   const adimlar = Object.keys(ADIMLAR);
   const aktifIndex = adimlar.indexOf(s.status);
+  const yontem = s.payment_method ?? "cspr";
   const iptal = s.status === "cancelled";
   const iadeDurumu = IADE_DURUM[s.status];
   const iadeSon = s.iade_son_tarih ? new Date(s.iade_son_tarih) : null;
@@ -87,14 +93,26 @@ export default async function SiparisSayfasi({
         {yeni === "1" && (
           <div className="mb-8 border-l-4 border-black bg-neutral-50 px-5 py-4">
             <p className="text-sm font-bold">Siparişiniz alındı — stoklar sizin adınıza rezerve edildi.</p>
-            <p className="mt-1 text-xs text-black/50">Ödeme için 30 dakikanız var. Sipariş no: <span className="font-mono font-bold">{s.order_no}</span></p>
+            <p className="mt-1 text-xs text-black/50">
+              {yontem === "cspr"
+                ? "Ödeme için 30 dakikanız var. "
+                : yontem === "kapida"
+                  ? "Ücreti paketiniz eline ulaştığında kargo görevlisine ödeyeceksiniz. "
+                  : "Havale/EFT bilgileri aşağıda — ödemeniz onaylandığında siparişiniz hazırlanacak. "}
+              Sipariş no: <span className="font-mono font-bold">{s.order_no}</span>
+            </p>
           </div>
         )}
         {yeni === "1" && <KolayUyelik orderNo={s.order_no} />}
 
         <div className="border-b border-black/20 pb-5">
           <h1 className="text-[15px] font-black uppercase tracking-wide text-black sm:text-[17px]">Sipariş</h1>
-          <p className="mt-2 font-mono text-sm text-black/50">{s.order_no}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <p className="font-mono text-sm text-black/50">{s.order_no}</p>
+            <span className="rounded-full border border-black/15 px-3 py-1 text-[11px] font-bold text-black/70">
+              💳 Ödeme: {ODEME_YONTEM[yontem] ?? s.odeme_yontemi ?? "Online (CSPR)"}
+            </span>
+          </div>
           <div className="mt-5"><OdemeAdimlari aktif={3} /></div>
         </div>
 
@@ -193,7 +211,31 @@ export default async function SiparisSayfasi({
         <div className="mt-10 space-y-4">
           {s.status === "pending" && !iptal && (
             <div className="flex flex-col gap-3">
-              <OdemeButonu orderNo={s.order_no} erisim={k ?? null} />
+              {yontem === "havale" ? (
+                <div className="rounded-xl border border-black/10 bg-[#f8f8f8] p-5 text-sm">
+                  <p className="text-[13px] font-black uppercase tracking-wide text-black">🏦 Havale / EFT Bilgileri</p>
+                  <dl className="mt-3 space-y-1.5 text-[13px]">
+                    <div className="flex justify-between gap-4"><dt className="text-black/50">Hesap sahibi</dt><dd className="font-bold text-black">HepsiBirarada Ticaret A.Ş.</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="shrink-0 text-black/50">IBAN</dt><dd className="text-right font-mono font-bold text-black">TR33 0006 1005 1978 6457 8413 26</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-black/50">Açıklama</dt><dd className="font-mono font-bold text-black">{s.order_no}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-black/50">Ödenecek tutar</dt><dd className="font-black text-black">{fmt(s.total)} ₺</dd></div>
+                  </dl>
+                  <p className="mt-3 text-xs leading-relaxed text-black/50">
+                    Ödemeyi yaptıktan sonra satıcımız transferi onaylar; siparişiniz hemen ardından hazırlanmaya başlar.
+                    Açıklama alanına sipariş numaranızı yazmanız onayı hızlandırır.
+                  </p>
+                </div>
+              ) : yontem === "kapida" ? (
+                <div className="border border-black/10 bg-neutral-50 px-5 py-4 text-sm">
+                  <p className="font-bold text-black">🚚 Kapıda ödeme seçtiniz</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-black/60">
+                    Paketiniz kargoya teslim edilirken <b className="text-black">{fmt(s.total)} ₺</b> ücreti kargo görevlisine
+                    nakit veya kredi kartıyla ödeyin. Siparişiniz şu an hazırlanmak üzere satıcıda.
+                  </p>
+                </div>
+              ) : (
+                <OdemeButonu orderNo={s.order_no} erisim={k ?? null} />
+              )}
               <IptalButonu orderNo={s.order_no} erisim={k ?? null} />
             </div>
           )}

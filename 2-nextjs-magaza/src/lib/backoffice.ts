@@ -70,6 +70,8 @@ export type Siparis = {
   access_key?: string;
   status: string;
   status_label?: string;
+  payment_method?: "cspr" | "kapida" | "havale" | null;
+  odeme_yontemi?: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
   customer_phone?: string | null;
@@ -200,6 +202,8 @@ export type SiparisVerisi = {
   notes?: string;
   hediyePaket: boolean;
   hediyeNotu: string | null;
+  /** cspr: online kripto (QR) · kapida: kapıda ödeme (+hizmet bedeli) · havale: banka transferi (%2 indirim) */
+  odemeYontemi?: "cspr" | "kapida" | "havale";
   fatura: { tipi: "bireysel" | "kurumsal"; unvan?: string; vergiDairesi?: string; vergiNo?: string; adres?: string };
 };
 
@@ -224,6 +228,7 @@ export async function siparisOlustur(veri: SiparisVerisi): Promise<{ orderNo: st
       customer_phone: veri.phone,
       hediye_paket: veri.hediyePaket,
       hediye_notu: veri.hediyeNotu,
+      payment_method: veri.odemeYontemi ?? "cspr",
       fatura_tipi: veri.fatura.tipi,
       ...(veri.fatura.tipi === "kurumsal"
         ? { fatura_unvan: veri.fatura.unvan, vergi_dairesi: veri.fatura.vergiDairesi, vergi_no: veri.fatura.vergiNo }

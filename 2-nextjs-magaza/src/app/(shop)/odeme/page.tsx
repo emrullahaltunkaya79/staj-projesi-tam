@@ -20,6 +20,15 @@ type KayitliAdres = { id: number; baslik: string; ad_soyad: string; telefon: str
 const etiket = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/50";
 const alan = "h-12 w-full border border-black/20 bg-white px-4 text-sm focus:border-black focus:outline-none";
 
+/** Ödeme yöntemleri — tutara etkisi güvenilir sunucuda uygulanır (api/orders), burada yansısı var */
+const YONTEMLER: { id: "cspr" | "kapida" | "havale"; ad: string; aciklama: string; not: string }[] = [
+  { id: "cspr", ad: "⛓️ CSPR ile Öde", aciklama: "Kripto ile online ödeyin, blok zincirde anında onaylanır.", not: "Anında onay" },
+  { id: "havale", ad: "🏦 Havale / EFT", aciklama: "Banka transferi; ödemen onaylandığında sipariş hazırlanır.", not: "%2 indirim" },
+  { id: "kapida", ad: "🚚 Kapıda Ödeme", aciklama: "Paket eline ulaşınca kargo görevlisine nakit/kart ile öde.", not: "+25,00 ₺ hizmet bedeli" },
+];
+const KAPIDA_BEDEL = 25;
+const HAVALE_ORANI = 0.02;
+
 export default function OdemeSayfasi() {
   const { ogeler, kdv, genelToplam, temizle } = sepet();
   const { kullanici } = auth();
@@ -43,6 +52,9 @@ export default function OdemeSayfasi() {
   const [hediye, setHediye] = useState(false);
   const [hediyeNotu, setHediyeNotu] = useState("");
 
+  // Ödeme yöntemi
+  const [odemeYontemi, setOdemeYontemi] = useState<"cspr" | "kapida" | "havale">("cspr");
+
   // Hesaba kayıtlı adresler (giriş yapmış müşteri)
   const [adresler, setAdresler] = useState<KayitliAdres[]>([]);
   const [adresiKaydet, setAdresiKaydet] = useState(false);
@@ -62,7 +74,8 @@ export default function OdemeSayfasi() {
   const ucretsizKargo = genelToplam >= UCRETSIZ_KARGO_LIMITI || kupon?.type === "free_shipping";
   const toplamKargo = ucretsizKargo || !bolge ? 0 : bolge.fiyat;
   const indirimTutari = kupon ? kupon.discount : 0;
-  const odenecekTutar = Math.max(0, genelToplam - indirimTutari) + toplamKargo;
+  const havaleIndirimi = odemeYontemi === "havale" ? Math.round((genelToplam - indirimTutari) * HAVALE_ORANI * 100) / 100 : 0;
+  const odenecekTutar = Math.max(0, genelToplam - indirimTutari - havaleIndirimi) + toplamKargo + (odemeYontemi === "kapida" ? KAPIDA_BEDEL : 0);
 
   useEffect(() => {
     if (!kullanici) return;
@@ -143,6 +156,7 @@ export default function OdemeSayfasi() {
           externalRef: `NEXT-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
           hediyePaket: hediye,
           hediyeNotu: hediye ? hediyeNotu.trim() : null,
+          odemeYontemi,
           couponCode: kupon?.code ?? null,
           fatura: {
             tipi: faturaTipi,
@@ -340,6 +354,40 @@ export default function OdemeSayfasi() {
               )}
             </section>
 
+            {/* 3. Ödeme yöntemi */}
+            <section>
+              <h2 className="mb-4 text-[13px] font-black uppercase tracking-widest text-black">3. Ödeme yöntemi</h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {YONTEMLER.map((y) => (
+                  <button key={y.id} type="button" onClick={() => setOdemeYontemi(y.id)}
+                          className={`rounded-xl border-2 p-4 text-left transition ${
+                            odemeYontemi === y.id ? "border-black" : "border-black/10 hover:border-black/40"
+                          }`}>
+                    <p className="flex items-center justify-between gap-2 text-sm font-black text-black">
+                      {y.ad}
+                      {odemeYontemi === y.id && (
+                        <span className="rounded-full bg-black px-2 py-0.5 text-[10px] font-bold text-white">Seçili</span>
+                      )}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-black/50">{y.aciklama}</p>
+                    <p className={`mt-2 text-[11px] font-bold ${y.not.startsWith("+") ? "text-red-500" : "text-emerald-600"}`}>{y.not}</p>
+                  </button>
+                ))}
+              </div>
+              {odemeYontemi === "havale" && (
+                <div className="mt-3 rounded-xl border border-black/10 bg-[#f8f8f8] px-4 py-3 text-[12px] leading-relaxed text-black/60">
+                  Siparişi onaylayınca IBAN bilgilerimizi ve ödeme açıklamasına yazacağınız sipariş numaranızı göreceksiniz.
+                  Ödemeniz satıcı tarafından onaylandığında siparişiniz hazırlanmaya başlar.
+                </div>
+              )}
+              {odemeYontemi === "kapida" && (
+                <div className="mt-3 rounded-xl border border-black/10 bg-[#f8f8f8] px-4 py-3 text-[12px] leading-relaxed text-black/60">
+                  Paketiniz kargoya teslim edilirken ücreti kargo görevlisine nakit veya kredi kartıyla ödeyin.
+                  Kapıda ödeme hizmet bedeli sipariş tutarına eklenir.
+                </div>
+              )}
+            </section>
+
             {hata && <div className="border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{hata}</div>}
 
             {/* Hediye seçenekleri */}
@@ -408,12 +456,24 @@ export default function OdemeSayfasi() {
                   <span className="font-bold tabular-nums">−{fmt(kupon.discount)} ₺</span>
                 </div>
               )}
+              {havaleIndirimi > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Havale/EFT indirimi (%2)</span>
+                  <span className="font-bold tabular-nums">−{fmt(havaleIndirimi)} ₺</span>
+                </div>
+              )}
               <div className="flex justify-between text-black/60">
                 <span>Kargo</span>
                 <span className={`font-semibold tabular-nums ${ucretsizKargo ? "text-emerald-600" : "text-black"}`}>
                   {ucretsizKargo ? "Ücretsiz" : bolge ? `${fmt(toplamKargo)} ₺` : "—"}
                 </span>
               </div>
+              {odemeYontemi === "kapida" && (
+                <div className="flex justify-between text-black/60">
+                  <span>Kapıda ödeme bedeli</span>
+                  <span className="font-semibold tabular-nums text-black">{fmt(KAPIDA_BEDEL)} ₺</span>
+                </div>
+              )}
               <div className="flex items-baseline justify-between border-t border-black/15 pt-4">
                 <span className="text-sm font-bold text-black">Ödenecek</span>
                 <span className="text-xl font-black tabular-nums">{fmt(odenecekTutar)} ₺</span>

@@ -15,6 +15,13 @@ class Order extends Model
     /** Cayma hakkı: teslimden itibaren gün sayısı (Mesafeli Satış Sözleşmesi md. 5) */
     public const IADE_SURESI_GUN = 14;
 
+    /** Ödeme yöntemleri — checkout'ta müşteri seçer, sunucu güvenilir şekilde fiyatlar. */
+    public const ODEME_YONTEMLERI = [
+        'cspr' => 'Online (CSPR)',
+        'kapida' => 'Kapıda Ödeme',
+        'havale' => 'Havale / EFT',
+    ];
+
     protected $fillable = [
         'company_id',
         'contact_id',
@@ -25,6 +32,7 @@ class Order extends Model
         'customer_name',
         'customer_phone',
         'shipping_address',
+        'payment_method',
         'fatura_tipi',
         'fatura_unvan',
         'vergi_dairesi',
@@ -127,6 +135,11 @@ class Order extends Model
             'cancelled' => 'İptal',
             default => $this->status,
         };
+    }
+
+    public function odemeYontemiEtiketi(): string
+    {
+        return self::ODEME_YONTEMLERI[$this->payment_method] ?? 'Online (CSPR)';
     }
 
     public function statusBadgeClass(): string
