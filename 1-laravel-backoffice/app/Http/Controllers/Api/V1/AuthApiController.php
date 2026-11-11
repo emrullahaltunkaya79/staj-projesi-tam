@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
@@ -301,6 +302,78 @@ class AuthApiController extends Controller
         ])->save();
 
         return response()->json(['message' => 'E-postanız doğrulandı.']);
+    }
+
+    /**
+     * Google girişi DEMO modu: gerçek OAuth kimliği yapılandırılmamışken e-posta ile
+     * doğrulanmış müşteri hesabı oluşturur/giriş yapar. Kimlik yapılandırılınca
+     * otomatik kapanır (gerçek akış tek yol olur).
+     * POST /api/v1/auth/google/demo-login { email, name? }
+     */
+    public function googleDemoLogin(Request $request): JsonResponse
+    {
+        if (config('services.google.client_id') ?: \App\Models\Setting::get('google_client_id')) {
+            return response()->json(['message' => 'Gerçek Google girişi aktif — demo girişi kapalı.'], 403);
+        }
+
+        $veri = $request->validate([
+            'email' => ['required', 'email', 'max:120'],
+            'name' => ['nullable', 'string', 'max:120'],
+        ], ['email.email' => 'Geçerli bir e-posta adresi girin.']);
+
+        $email = mb_strtolower($veri['email']);
+        $name = $veri['name'] ?? explode('@', $email)[0];
+
+        $user = User::where('email', $email)->first();
+        if ($user && $user->role !== 'musteri') {
+            return response()->json(['message' => 'Bu e-posta bir satıcı/panel hesabına ait — Google girişi yalnızca müşteri hesapları içindir.'], 403);
+        }
+
+        if (! $user) {
+            $user = User::create([
+                'company_id' => config('services.google.company_id') ?? (\App\Models\Company::query()->min('id') ?: 1),
+                'role' => 'musteri',
+                'name' => $name,
+                'email' => $email,
+                'password' => Str::random(32),
+            ]);
+            // email_verified_at fillable dışındadır — forceFill ile damgalanır
+            $user->forceFill(['email_verified_at' => now()])->save();
+            Contact::firstOrCreate(
+                ['company_id' => $user->company_id, 'email' => $email],
+                ['type' => 'musteri', 'name' => $name]
+            );
+        } else {
+            $user->forceFill(['email_verified_at' => $user->email_verified_at ?? now()])->save();
+        }
+
+        $token = $user->createToken('eticaret-musteri', ['ecommerce'])->plainTextToken;
+
+        return response()->json([
+            'message' => 'Demo Google girişi tamamlandı.',
+            'data' => [
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => 'musteri',
+                    'contact_id' => $user->contact?->id,
+                    'email_verified' => true,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Google girişi yapılandırma durumu — mağaza giriş kartı bununla akış seçer.
+     * GET /api/v1/auth/google/durum
+     */
+    public function googleDurum(): JsonResponse
+    {
+        $acik = (bool) (config('services.google.client_id') ?: \App\Models\Setting::get('google_client_id'));
+
+        return response()->json(['data' => ['yapilandirildi' => $acik]]);
     }
 
     /**

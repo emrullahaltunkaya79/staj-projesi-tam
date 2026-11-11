@@ -41,6 +41,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Company::class);
     }
 
+    /** Müşteri carisi — e-posta + şirket eşleşmesiyle (Google girişi bu cariyi otomatik açar). */
+    public function contact()
+    {
+        return $this->hasOne(Contact::class, 'email', 'email')
+            ->where('company_id', $this->company_id ?? null);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

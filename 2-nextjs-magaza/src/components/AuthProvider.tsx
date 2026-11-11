@@ -22,6 +22,7 @@ type AuthBaglami = {
   kullanici: AuthUser | null;
   girisYapmis: boolean;
   giris: (email: string, password: string) => Promise<AuthUser>;
+  googleDemoGiris: (email: string, ad?: string) => Promise<AuthUser>;
   kayit: (name: string, email: string, password: string) => Promise<KayitSonuc>;
   cikis: () => Promise<void>;
   emailDogrula: (email: string, kod: string) => Promise<void>;
@@ -34,6 +35,22 @@ const USER_KEY = "hba-user";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [kullanici, setKullanici] = useState<AuthUser | null>(null);
   const [googleUyari, setGoogleUyari] = useState<string | null>(null);
+
+  // Google DEMO girişi: OAuth kimliği yapılandırılmamışken e-postayla doğrulanmış müşteri hesabı
+  const googleDemoGiris = async (email: string, ad?: string): Promise<AuthUser> => {
+    const r = await fetch('/api/auth/google-demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name: ad || undefined }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message || 'Demo Google girişi başarısız.');
+    localStorage.setItem(TOKEN_KEY, d.data.token);
+    localStorage.setItem(USER_KEY, JSON.stringify(d.data.user));
+    setKullanici(d.data.user);
+    window.dispatchEvent(new Event('hba-oturum'));
+    return d.data.user;
+  };
 
   useEffect(() => {
     // Google girişi hata kodları — kullanıcıya anlaşılır mesajla bildirilir
@@ -158,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Baglam.Provider value={{ kullanici, girisYapmis: !!kullanici, giris, kayit, cikis, emailDogrula }}>
+    <Baglam.Provider value={{ kullanici, girisYapmis: !!kullanici, giris, googleDemoGiris, kayit, cikis, emailDogrula }}>
       {children}
       {googleUyari && (
         <div className="fixed bottom-6 left-1/2 z-[90] -translate-x-1/2 rounded-full border border-amber-200 bg-amber-50 px-5 py-2.5 text-xs font-bold text-amber-800 shadow-lg" role="alert">

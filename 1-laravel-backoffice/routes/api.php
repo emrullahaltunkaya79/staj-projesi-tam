@@ -26,6 +26,8 @@ Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/verify-email', [AuthApiController::class, 'verifyEmail'])->name('api.auth.verify');
     Route::post('/auth/resend-verification', [AuthApiController::class, 'resendVerification'])->name('api.auth.resend');
     Route::post('/auth/google/exchange', [AuthApiController::class, 'googleExchange'])->name('api.auth.google-exchange');
+    Route::get('/auth/google/durum', [AuthApiController::class, 'googleDurum'])->name('api.auth.google-durum');
+    Route::post('/auth/google/demo-login', [AuthApiController::class, 'googleDemoLogin'])->name('api.auth.google-demo');
 });
 
 // Müşteri hesabı — müşterinin kendi token'ıyla

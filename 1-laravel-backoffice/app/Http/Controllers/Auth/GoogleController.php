@@ -108,8 +108,9 @@ class GoogleController extends Controller
                 'name' => $name,
                 'email' => $email,
                 'password' => Str::random(32), // müşteri şifresiz başlar; şifre belirleme akışı "Hesabım"dan
-                'email_verified_at' => now(),
             ]);
+            // email_verified_at fillable dışındadır — forceFill ile damgalanır
+            $user->forceFill(['email_verified_at' => now()])->save();
 
             Contact::firstOrCreate(
                 ['company_id' => $user->company_id, 'email' => $email],
