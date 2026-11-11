@@ -10,11 +10,16 @@ import { SepeteEkleButonu } from "./SepeteEkleButonu";
 import { indirimliFiyat } from "@/lib/backoffice";
 import { GeriSayim } from "./GeriSayim";
 import { TeslimatBilgisi } from "./TeslimatBilgisi";
+import { KarsilastirEkle } from "./KarsilastirCubugu";
+import { FiyatAlarmi } from "./FiyatAlarmi";
 import { imgUrl } from "@/lib/img";
 import { kdvDahil } from "@/lib/fiyat";
 
 export function UrunDetayOzellikleri({
   urun,
+  aciklama,
+  ratingAvg,
+  reviewCount,
 }: {
   urun: {
     id: number;
@@ -38,6 +43,9 @@ export function UrunDetayOzellikleri({
     image_count?: number;
     variants?: { id: number; name: string; type?: string; renk?: string | null; beden?: string | null; stock_quantity: number; in_stock: boolean }[];
   };
+  aciklama: string;
+  ratingAvg: number | null;
+  reviewCount: number;
 }) {
   const [secimler, setSecimler] = useState<Record<string, string>>({});
   const [seciliVaryantId, setSeciliVaryantId] = useState<number | null>(null);
@@ -86,6 +94,18 @@ export function UrunDetayOzellikleri({
           {urun.code ? `Kod: ${urun.code}` : ""}
           {urun.barcode ? ` · Barkod: ${urun.barcode}` : ""}
         </p>
+
+        <div className="mt-4 flex items-center gap-2 text-[13px] text-black/40">
+          {ratingAvg != null ? (
+            <>
+              <span className="flex text-amber-500">{"★".repeat(Math.round(ratingAvg))}<span className="text-black/15">{"★".repeat(5 - Math.round(ratingAvg))}</span></span>
+              <span className="font-bold text-black">{ratingAvg.toFixed(1)}</span>
+              <a href="#yorumlar" className="underline-offset-2 hover:underline">({reviewCount} değerlendirme)</a>
+            </>
+          ) : (
+            <span>Henüz değerlendirme yok</span>
+          )}
+        </div>
 
         <div className="mt-8 flex flex-wrap items-baseline gap-3">
           <span className="text-3xl font-black tabular-nums text-black">{fmt(kdvDahil(netFiyat))} ₺</span>
@@ -271,6 +291,13 @@ export function UrunDetayOzellikleri({
         </div>
 
         <TeslimatBilgisi fiyat={kdvDahil(netFiyat)} stokta={urun.in_stock} />
+
+        {/* Karşılaştır + fiyat alarmı */}
+        <KarsilastirEkle urun={{ id: urun.id, ad: urun.name, kategori: urun.category, fiyat: urun.final_price ?? urun.sale_price, marka: urun.brand ?? null, puan: ratingAvg, stokta: urun.in_stock, gorsel: urun.image_url }} />
+        <FiyatAlarmi urunId={urun.id} />
+
+        {/* Açıklama */}
+        <p className="mt-6 max-w-md text-[15px] leading-relaxed text-black/70">{aciklama}</p>
       </div>
     </>
   );

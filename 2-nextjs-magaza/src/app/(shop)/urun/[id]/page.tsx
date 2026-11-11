@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { urun, urunler, ayniAldilar, indirimliFiyat, type Urun } from "@/lib/backoffice";
-import { GuvenKartlari } from "@/components/GuvenKartlari";
 import { Yorumlar } from "@/components/Yorumlar";
 import { UrunDetayOzellikleri } from "@/components/UrunDetayOzellikleri";
 import { SonGoruntulenenler } from "@/components/SonGoruntulenenler";
 import { BirlikteAlinanlar, type PaketUrunu } from "@/components/BirlikteAlinanlar";
 import { UrunSorulari } from "@/components/UrunSorulari";
-import { FiyatAlarmi } from "@/components/FiyatAlarmi";
-import { KarsilastirEkle, KarsilastirCubugu } from "@/components/KarsilastirCubugu";
+import { KarsilastirCubugu } from "@/components/KarsilastirCubugu";
 
 const ACIKLAMALAR: Record<string, string> = {
   Bilgisayar: "Günlük iş akışınızı hızlandıran, ergonomik ve dayanıklı bilgisayar donanımları. İki yıl garanti dahil.",
@@ -136,33 +134,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
 
       <section className="px-5 pb-10 sm:px-10">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2 [&>*]:min-w-0">
-          <UrunDetayOzellikleri urun={u} />
-
-          <div className="flex flex-col">
-            <div className="mt-2 flex items-center gap-2 text-[13px] text-black/40">
-              {u.rating_avg != null ? (
-                <>
-                  <span className="flex text-amber-500">{"★".repeat(Math.round(u.rating_avg))}<span className="text-black/15">{"★".repeat(5 - Math.round(u.rating_avg))}</span></span>
-                  <span className="font-bold text-black">{u.rating_avg.toFixed(1)}</span>
-                  <a href="#yorumlar" className="underline-offset-2 hover:underline">({u.review_count ?? 0} değerlendirme)</a>
-                </>
-              ) : (
-                <span>Henüz değerlendirme yok</span>
-              )}
-            </div>
-
-            <KarsilastirEkle urun={{ id: u.id, ad: u.name, kategori: u.category, fiyat: u.final_price ?? u.sale_price, marka: u.brand ?? null, puan: u.rating_avg ?? null, stokta: u.in_stock, gorsel: u.image_url }} />
-            <FiyatAlarmi urunId={u.id} />
-
-            <p className="mt-8 max-w-md text-[15px] leading-relaxed text-black/70">{aciklama}</p>
-
-            <div className="mt-auto space-y-5">
-              <div className="space-y-3 border-t border-black/15 pt-6 text-[13px] leading-relaxed text-black/60">
-                <p>Sipariş verdiğinizde stok arka ofiste 30 dakika boyunca sizin adınıza rezerve edilir.</p>
-                <p>Ödeme onayında faturanız otomatik kesilir; kargoya verildiğinde takip bağlantısı sipariş sayfanızda görünür.</p>
-              </div>
-            </div>
-          </div>
+          <UrunDetayOzellikleri urun={u} aciklama={aciklama} ratingAvg={u.rating_avg ?? null} reviewCount={u.review_count ?? 0} />
         </div>
       </section>
 
@@ -174,12 +146,6 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
         gorsel: u.id ? `/api/img/${u.id}` : null,
       }} />
 
-      {/* Güven kartları */}
-      <div className="px-5 sm:px-10">
-        <div className="mx-auto max-w-7xl">
-          <GuvenKartlari ince />
-        </div>
-      </div>
       {/* Gerçek değerlendirmeler */}
       <div id="yorumlar" className="scroll-mt-36">
         <Yorumlar urunId={u.id} />
