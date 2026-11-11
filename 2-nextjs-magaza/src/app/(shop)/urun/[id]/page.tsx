@@ -134,15 +134,9 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      <section className="px-5 pb-24 sm:px-10">
+      <section className="px-5 pb-10 sm:px-10">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2 [&>*]:min-w-0">
           <UrunDetayOzellikleri urun={u} />
-      <SonGoruntulenenler suAnki={{
-        id: u.id,
-        ad: u.name,
-        fiyat: u.final_price ?? u.sale_price,
-        gorsel: u.id ? `/api/img/${u.id}` : null,
-      }} />
 
           <div className="flex flex-col">
             <div className="mt-2 flex items-center gap-2 text-[13px] text-black/40">
@@ -171,6 +165,14 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </section>
+
+      {/* Yakında İnceledikleriniz — iki kolonun altında tam genişlik şerit (grid içinde kalırsa sağ kolona biniyordu) */}
+      <SonGoruntulenenler suAnki={{
+        id: u.id,
+        ad: u.name,
+        fiyat: u.final_price ?? u.sale_price,
+        gorsel: u.id ? `/api/img/${u.id}` : null,
+      }} />
 
       {/* Güven kartları */}
       <div className="px-5 sm:px-10">
