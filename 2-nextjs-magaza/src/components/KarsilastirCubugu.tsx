@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Check, X } from "lucide-react";
+import { cerezKategorisiAktif } from "@/lib/cerez";
 
 export type KarsilastirOgesi = {
   id: number;
@@ -29,7 +30,8 @@ function oku(): Depo {
 }
 
 function yaz(depo: Depo) {
-  localStorage.setItem(ANAHTAR, JSON.stringify(depo));
+  // Karşılaştırma listesi fonksiyonel çerezdir — onay yoksa seçim yalnızca oturumluk kalır
+  if (cerezKategorisiAktif('fonksiyonel')) localStorage.setItem(ANAHTAR, JSON.stringify(depo));
   window.dispatchEvent(new Event("hba-karsilastir"));
 }
 

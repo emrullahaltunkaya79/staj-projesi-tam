@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { cerezKategorisiAktif } from "@/lib/cerez";
 
 /** Karanlık mod durumu — header butonu ve kullanıcı menüsündeki anahtar paylaşır. */
 export function karanlikModKullan() {
@@ -19,7 +20,8 @@ export function karanlikModKullan() {
     const yeni = !dark;
     setDark(yeni);
     document.documentElement.classList.toggle("dark", yeni);
-    localStorage.setItem("hba-dark", String(yeni));
+    // Tema tercihi fonksiyonel çerezdir — onay yoksa yalnızca bu oturum için geçerlidir
+    if (cerezKategorisiAktif('fonksiyonel')) localStorage.setItem("hba-dark", String(yeni));
   };
 
   return { dark, degistir };

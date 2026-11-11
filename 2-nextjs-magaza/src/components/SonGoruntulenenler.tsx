@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { kdvDahil } from "@/lib/fiyat";
+import { cerezKategorisiAktif } from "@/lib/cerez";
 
 const ANAHTAR = "hba-son-goruntulenen";
 
@@ -18,7 +19,8 @@ export function SonGoruntulenenler({ suAnki }: { suAnki?: Kayit }) {
       const kayitli: Kayit[] = JSON.parse(localStorage.getItem(ANAHTAR) ?? "[]");
       if (suAnki) {
         const guncel = [suAnki, ...kayitli.filter((k) => k.id !== suAnki.id)].slice(0, 8);
-        localStorage.setItem(ANAHTAR, JSON.stringify(guncel));
+        // Fonksiyonel çerez onayı yoksa ziyaret kaydı cihaza yazılmaz (oturumluk gösterim sürer)
+        if (cerezKategorisiAktif('fonksiyonel')) localStorage.setItem(ANAHTAR, JSON.stringify(guncel));
         setListe(guncel.slice(1)); // mevcut ürünü gösterme
       } else {
         setListe(kayitli.slice(0, 8));

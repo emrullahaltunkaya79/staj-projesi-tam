@@ -9,7 +9,8 @@ import { favori } from "./FavoriProvider";
 import { DarkModeToggle, karanlikModKullan } from "./DarkModeToggle";
 import { dil } from "./DilProvider";
 import { LiveChat } from "./LiveChat";
-import { CerezOnayi } from "./CerezOnayi";
+import { CerezAyarlariDugmesi, CerezOnayi } from "./CerezOnayi";
+import { cerezKategorisiAktif } from "@/lib/cerez";
 import { GeriSayim } from "./GeriSayim";
 import { TemaSecici } from "./TemaSecici";
 import { KaydirmaYardimcisi } from "./KaydirmaYardimcisi";
@@ -61,7 +62,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const sonAramaEkle = (terim: string) => {
     const liste = [terim, ...sonAramalar.filter((t) => t !== terim)].slice(0, 6);
     setSonAramalar(liste);
-    try { localStorage.setItem("hba-son-aramalar", JSON.stringify(liste)); } catch {}
+    // Arama geçmişi fonksiyonel çerezdir — onay yoksa yalnızca oturumluk tutulur
+    if (cerezKategorisiAktif('fonksiyonel')) { try { localStorage.setItem("hba-son-aramalar", JSON.stringify(liste)); } catch {} }
   };
 
   // Mega menü verisi ilk hover'da bir kez yüklenir
@@ -485,6 +487,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 <a href="/sozlesme/uyelik" className="hover:text-white transition">Üyelik Sözleşmesi</a>
                 <a href="/gizlilik" className="hover:text-white transition">KVKK Aydınlatma Metni</a>
                 <a href="/cerez-politikasi" className="hover:text-white transition">Çerez Politikası</a>
+                <CerezAyarlariDugmesi sinif="text-left hover:text-white transition" />
               </div>
             </div>
           </div>

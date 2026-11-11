@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { oturumlaSenkron } from "@/lib/hesapSenkron";
+import { cerezKategorisiAktif } from "@/lib/cerez";
 
 export type FavoriUrun = {
   id: number;
@@ -57,7 +58,8 @@ export function FavoriProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!hazir) return;
     try {
-      localStorage.setItem(ANAHTAR, JSON.stringify(favoriler));
+      // Favoriler fonksiyonel çerezdir — onay yoksa cihazda saklanmaz (girişli hesapta sunucuda yaşar)
+      if (cerezKategorisiAktif('fonksiyonel')) localStorage.setItem(ANAHTAR, JSON.stringify(favoriler));
     } catch {}
     if (hazir && giris.girisYapmis) sunucuyaYaz("favoriler", favoriler);
   }, [favoriler, hazir, giris.girisYapmis]);
