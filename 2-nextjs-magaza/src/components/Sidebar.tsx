@@ -416,26 +416,33 @@ export function Sidebar({
 
   return (
     <>
-      {/* Masaüstü: sticky sidebar — kaydırırken filtreler ekranda kalır */}
+      {/* Masaüstü: sabit (fixed) filtre paneli — katalog kısa olsa bile kaydırırken ekranda kalır.
+          sticky, ebeveyn kolondan uzun olamayacağı için ürünü az kataloglarda hiç yapışamıyordu;
+          fixed öğe de doğrudan flex çocuğu olamaz (statik konumu satır başına düşer). Bu yüzden
+          genişliği rezerve eden spacer kolonun İÇİNDE konumlanır; x konumu böylece kolonla aynı kalır. */}
       <div
-        className={`hidden h-fit shrink-0 overflow-hidden transition-[width,opacity,margin] duration-300 ease-in-out lg:sticky lg:top-36 lg:block lg:self-start ${
+        className={`hidden shrink-0 transition-[width,opacity,margin] duration-300 ease-in-out lg:block ${
           masaustuAcik ? "w-56 opacity-100" : "w-0 -mr-8 opacity-0"
         }`}
       >
-        <div className="max-h-[calc(100vh-10rem)] w-56 overflow-y-auto [scrollbar-width:thin]">{icerik}</div>
+        <div className={`z-30 w-56 lg:fixed lg:top-36 ${masaustuAcik ? "" : "lg:hidden"}`}>
+          <div className="max-h-[calc(100vh-10rem)] w-56 overflow-y-auto [scrollbar-width:thin]">{icerik}</div>
+        </div>
       </div>
 
-      {/* Masaüstü: sidebar aç/kapa butonu */}
-      <button
-        type="button"
-        onClick={() => setMasaustuAcik(!masaustuAcik)}
-        title={masaustuAcik ? "Filtreleri gizle" : "Filtreleri göster"}
-        className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-black/40 transition-all duration-300 hover:border-black hover:text-black lg:sticky lg:top-36 lg:flex lg:self-start ${
-          masaustuAcik ? "" : "rotate-180"
-        }`}
-      >
-        <ChevronDown className="h-4 w-4 -rotate-90" />
-      </button>
+      {/* Masaüstü: sidebar aç/kapa butonu — panelin sağına sabitlenir (bg-white: grid arkasından geçerken okunaklı) */}
+      <div className="hidden h-9 w-9 shrink-0 lg:block">
+        <button
+          type="button"
+          onClick={() => setMasaustuAcik(!masaustuAcik)}
+          title={masaustuAcik ? "Filtreleri gizle" : "Filtreleri göster"}
+          className={`z-30 flex h-9 w-9 items-center justify-center rounded-full border border-black/15 bg-white text-black/40 shadow-sm transition-all duration-300 hover:border-black hover:text-black lg:fixed lg:top-36 ${
+            masaustuAcik ? "" : "rotate-180"
+          }`}
+        >
+          <ChevronDown className="h-4 w-4 -rotate-90" />
+        </button>
+      </div>
 
       {/* Mobil: açma butonu (tam genişlik, üstte) */}
       <button
