@@ -143,6 +143,17 @@ export default async function SiparisSayfasi({
           </div>
         )}
 
+        {/* Reddedilen iade talebi: statü teslime döner ama müşteri kararı görmelidir */}
+        {s.iade_talebi?.reddedildi && (
+          <div className="mt-8 border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700">
+            ↩️ Önceki iade talebiniz satıcı tarafından reddedildi
+            {s.iade_talebi.red_notu ? <span className="font-medium"> — “{s.iade_talebi.red_notu}”</span> : null}.
+            <p className="mt-1 text-xs font-medium text-red-600/80">
+              Farklı bir görüşünüz varsa <a href="/iletisim" className="font-bold underline underline-offset-2">müşteri hizmetlerimizle</a> iletişime geçebilirsiniz.
+            </p>
+          </div>
+        )}
+
         {iadeDurumu ? (
           <div className={`mt-8 border px-5 py-4 text-sm font-bold ${s.status === "returned" ? "border-black bg-neutral-50 text-black" : "border-amber-300 bg-amber-50 text-amber-700"}`}>
             ↩️ {iadeDurumu}{s.iade_talebi?.kismi ? " (kısmi iade)" : ""}

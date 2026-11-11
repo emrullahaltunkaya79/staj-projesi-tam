@@ -193,11 +193,14 @@ class OrderService
             $order->load('contact');
 
             // Rezerv → gerçek stok düşümü (InvoiceService satışı yapar)
+            // fiyat_kontrolu=false: kalem fiyatları sipariş anında mağazanın güvenilir
+            // sunucusu tarafından hesaplanmıştır (kupon/kargo/kapıda bedeli katlamalı)
             $invoice = $this->invoiceService->createSaleInvoice($companyId, [
                 'contact_id' => $order->contact_id,
                 'warehouse_id' => $order->warehouse_id,
                 'issue_date' => now()->toDateString(),
                 'tax_rate' => (float) $order->tax_rate,
+                'fiyat_kontrolu' => false,
                 'notes' => "{$order->order_no} numaralı e-ticaret siparişinden kesilmiştir.",
                 'items' => collect($order->items)->map(fn ($i) => [
                     'product_id' => $i['product_id'],
@@ -236,6 +239,45 @@ class OrderService
 
             return $order->fresh();
         });
+    }
+
+    /**
+     * Panel: ödenmiş siparişi hazırlanmaya alır (paid → preparing).
+     */
+    public function markPreparing(Order $order, int $companyId): Order
+    {
+        $order = Order::where('company_id', $companyId)->where('id', $order->id)->lockForUpdate()->first();
+
+        if (! $order || $order->status !== 'paid') {
+            throw ValidationException::withMessages(['order' => 'Yalnızca ödenmiş siparişler hazırlanmaya alınabilir.']);
+        }
+
+        $order->update(['status' => 'preparing']);
+
+        return $order->fresh();
+    }
+
+    /**
+     * Panel: iade talebini reddeder — sipariş teslim durumuna döner, talep temizlenir.
+     */
+    public function rejectReturn(Order $order, int $companyId, string $not = null): Order
+    {
+        $order = Order::where('company_id', $companyId)->where('id', $order->id)->lockForUpdate()->first();
+
+        if (! $order || $order->status !== 'return_requested') {
+            throw ValidationException::withMessages(['order' => 'Yalnızca iade talebinde olan siparişler reddedilebilir.']);
+        }
+
+        $order->update([
+            'status' => 'delivered',
+            'iade_talebi' => array_merge($order->iade_talebi ?? [], [
+                'reddedildi' => true,
+                'red_notu' => $not,
+                'red_tarihi' => now()->toIso8601String(),
+            ]),
+        ]);
+
+        return $order->fresh();
     }
 
     /**

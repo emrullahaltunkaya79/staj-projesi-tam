@@ -101,6 +101,10 @@ export type IadeTalebi = {
   kismi: boolean;
   kalemler: { sira: number; product_name: string; quantity: number; unit_price: number }[];
   tarih: string;
+  /** Satıcı talebi reddettiyse true + red notu — sipariş teslim durumuna döner */
+  reddedildi?: boolean;
+  red_notu?: string | null;
+  red_tarihi?: string | null;
 };
 
 /** Base64 data URI'ler sayfa boyutunu ~24MB'a çıkarıyordu; görsel /api/img/{id} proxy'sinden akar. */

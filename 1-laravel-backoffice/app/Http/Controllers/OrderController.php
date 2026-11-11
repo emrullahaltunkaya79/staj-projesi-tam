@@ -86,4 +86,46 @@ class OrderController extends Controller
 
         return back()->with('success', 'Kargo bilgileri kaydedildi: '.$order->fresh()->statusLabel());
     }
+
+    /**
+     * Panel: ödenmiş siparişi hazırlanmaya alır (paid → preparing).
+     */
+    public function markPreparing(Request $request, Order $order, OrderService $orderService)
+    {
+        try {
+            $orderService->markPreparing($order, $request->user()->company_id);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return back()->with('success', 'Sipariş hazırlanıyor durumuna alındı.');
+    }
+
+    /**
+     * Panel: iade talebini onaylar — stoğu geri alır, cari bakiyesini düzeltir, siparişi "İade Edildi" yapar.
+     */
+    public function approveReturn(Request $request, Order $order, OrderService $orderService)
+    {
+        try {
+            $orderService->approveReturn($order, $request->user()->company_id);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return back()->with('success', 'İade onaylandı: stoklar geri alındı ve tutar cari hesaba işlendi.');
+    }
+
+    /**
+     * Panel: iade talebini reddeder — sipariş teslim durumuna döner, talep "reddedildi" olarak işaretlenir.
+     */
+    public function rejectReturn(Request $request, Order $order, OrderService $orderService)
+    {
+        try {
+            $orderService->rejectReturn($order, $request->user()->company_id, $request->input('not'));
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return back()->with('success', 'İade talebi reddedildi: sipariş teslim durumuna döndü.');
+    }
 }

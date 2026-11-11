@@ -313,7 +313,11 @@ class InvoiceService
                 // --- FİYAT YETKİSİ KONTROLÜ (yalnızca satışta) ---
                 // Yönetici olmayan kullanıcılar, birim fiyatı ürünün alış-satış
                 // aralığının dışına taşıyamaz; oturum yoksa (seeder/komut) atlanır.
-                if ($type === 'satis' && auth()->check() && ! auth()->user()->isAdmin() && isset($item['unit_price'])) {
+                // E-ticaret sipariş faturaları (fiyat_kontrolu=false): kalem fiyatları
+                // mağazanın güvenilir sunucusu tarafından kupon/kargo/hizmet bedeliyle
+                // ölçeklenip sipariş anında onaylanmıştır — burada tekrar kontrol edilmez.
+                if ($type === 'satis' && ($data['fiyat_kontrolu'] ?? true)
+                    && auth()->check() && ! auth()->user()->isAdmin() && isset($item['unit_price'])) {
                     $min = (float) $product->purchase_price;
                     $max = (float) $product->sale_price;
                     $price = (float) $item['unit_price'];

@@ -4,6 +4,8 @@
 @section('actions')
     <a href="{{ route('siparisler.index') }}" class="btn-secondary">← Siparişler</a>
 
+    @php $odemeKisa = ['cspr' => 'CSPR', 'kapida' => 'Kapıda Ödeme', 'havale' => 'Havale / EFT']; @endphp
+
     @if (in_array($order->status, ['paid', 'preparing', 'shipped', 'delivered']))
         <a href="{{ route('siparisler.etiket', $order) }}" data-turbo="false" class="btn-secondary" title="Kargo kutu etiketini PDF olarak indir">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -13,7 +15,7 @@
         </a>
     @endif
 
-    @if ($order->status === 'pending')
+    @if ($order->status === 'pending' && $order->payment_method === 'cspr')
         <form method="POST" action="{{ route('siparisler.cspr.start', $order) }}">
             @csrf
             <button type="submit" class="btn-primary">
@@ -21,11 +23,14 @@
                 CSPR ile Öde
             </button>
         </form>
+    @endif
+
+    @if ($order->status === 'pending')
         <form method="POST" action="{{ route('siparisler.odendi', $order) }}">
             @csrf
             <button type="submit" class="btn-primary">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Ödendi — Faturalaştır
+                {{ $order->payment_method === 'havale' ? 'Havaleyi Onayla — Faturalaştır' : ($order->payment_method === 'kapida' ? 'Kapıda Ödendi — Faturalaştır' : 'Ödendi — Faturalaştır') }}
             </button>
         </form>
         <form method="POST" action="{{ route('siparisler.iptal', $order) }}"
@@ -35,7 +40,16 @@
         </form>
     @endif
 
-    @if (in_array($order->status, ['paid', 'preparing']) )
+    {{-- Kapıda ödemede tahsilat kapıda yapılır: kargola eylemi otomatik faturalandırır (sevk ile fatura) --}}
+
+    @if ($order->status === 'paid')
+        <form method="POST" action="{{ route('siparisler.hazirla', $order) }}">
+            @csrf
+            <button type="submit" class="btn-secondary">Hazırlığa Al</button>
+        </form>
+    @endif
+
+    @if (in_array($order->status, ['paid', 'preparing']) || ($order->status === 'pending' && $order->payment_method === 'kapida'))
         <form method="POST" action="{{ route('siparisler.kargo', $order) }}" class="flex flex-col items-end gap-2 sm:flex-row sm:items-end">
             @csrf
             <div>
@@ -148,6 +162,17 @@
             <dl class="space-y-2 text-sm">
                 <div class="flex justify-between"><dt class="text-slate-500">Sipariş No</dt><dd class="font-semibold">{{ $order->order_no }}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500">Müşteri</dt><dd>{{ $order->customer_name ?: ($order->contact->name ?? '—') }}</dd></div>
+                <div class="flex items-center justify-between">
+                    <dt class="text-slate-500">Ödeme</dt>
+                    <dd>
+                        <span class="inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $order->payment_method === 'kapida' ? 'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300' : ($order->payment_method === 'havale' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300') }}">
+                            {{ $order->odemeYontemiEtiketi() }}
+                        </span>
+                        @if ($order->payment_method === 'kapida' && in_array($order->status, ['pending', 'paid', 'preparing']))
+                            <span class="ml-1 text-[11px] text-orange-600 dark:text-orange-300">tahsilat kapıda</span>
+                        @endif
+                    </dd>
+                </div>
                 @if ($order->customer_email)<div class="flex justify-between"><dt class="text-slate-500">E-posta</dt><dd class="text-xs">{{ $order->customer_email }}</dd></div>@endif
                 @if ($order->customer_phone)<div class="flex justify-between"><dt class="text-slate-500">Telefon</dt><dd class="text-xs">{{ $order->customer_phone }}</dd></div>@endif
                 @if ($order->invoice)
@@ -190,7 +215,7 @@
             @endif
             @if ($order->iade_talebi)
                 <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
-                    <span class="font-semibold">{{ $order->iade_talebi['kismi'] ? 'Kısmi İade Talebi' : 'İade Talebi' }}</span>
+                    <span class="font-semibold">{{ ($order->iade_talebi['reddedildi'] ?? false) ? 'Reddedilen İade Talebi' : ($order->iade_talebi['kismi'] ? 'Kısmi İade Talebi' : 'İade Talebi') }}</span>
                     — {{ $order->iade_talebi['neden_etiketi'] }}
                     @if (! empty($order->iade_talebi['aciklama']))<br><em>“{{ $order->iade_talebi['aciklama'] }}”</em>@endif
                     <ul class="mt-1.5 list-disc pl-4">
@@ -199,6 +224,24 @@
                         @endforeach
                     </ul>
                     <div class="mt-1.5 font-semibold">İade tutarı: {{ number_format((float) $order->iade_tutari, 2, ',', '.') }} ₺</div>
+                    @if ($order->iade_talebi['reddedildi'] ?? false)
+                        <div class="mt-1.5 font-semibold text-red-700 dark:text-red-300">Talep reddedildi{{ ! empty($order->iade_talebi['red_notu']) ? ': '.$order->iade_talebi['red_notu'] : '' }}</div>
+                    @elseif ($order->status === 'return_requested')
+                        <div class="mt-2.5 flex gap-2">
+                            <form method="POST" action="{{ route('siparisler.iade.onay', $order) }}">
+                                @csrf
+                                <button type="submit" class="rounded-lg bg-emerald-600 px-3 py-1.5 font-semibold text-white transition hover:bg-emerald-700"
+                                        onclick="return confirm('İadeyi onaylıyor musunuz? İade edilen ürünlerin stoğu geri alınır ve tutar cari hesaba iade edilir.')">
+                                    İadeyi Onayla
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('siparisler.iade.reddet', $order) }}"
+                                  onsubmit="return confirm('İade talebini reddetmek istediğinize emin misiniz? Sipariş teslim durumuna döner.')">
+                                @csrf
+                                <button type="submit" class="rounded-lg border border-amber-300 px-3 py-1.5 font-semibold text-amber-800 transition hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200">Reddet</button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             @endif
         </div>

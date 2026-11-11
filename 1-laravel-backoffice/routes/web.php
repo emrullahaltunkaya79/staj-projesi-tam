@@ -117,6 +117,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/siparisler/{order}/odendi', [OrderController::class, 'markPaid'])->name('siparisler.odendi');
     Route::post('/siparisler/{order}/iptal', [OrderController::class, 'cancelOrder'])->name('siparisler.iptal');
     Route::post('/siparisler/{order}/kargo', [OrderController::class, 'updateShipping'])->name('siparisler.kargo');
+    Route::post('/siparisler/{order}/hazirla', [OrderController::class, 'markPreparing'])->name('siparisler.hazirla');
+    Route::post('/siparisler/{order}/iade-onay', [OrderController::class, 'approveReturn'])->name('siparisler.iade.onay');
+    Route::post('/siparisler/{order}/iade-reddet', [OrderController::class, 'rejectReturn'])->name('siparisler.iade.reddet');
 
     // CSPR kripto ödeme
     Route::post('/siparisler/{order}/cspr-odeme', [CasperPaymentController::class, 'start'])->name('siparisler.cspr.start');
