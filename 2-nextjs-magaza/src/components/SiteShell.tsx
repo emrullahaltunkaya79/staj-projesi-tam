@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, LogOut, ChevronDown, Heart, Globe, Moon, Sun, Menu } from "lucide-react";
+import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Globe, Moon, Sun, Menu } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { auth } from "./AuthProvider";
 import { favori } from "./FavoriProvider";
@@ -40,6 +41,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [menuAcik, setMenuAcik] = useState(false);
   const [aramaOdak, setAramaOdak] = useState(false);
   const [megaAcik, setMegaAcik] = useState<string | null>(null);
+  const [tumKategorilerAcik, setTumKategorilerAcik] = useState(false);
   const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[] }> | null>(null);
   const [oneriler, setOneriler] = useState<{
     urunler: { id: number; name: string; brand?: string | null; fiyat: number; image: string | null }[];
@@ -381,9 +383,10 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         className="relative border-b border-black/10 bg-white px-5 sm:px-10"
       >
         <div className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]">
-          <a href="#kategoriler" className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black uppercase tracking-wide text-black transition hover:bg-black/5">
+          <button type="button" onClick={() => setTumKategorilerAcik(v => !v)}
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black uppercase tracking-wide text-black transition hover:bg-black/5 ${tumKategorilerAcik ? "bg-black/5" : ""}`}>
             <Menu className="h-3.5 w-3.5 text-[var(--marka)]" /> Tüm Kategoriler
-          </a>
+          </button>
           <span className="mx-1.5 h-4 w-px shrink-0 bg-black/10" aria-hidden />
           <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-black transition hover:bg-black/5">Tüm Ürünler</a>
           <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-orange-600 transition hover:bg-orange-50">⚡ Flaş İndirimler</a>
@@ -403,6 +406,28 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             </a>
           ))}
         </div>
+
+        {/* Tüm kategoriler çekmecesi — düğmeyle açılır, kategori/link tıklanınca kapanır */}
+        {tumKategorilerAcik && (
+          <div className="absolute inset-x-0 top-full z-50">
+            <div className="mx-auto max-w-7xl rounded-b-2xl border-x border-b border-black/10 bg-white p-5 shadow-2xl">
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
+                {KATEGORI_LINKLERI.map((k) => (
+                  <Link key={k} href={`/kategori/${encodeURIComponent(k)}`}
+                        onClick={() => setTumKategorilerAcik(false)}
+                        className="flex items-center justify-between rounded-lg px-3 py-2 text-[13px] font-bold text-black/70 transition hover:bg-[var(--marka)]/10 hover:text-[var(--marka)]">
+                    {k}
+                    <ChevronRight className="h-3.5 w-3.5 text-black/25" />
+                  </Link>
+                ))}
+              </div>
+              <a href="/" onClick={() => setTumKategorilerAcik(false)}
+                 className="mt-3 flex items-center justify-center gap-1 rounded-lg bg-black/[.04] py-2 text-[12px] font-bold text-black/60 transition hover:bg-black/10 hover:text-black">
+                Tüm Ürünleri Gör
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* Mega menü paneli — hover edilen kategorinin markaları */}
         {megaAcik && menuVerisi?.[megaAcik] && (
