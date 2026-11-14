@@ -48,7 +48,7 @@ export function SonGoruntulenenler({ suAnki }: { suAnki?: Kayit }) {
               <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-[#f4f4f4]">
                 {k.gorsel ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={k.gorsel} alt={k.ad} loading="lazy" className="h-full w-full object-contain p-[6%]" />
+                  <img src={k.gorsel} alt={k.ad} loading="lazy" className="h-full w-full object-contain p-4" />
                 ) : (
                   <span className="text-3xl font-black text-black/10">{k.ad.charAt(0)}</span>
                 )}

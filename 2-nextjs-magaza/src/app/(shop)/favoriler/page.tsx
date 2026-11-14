@@ -56,7 +56,7 @@ export default function FavorilerSayfasi() {
                   <div className="relative aspect-[4/5] items-center justify-center overflow-hidden bg-[#f4f4f4] transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-[1.015]">
                     {f.gorsel ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`/api/img/${f.id}`} alt={f.ad} className="h-full w-full object-contain p-[6%]" />
+                      <img src={`/api/img/${f.id}`} alt={f.ad} className="h-full w-full object-contain p-4" />
                     ) : (
                       <span className="text-5xl font-black text-black/10">{f.ad.charAt(0)}</span>
                     )}

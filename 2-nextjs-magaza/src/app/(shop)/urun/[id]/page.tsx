@@ -184,7 +184,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
                   <div className="flex aspect-square items-center justify-center overflow-hidden bg-[#f4f4f4]">
                     {b.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={b.image_url} alt={b.name} loading="lazy" className="h-full w-full object-contain p-[6%] transition-transform duration-300 group-hover:scale-[1.04]" />
+                      <img src={b.image_url} alt={b.name} loading="lazy" className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04]" />
                     ) : (
                       <span className="text-4xl font-black text-black/10">{b.name.charAt(0)}</span>
                     )}

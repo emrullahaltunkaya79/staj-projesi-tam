@@ -82,7 +82,7 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
                   <div className="relative aspect-square bg-[#f4f4f4]">
                     {u.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={imgUrl(u.id, u.image_url)} alt={u.name} loading="lazy" className="h-full w-full object-contain p-[6%]" />
+                      <img src={imgUrl(u.id, u.image_url)} alt={u.name} loading="lazy" className="h-full w-full object-contain p-4" />
                     ) : (
                       <span className="flex h-full items-center justify-center text-5xl font-black text-black/10">{u.name.charAt(0)}</span>
                     )}

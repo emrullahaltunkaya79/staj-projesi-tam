@@ -75,7 +75,7 @@ export default function KarsilastirSayfasi() {
                                 <div className="flex aspect-square items-center justify-center bg-[#f4f4f4]">
                                   {u.gorsel ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={u.gorsel} alt={u.ad} className="h-full w-full object-contain p-[6%]" />
+                                    <img src={u.gorsel} alt={u.ad} className="h-full w-full object-contain p-4" />
                                   ) : (
                                     <span className="text-4xl font-black text-black/10">{u.ad.charAt(0)}</span>
                                   )}

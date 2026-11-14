@@ -19,7 +19,7 @@ export function UrunKarti({ urun }: { urun: Urun }) {
         <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#f4f4f4] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.015]">
           {urun.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imgUrl(urun.id, urun.image_url)} alt={urun.name} loading="lazy" className="h-full w-full object-contain p-[6%]" />
+            <img src={imgUrl(urun.id, urun.image_url)} alt={urun.name} loading="lazy" className="h-full w-full object-contain p-4" />
           ) : (
             <span className="text-5xl font-black text-black/10">{urun.name.slice(0, 1)}</span>
           )}
