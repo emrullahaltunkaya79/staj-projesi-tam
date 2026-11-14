@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Contact;
 use App\Models\Expense;
 use App\Models\Product;
@@ -144,5 +145,110 @@ class PanelSayfaSagligiTest extends TestCase
         foreach (['/panel', '/siparisler', '/urunler', '/ayarlar', '/sistem'] as $rota) {
             $this->get($rota)->assertRedirect();
         }
+    }
+
+    /** Hızlı aksiyonlar: bekleyen/paid/return_requested satırlarının listede görünürlüğü */
+    private function siparisOlustur(string $durum): Order
+    {
+        Mail::fake();
+        $cari = Contact::where('company_id', $this->admin->company_id)->first()
+            ?? Contact::create(['company_id' => $this->admin->company_id, 'type' => 'musteri', 'name' => 'Hızlı Aksiyon Cari']);
+        $urun = Product::first() ?? Product::create([
+            'company_id' => $this->admin->company_id, 'name' => 'Aksiyon Ürün', 'unit' => 'adet',
+            'purchase_price' => 50, 'sale_price' => 100, 'stock_quantity' => 20,
+        ]);
+        $order = app(OrderService::class)->create($this->admin->company_id, [
+            'contact_id' => $cari->id, 'tax_rate' => 20, 'payment_method' => 'cspr',
+            'items' => [['product_id' => $urun->id, 'quantity' => 1, 'unit_price' => 100]],
+        ]);
+
+        if ($durum === 'paid' || $durum === 'preparing') {
+            $order = app(OrderService::class)->markPaid($order, $this->admin->company_id);
+        }
+        if ($durum === 'preparing') {
+            $order = app(OrderService::class)->markPreparing($order, $this->admin->company_id);
+        }
+        if ($durum === 'return_requested') {
+            $order->update(['status' => 'delivered', 'delivered_at' => now()]);
+            $order = app(OrderService::class)->requestReturn($order, $this->admin->company_id, ['neden' => 'diger']);
+        }
+
+        return $order->fresh();
+    }
+
+    /** @test */
+    public function hizli_aksiyon_dugmeleri_duruma_gore_listede_gorunur(): void
+    {
+        $pending = $this->siparisOlustur('pending');
+        $paid = $this->siparisOlustur('paid');
+        $iade = $this->siparisOlustur('return_requested');
+
+        $html = $this->get('/siparisler')->getContent();
+
+        // bekleyen: Ödendi + İptal
+        $this->assertTrue((bool) preg_match('/'.$pending->order_no.'[\s\S]{0,2000}?Ödendi[\s\S]{0,600}?İptal/', $html), 'Bekleyen satırda Ödendi ve İptal görünmeli.');
+        // paid: Hazırlığa Al
+        $this->assertTrue((bool) preg_match('/'.$paid->order_no.'[\s\S]{0,2000}?Hazırlığa Al/', $html), 'Ödenen satırda Hazırlığa Al görünmeli.');
+        // return_requested: İadeyi Onayla + Reddet
+        $this->assertTrue((bool) preg_match('/'.$iade->order_no.'[\s\S]{0,2000}?İadeyi Onayla[\s\S]{0,600}?Reddet/', $html), 'İade satırında Onayla/Reddet görünmeli.');
+    }
+
+    /** @test */
+    public function listeden_odendi_hizli_aksiyonu_calisir(): void
+    {
+        $order = $this->siparisOlustur('pending');
+
+        $this->followingRedirects()
+            ->post('/siparisler/'.$order->id.'/odendi')
+            ->assertOk();
+
+        $this->assertSame('paid', $order->fresh()->status);
+        $this->assertNotNull($order->fresh()->invoice_id);
+    }
+
+    /** @test */
+    public function listeden_iptal_hizli_aksiyonu_calisir(): void
+    {
+        $order = $this->siparisOlustur('pending');
+
+        $this->followingRedirects()
+            ->post('/siparisler/'.$order->id.'/iptal')
+            ->assertOk();
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+    }
+
+    /** @test */
+    public function listeden_hazirliga_al_hizli_aksiyonu_calisir(): void
+    {
+        $order = $this->siparisOlustur('paid');
+
+        $this->followingRedirects()
+            ->post('/siparisler/'.$order->id.'/hazirla')
+            ->assertOk();
+
+        $this->assertSame('preparing', $order->fresh()->status);
+    }
+
+    /** @test */
+    public function listeden_iade_onay_ve_reddet_hizli_aksiyonlari_calisir(): void
+    {
+        $order = $this->siparisOlustur('return_requested');
+
+        // reddet: teslime döner, talep damgalı
+        $this->followingRedirects()
+            ->post('/siparisler/'.$order->id.'/iade-reddet', ['not' => 'Red gerekçesi test'])
+            ->assertOk();
+        $this->assertSame('delivered', $order->fresh()->status);
+        $this->assertTrue($order->fresh()->iade_talebi['reddedildi']);
+
+        // yeniden iade talebi + onay: returned + stok geri
+        $order->update(['status' => 'delivered']);
+        $order = app(OrderService::class)->requestReturn($order, $this->admin->company_id, ['neden' => 'diger']);
+        $this->followingRedirects()
+            ->post('/siparisler/'.$order->id.'/iade-onay')
+            ->assertOk();
+
+        $this->assertSame('returned', $order->fresh()->status);
     }
 }

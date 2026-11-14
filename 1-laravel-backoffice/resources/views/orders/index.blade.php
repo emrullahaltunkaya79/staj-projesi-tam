@@ -87,13 +87,37 @@
                         </td>
                         <td class="text-xs">{{ $order->created_at->format('d.m.Y H:i') }}</td>
                         <td class="text-right tabular-nums">
-                            <div class="flex items-center justify-end gap-2">
+                            <div class="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
                                 @if ($order->status === 'pending')
                                     <form method="POST" action="{{ route('siparisler.odendi', $order) }}"
                                           onsubmit="return confirm('{{ $order->order_no }} siparişini ÖDENDİ olarak işaretliyor musunuz? Fatura kesilir ve stok düşer.');">
                                         @csrf
                                         <button type="submit" title="Ödeme alındı — fatura kes"
                                                 class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">Ödendi</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('siparisler.iptal', $order) }}"
+                                          onsubmit="return confirm('Siparişi iptal etmek istediğinize emin misiniz? Rezerve stok serbest bırakılır.');">
+                                        @csrf
+                                        <button type="submit" class="text-xs font-semibold text-red-500 hover:text-red-600">İptal</button>
+                                    </form>
+                                @endif
+                                @if ($order->status === 'paid')
+                                    <form method="POST" action="{{ route('siparisler.hazirla', $order) }}">
+                                        @csrf
+                                        <button type="submit" title="Paketlemeye alındı işaretlenir"
+                                                class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Hazırlığa Al</button>
+                                    </form>
+                                @endif
+                                @if ($order->status === 'return_requested')
+                                    <form method="POST" action="{{ route('siparisler.iade.onay', $order) }}"
+                                          onsubmit="return confirm('İadeyi onaylıyor musunuz? İade edilen ürünlerin stoğu geri alınır.');">
+                                        @csrf
+                                        <button type="submit" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">İadeyi Onayla</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('siparisler.iade.reddet', $order) }}"
+                                          onsubmit="return confirm('İade talebini reddetmek istediğinize emin misiniz? Sipariş teslim durumuna döner.');">
+                                        @csrf
+                                        <button type="submit" class="text-xs font-semibold text-red-500 hover:text-red-600">Reddet</button>
                                     </form>
                                 @endif
                                 @if (in_array($order->status, ['paid', 'preparing', 'shipped', 'delivered']))
