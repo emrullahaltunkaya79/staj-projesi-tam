@@ -919,6 +919,13 @@
         try { const f = JSON.parse(pendingFlash); showToast(f.message, f.type); } catch (e) { /* yoksay */ }
     }
 
+    // Uzun süre açık kalan sekmelerde gömülü CSRF token'ı eskir → her form gönderiminde meta'dan tazele
+    document.addEventListener('submit', function (e) {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        var kutu = e.target && e.target.querySelector ? e.target.querySelector('input[name="_token"]') : null;
+        if (meta && kutu) kutu.value = meta.getAttribute('content');
+    }, true);
+
     const closeModalForm = () => {
         if (!modalOverlay || modalOverlay.classList.contains('hidden')) return;
         if (modalAbort) { modalAbort.abort(); modalAbort = null; }

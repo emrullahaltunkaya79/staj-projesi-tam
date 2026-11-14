@@ -88,6 +88,14 @@
                         <td class="text-xs">{{ $order->created_at->format('d.m.Y H:i') }}</td>
                         <td class="text-right tabular-nums">
                             <div class="flex items-center justify-end gap-2">
+                                @if ($order->status === 'pending')
+                                    <form method="POST" action="{{ route('siparisler.odendi', $order) }}"
+                                          onsubmit="return confirm('{{ $order->order_no }} siparişini ÖDENDİ olarak işaretliyor musunuz? Fatura kesilir ve stok düşer.');">
+                                        @csrf
+                                        <button type="submit" title="Ödeme alındı — fatura kes"
+                                                class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">Ödendi</button>
+                                    </form>
+                                @endif
                                 @if (in_array($order->status, ['paid', 'preparing', 'shipped', 'delivered']))
                                     <a href="{{ route('siparisler.etiket', $order) }}" title="Kargo etiketini indir" data-turbo="false" class="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">Etiket</a>
                                 @endif
