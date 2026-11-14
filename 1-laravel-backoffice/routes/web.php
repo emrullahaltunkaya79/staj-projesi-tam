@@ -84,6 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('urunler', ProductController::class)->parameters(['urunler' => 'product']);
     Route::post('/urunler/{product}/gorseller', [ProductController::class, 'uploadImage'])->name('urunler.gorsel.upload');
     Route::delete('/urunler/{product}/gorseller/{image}', [ProductController::class, 'destroyImage'])->name('urunler.gorsel.destroy');
+    Route::post('/urunler/{product}/gorseller/{image}/ana-gorsel', [ProductController::class, 'setPrimaryImage'])->name('urunler.gorsel.ana');
+    Route::get('/urunler/{product}/gorseller/{image}/goster', [ProductController::class, 'showImage'])->name('urunler.gorsel.goster');
     Route::resource('faturalar', InvoiceController::class)
         ->only(['index', 'create', 'store', 'show'])
         ->parameters(['faturalar' => 'invoice']);

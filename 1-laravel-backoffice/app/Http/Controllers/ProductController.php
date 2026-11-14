@@ -63,8 +63,11 @@ class ProductController extends Controller
         $first = $product->images()->count() === 0; // ilk görsel otomatik ana görsel
 
         foreach ($request->file('images') as $i => $file) {
+            $yol = $file->store('product-images');
+            $this->optimizeImage(Storage::disk('local')->path($yol));
+
             $product->images()->create([
-                'path' => $file->store('product-images'),
+                'path' => $yol,
                 'is_primary' => $first && $i === 0,
                 'sort' => $product->images()->count() + $i,
             ]);
@@ -80,10 +83,90 @@ class ProductController extends Controller
     {
         $image = \App\Models\ProductImage::where('product_id', $product->id)->where('id', $image->id)->firstOrFail();
 
+        $anaSilindi = $image->is_primary;
         Storage::delete($image->path);
         $image->delete();
 
+        // Ana görsel silindiyse sıradaki görsel ana görsel olur — mağaza görselsiz kalmasın
+        if ($anaSilindi && $product->images()->exists()) {
+            $product->images()
+                ->orderByDesc('is_primary')->orderBy('sort')->orderBy('id')
+                ->first()?->update(['is_primary' => true]);
+        }
+
         return back()->with('success', 'Görsel silindi.');
+    }
+
+    /**
+     * Panel: görseli ürünün ana görseli yapar.
+     */
+    public function setPrimaryImage(Request $request, Product $product, ProductImage $image)
+    {
+        abort_unless($image->product_id === $product->id, 404);
+
+        \App\Models\ProductImage::where('product_id', $product->id)->update(['is_primary' => false]);
+        $image->update(['is_primary' => true]);
+
+        return back()->with('success', 'Ana görsel güncellendi.');
+    }
+
+    /**
+     * Panel: görseli kimlik doğrulamalı olarak servis eder (/api/img mağaza ucudur, panelde kullanılmaz).
+     */
+    public function showImage(Request $request, Product $product, ProductImage $image)
+    {
+        abort_unless($image->product_id === $product->id, 404);
+
+        $mutlak = Storage::disk('local')->path($image->path);
+        abort_unless(is_file($mutlak), 404);
+
+        $mime = match (strtolower(pathinfo($mutlak, PATHINFO_EXTENSION))) {
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'image/jpeg',
+        };
+
+        return response()->file($mutlak, ['Content-Type' => $mime, 'Cache-Control' => 'public, max-age=300']);
+    }
+
+    /**
+     * Yüklenen görseli 1600 px sınırına küçültür ve sıkıştırır — mağaza sayfaları hızlı kalsın.
+     */
+    private function optimizeImage(string $mutlakYol): void
+    {
+        $bilgi = @getimagesize($mutlakYol);
+        if (! $bilgi) {
+            return;
+        }
+
+        [$genislik, $yukseklik] = $bilgi;
+        $maks = 1600;
+        if ($genislik <= $maks && $yukseklik <= $maks) {
+            return;
+        }
+
+        $oran = max($genislik / $maks, $yukseklik / $maks);
+        $yeniGen = (int) round($genislik / $oran);
+        $yeniYuk = (int) round($yukseklik / $oran);
+
+        $img = match ($bilgi['mime']) {
+            'image/png' => @imagecreatefrompng($mutlakYol),
+            'image/webp' => @imagecreatefromwebp($mutlakYol),
+            default => @imagecreatefromjpeg($mutlakYol),
+        };
+        if (! $img) {
+            return;
+        }
+
+        $kucuk = imagescale($img, $yeniGen, $yeniYuk);
+        match ($bilgi['mime']) {
+            'image/png' => imagepng($kucuk, $mutlakYol, 8),
+            'image/webp' => imagewebp($kucuk, $mutlakYol, 85),
+            default => imagejpeg($kucuk, $mutlakYol, 85),
+        };
+
+        imagedestroy($img);
+        imagedestroy($kucuk);
     }
 
     public function create()
@@ -122,6 +205,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $product->loadMissing('images');
+
         return view('products.edit', compact('product'));
     }
 
