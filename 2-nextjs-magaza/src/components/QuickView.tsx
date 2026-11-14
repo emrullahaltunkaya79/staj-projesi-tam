@@ -114,7 +114,7 @@ function QuickViewModal({ urunId, kapat }: { urunId: number; kapat: () => void }
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-[#f4f4f4]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/img/${ozet.id}`} alt={ozet.name} className="h-full w-full object-contain p-8" />
+              <img src={`/api/img/${ozet.id}`} alt={ozet.name} className="h-full w-full object-contain p-[6%]" />
             </div>
 
             <div className="flex flex-col">

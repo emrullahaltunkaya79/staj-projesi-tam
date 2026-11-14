@@ -58,7 +58,7 @@ export function SepetOnerileri() {
               <Link href={`/urun/${o.id}`} className="flex aspect-square items-center justify-center overflow-hidden bg-[#f4f4f4]">
                 {o.gorsel ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={o.gorsel} alt={o.ad} loading="lazy" className="h-full w-full object-contain p-2" />
+                  <img src={o.gorsel} alt={o.ad} loading="lazy" className="h-full w-full object-contain p-[6%]" />
                 ) : (
                   <span className="text-2xl font-black text-black/10">{o.ad.charAt(0)}</span>
                 )}

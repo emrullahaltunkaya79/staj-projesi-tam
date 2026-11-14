@@ -77,7 +77,7 @@ export function BirlikteAlinanlar({
               >
                 {u.gorsel ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={u.gorsel} alt={u.ad} loading="lazy" className="h-full w-full object-contain p-2" />
+                  <img src={u.gorsel} alt={u.ad} loading="lazy" className="h-full w-full object-contain p-[6%]" />
                 ) : (
                   <span className="text-2xl font-black text-black/10">{u.ad.charAt(0)}</span>
                 )}

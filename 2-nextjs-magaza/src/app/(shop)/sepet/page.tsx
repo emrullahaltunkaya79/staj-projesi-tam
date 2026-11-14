@@ -30,7 +30,7 @@ export default function SepetSayfasi() {
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center bg-[#f4f4f4]">
                     {o.gorsel ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={o.gorsel} alt={o.ad} className="h-full w-full object-contain p-2" />
+                      <img src={o.gorsel} alt={o.ad} className="h-full w-full object-contain p-[6%]" />
                     ) : (
                       <span className="text-2xl font-black text-black/10">{o.ad.slice(0, 1)}</span>
                     )}

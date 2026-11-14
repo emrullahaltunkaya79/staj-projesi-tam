@@ -37,7 +37,7 @@ export function GorselGaleri({ gorseller, urunAd }: { gorseller: string[]; urunA
         >
           <div className="flex aspect-square items-center justify-center overflow-hidden bg-[#f4f4f4]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img key={gosterilen} src={gosterilen} alt={urunAd} className="h-full w-full object-contain p-10 transition-transform duration-300 hover:scale-105" />
+            <img key={gosterilen} src={gosterilen} alt={urunAd} className="h-full w-full object-contain p-[6%] transition-transform duration-300 hover:scale-105" />
           </div>
         </button>
 
@@ -78,7 +78,7 @@ export function GorselGaleri({ gorseller, urunAd }: { gorseller: string[]; urunA
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={g} alt="" className="h-full w-full object-contain p-1.5" />
+              <img src={g} alt="" className="h-full w-full object-contain p-[6%]" />
             </button>
           ))}
         </div>
