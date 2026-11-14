@@ -260,7 +260,7 @@ class OrderService
     /**
      * Panel: iade talebini reddeder — sipariş teslim durumuna döner, talep temizlenir.
      */
-    public function rejectReturn(Order $order, int $companyId, string $not = null): Order
+    public function rejectReturn(Order $order, int $companyId, ?string $not = null): Order
     {
         $order = Order::where('company_id', $companyId)->where('id', $order->id)->lockForUpdate()->first();
 
@@ -464,6 +464,14 @@ class OrderService
             }
 
             $order->update(['status' => 'returned']);
+
+            // Mağazaya bildir: müşteri sipariş sayfası iade durumunu anında görsün
+            $this->webhookService->orderReturned(
+                $order->order_no,
+                (string) ($order->external_ref ?? ''),
+                (float) $order->iade_tutari,
+                (bool) ($order->iade_talebi['kismi'] ?? false),
+            );
 
             return $order;
         });

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class OrderWebhookTest extends TestCase
@@ -104,5 +105,34 @@ class OrderWebhookTest extends TestCase
         $service->cancel($order, $user->company_id);
 
         $this->assertSame('cancelled', $order->fresh()->status);
+    }
+
+    /** @test */
+    public function iade_onaylaninca_order_returned_webhook_gonderilir(): void
+    {
+        Http::fake();
+        Mail::fake();
+
+        config(['services.ecommerce.webhook_url' => 'https://eticaret.example.com/webhook']);
+        config(['services.ecommerce.webhook_secret' => 'test-secret']);
+
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        [$contact, $product, $order, $service] = $this->createPendingOrder($user);
+        $order = $service->markPaid($order, $user->company_id);
+        $order->update(['status' => 'delivered', 'delivered_at' => now()]);
+        $order = $service->requestReturn($order, $user->company_id, ['neden' => 'hasarli']);
+
+        $service->approveReturn($order, $user->company_id);
+
+        Http::assertSent(function ($request) use ($order) {
+            return $request->url() === 'https://eticaret.example.com/webhook'
+                && $request['event'] === 'order.returned'
+                && $request['payload']['order_no'] === $order->order_no
+                && $request['payload']['external_ref'] === 'ETC-777'
+                && $request['payload']['partial'] === false
+                && (float) $request['payload']['refunded_amount'] > 0;
+        });
     }
 }

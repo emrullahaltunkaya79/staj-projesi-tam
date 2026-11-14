@@ -104,6 +104,19 @@ class WebhookService
     }
 
     /**
+     * İade tamamlandı bildirimi — mağaza sipariş sayfası iade durumunu anında günceller.
+     */
+    public function orderReturned(string $orderNo, ?string $externalRef, float $refunded, bool $kismi = false): void
+    {
+        $this->send('order.returned', [
+            'order_no' => $orderNo,
+            'external_ref' => $externalRef,
+            'refunded_amount' => $refunded,
+            'partial' => $kismi,
+        ]);
+    }
+
+    /**
      * Kargo bilgisi bildirimi — e-ticaret müşteriye takip linki göstersin.
      */
     public function orderShipped(string $orderNo, string $externalRef, string $carrier, string $trackingNo, string $trackingUrl): void
