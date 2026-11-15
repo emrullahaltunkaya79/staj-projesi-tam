@@ -41,6 +41,7 @@ class ApiController extends Controller
             ->get()->keyBy('product_id');
 
         $products = Product::with('category', 'variants')
+            ->withCount('images')
             ->orderBy('name')
             ->when($request->query('category_id'), fn ($q, $id) => $q->where('category_id', $id))
             // katalog=evet: vitrin listeleri gizli ürünleri (üyelik paketi vb.) içermez;
@@ -71,6 +72,7 @@ class ApiController extends Controller
                 'rating_avg' => $puanlar[$p->id]->oran ?? null,
                 'review_count' => (int) ($puanlar[$p->id]->adet ?? 0),
                 'is_bestseller' => isset($satislar[$p->id]) && (int) $satislar[$p->id]->adet >= 2,
+                'image_count' => (int) $p->images_count,
                 'image_url' => $p->images->isNotEmpty() ? 'ok' : null, // base64 yok — /api/img proxy'si binary servis eder
                 'varyant_adlari' => $p->variants->pluck('name')->values(),
                 'varyant_min_stok' => $p->variants->isNotEmpty() ? (int) $p->variants->min('stock_quantity') : null,
