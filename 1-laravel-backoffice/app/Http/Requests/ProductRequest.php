@@ -15,6 +15,7 @@ class ProductRequest extends FormRequest
     {
         return [
             'code' => ['nullable', 'string', 'max:50'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             // Güncellemede ürünün kendi barkodu hariç tutulur
             'barcode' => ['nullable', 'string', 'max:64', \Illuminate\Validation\Rule::unique('products', 'barcode')->ignore($this->route('product'))],
             'name' => ['required', 'string', 'max:255'],
