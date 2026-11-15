@@ -170,12 +170,16 @@ class ProductApiController extends Controller
         ], $silinen ? 200 : 404);
     }
 
-    public function reviews(int $id): JsonResponse
+    public function reviews(int $id, \Illuminate\Http\Request $request): JsonResponse
     {
+        $sirala = (string) $request->query('sirala');
+
         $reviews = ProductReview::where('product_id', $id)
             ->where('is_approved', true)
             ->withCount('votes')
-            ->latest()
+            // En yararlı: faydalı oyu en çok olan yorumlar önce; en yeni en yararlıdan sonra
+            ->when($sirala === 'yararli', fn ($q) => $q->orderByDesc('votes_count')->latest())
+            ->when($sirala !== 'yararli', fn ($q) => $q->latest())
             ->take(20)
             ->get(['id', 'user_name', 'rating', 'comment', 'image_path', 'created_at'])
             ->map(fn ($r) => array_merge($r->toArray(), ['faydali' => (int) $r->votes_count]));

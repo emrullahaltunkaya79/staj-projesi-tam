@@ -49,6 +49,17 @@ class Product extends Model
 
     protected static function booted(): void
     {
+        // Fiyat değişimi geçmişe yazılır — ürün detaydaki 30 günlük grafik beslenir
+        static::updated(function (self $urun): void {
+            if ($urun->wasChanged('sale_price')) {
+                \DB::table('price_history')->insert([
+                    'product_id' => $urun->id,
+                    'price' => $urun->finalPrice(),
+                    'created_at' => now(),
+                ]);
+            }
+        });
+
         // Ürün stokla açılırsa "açılış" hareketi kaydet ve stoğu ilk depoya ata
         static::created(function ($product) {
             if ($product->stock_quantity > 0) {

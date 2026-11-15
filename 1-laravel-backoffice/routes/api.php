@@ -44,6 +44,8 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])
         Route::get('/hesap/adresler', [AccountApiController::class, 'adresler'])->name('api.hesap.adresler');
         Route::post('/hesap/adresler', [AccountApiController::class, 'adresEkle'])->name('api.hesap.adres-ekle');
         Route::delete('/hesap/adresler/{id}', [AccountApiController::class, 'adresSil'])->whereNumber('id')->name('api.hesap.adres-sil');
+    Route::post('/hesap/adresler/{id}/varsayilan', [AccountApiController::class, 'adresVarsayilan'])->whereNumber('id')->name('api.hesap.adres-varsayilan');
+    Route::delete('/hesap', [AccountApiController::class, 'hesapSil'])->name('api.hesap.sil');
         Route::get('/hesap/durum', [AccountApiController::class, 'durum'])->name('api.hesap.durum');
         Route::put('/hesap/durum', [AccountApiController::class, 'durumKaydet'])->name('api.hesap.durum-kaydet');
     });
@@ -64,6 +66,7 @@ Route::middleware(['auth:sanctum', 'musteri.engelle', 'throttle:300,1'])
         Route::delete('/products/{id}', [ProductApiController::class, 'destroy'])->whereNumber('id')->name('api.products.destroy');
         Route::post('/products/{id}/images', [ProductApiController::class, 'uploadImage'])->whereNumber('id')->name('api.products.images');
         Route::get('/products/{id}/reviews', [ProductApiController::class, 'reviews'])->whereNumber('id')->name('api.products.reviews');
+        Route::get('/products/{id}/fiyat-gecmisi', [ApiController::class, 'fiyatGecmisi'])->whereNumber('id')->name('api.products.fiyat-gecmisi');
         Route::get('/yorumlar', [ProductApiController::class, 'yorumModerasyon'])->name('api.yorumlar');
         Route::patch('/yorumlar/{id}/onay', [ProductApiController::class, 'yorumOnay'])->whereNumber('id')->name('api.yorumlar.onay');
         Route::delete('/yorumlar/{id}', [ProductApiController::class, 'yorumSil'])->whereNumber('id')->name('api.yorumlar.sil');

@@ -67,8 +67,9 @@ class AccountApiController extends Controller
         return response()->json([
             'data' => DB::table('customer_addresses')
                 ->where('user_id', $request->user()->id)
+                ->orderByDesc('is_default')
                 ->orderBy('id')
-                ->get(['id', 'baslik', 'ad_soyad', 'telefon', 'il', 'ilce', 'acik_adres']),
+                ->get(['id', 'baslik', 'ad_soyad', 'telefon', 'il', 'ilce', 'acik_adres', 'is_default']),
         ]);
     }
 
@@ -82,14 +83,24 @@ class AccountApiController extends Controller
             'il' => ['required', 'string', 'max:50'],
             'ilce' => ['required', 'string', 'max:80'],
             'acik_adres' => ['required', 'string', 'min:10', 'max:500'],
+            'is_default' => ['nullable', 'boolean'],
         ], ['acik_adres.min' => 'Açık adres en az 10 karakter olmalıdır.']);
 
         if (DB::table('customer_addresses')->where('user_id', $request->user()->id)->count() >= 10) {
             throw ValidationException::withMessages(['baslik' => 'En fazla 10 adres kaydedebilirsiniz.']);
         }
 
+        // İlk adres otomatik varsayılan; is_default istendiyse diğerlerinin bayrağı kalkar
+        $ilk = DB::table('customer_addresses')->where('user_id', $request->user()->id)->count() === 0;
+        $varsayilan = $ilk || (bool) ($veri['is_default'] ?? false);
+        if ($varsayilan) {
+            DB::table('customer_addresses')->where('user_id', $request->user()->id)->update(['is_default' => false]);
+        }
+        unset($veri['is_default']);
+
         $id = DB::table('customer_addresses')->insertGetId($veri + [
             'user_id' => $request->user()->id,
+            'is_default' => $varsayilan,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -108,6 +119,74 @@ class AccountApiController extends Controller
         abort_if($silinen === 0, 404, 'Adres bulunamadı.');
 
         return response()->json(['message' => 'Adres silindi.']);
+    }
+
+    /** POST /api/v1/hesap/adresler/{id}/varsayilan — adresi varsayılan yap */
+    public function adresVarsayilan(Request $request, int $id): JsonResponse
+    {
+        $guncellenen = DB::table('customer_addresses')
+            ->where('user_id', $request->user()->id)
+            ->where('id', $id)
+            ->update(['is_default' => true, 'updated_at' => now()]);
+
+        abort_if($guncellenen === 0, 404, 'Adres bulunamadı.');
+
+        // diğer adreslerin bayrağını kalkar
+        DB::table('customer_addresses')
+            ->where('user_id', $request->user()->id)
+            ->where('id', '!=', $id)
+            ->update(['is_default' => false]);
+
+        return response()->json(['message' => 'Varsayılan adres güncellendi.']);
+    }
+
+    /**
+     * KVKK m.7 — hesabı silme: kullanıcı anonimleştirilir, oturum/tokenlar kapatılır.
+     * Sipariş/fatura kayıtları yasal saklama nedeniyle kalır ama kimlik bilgileri anonimleşir.
+     * DELETE /api/v1/hesap
+     */
+    public function hesapSil(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $company = $user->company_id;
+
+        // cari: faturası yoksa sil; varsa anonimleştir (yasal saklama)
+        $cari = \App\Models\Contact::where('company_id', $company)
+            ->where('email', $user->email)
+            ->first();
+
+        $anonimEposta = 'silinen-' . $user->id . '@anonim.local';
+
+        if ($cari && $cari->invoices()->exists()) {
+            $cari->update(['name' => 'Silinmiş Kullanıcı', 'email' => $anonimEposta, 'phone' => null, 'address' => null, 'sadakat_puani' => 0]);
+        } elseif ($cari) {
+            $cari->delete();
+        }
+
+        // siparişlerdeki kişisel bilgiler anonimleşir (kayıtlar yasal saklamada kalır)
+        \App\Models\Order::where('customer_email', $user->email)
+            ->update([
+                'customer_name' => 'Silinmiş Kullanıcı',
+                'customer_email' => $anonimEposta,
+                'customer_phone' => null,
+                'shipping_address' => null,
+                'notes' => null,
+            ]);
+
+        // hesap verileri
+        DB::table('customer_addresses')->where('user_id', $user->id)->delete();
+        DB::table('customer_states')->where('user_id', $user->id)->delete();
+
+        $user->tokens()->delete();
+        $user->forceFill([
+            'name' => 'Silinmiş Kullanıcı',
+            'email' => $anonimEposta,
+            'password' => \Illuminate\Support\Str::random(40),
+            'email_verified_at' => null,
+        ])->save();
+        $user->delete(); // soft delete — geri dönüşüm kutusunda iz bırakmadan kapanır
+
+        return response()->json(['message' => 'Hesabınız silindi. Kişisel verileriniz anonimleştirildi. Sizi ağırlamaktan dolayı teşekkür ederiz.']);
     }
 
     /** GET /api/v1/hesap/durum — hesaba kayıtlı favoriler ve sepet */

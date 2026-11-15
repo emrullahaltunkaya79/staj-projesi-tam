@@ -53,6 +53,7 @@ class Order extends Model
         'iade_talebi',
         'iade_tutari',
         'paid_at',
+        'shipped_at',
         'delivered_at',
         'expires_at',
         'invoice_id',
@@ -74,6 +75,7 @@ class Order extends Model
             'total' => 'decimal:2',
             'kullanilan_puan' => 'integer',
             'paid_at' => 'datetime',
+            'shipped_at' => 'datetime',
             'delivered_at' => 'datetime',
             'expires_at' => 'datetime',
         ];

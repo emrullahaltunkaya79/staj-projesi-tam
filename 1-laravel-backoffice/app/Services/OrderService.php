@@ -516,6 +516,7 @@ class OrderService
                 'tracking_no' => $data['tracking_no'],
                 'carrier' => $data['carrier'],
                 'status' => $data['status'] ?? $order->status,
+                'shipped_at' => ($data['status'] ?? $order->status) === 'shipped' ? now() : $order->shipped_at,
             ]);
 
             // E-ticarete bildir: müşteri takip linkini görebilsin
