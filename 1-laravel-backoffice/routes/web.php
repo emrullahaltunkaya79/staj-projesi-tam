@@ -30,6 +30,7 @@ use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\KartOdemeController;
 use Illuminate\Support\Facades\Route;
 
@@ -113,6 +114,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/raporlar', [ReportController::class, 'index'])->name('raporlar.index');
 
     // Paket kampanyaları (mağaza sepet motoruna beslenir)
+    Route::get('/mesajlar', [ContactMessageController::class, 'index'])->name('mesajlar.index');
+    Route::post('/mesajlar/{id}/okundu', [ContactMessageController::class, 'okundu'])->whereNumber('id')->name('mesajlar.okundu');
+    Route::delete('/mesajlar/{id}', [ContactMessageController::class, 'destroy'])->whereNumber('id')->name('mesajlar.sil');
+
     Route::get('/kampanyalar', [CampaignController::class, 'index'])->name('kampanyalar.index');
     Route::post('/kampanyalar', [CampaignController::class, 'store'])->name('kampanyalar.store');
     Route::post('/kampanyalar/{campaign}/toggle', [CampaignController::class, 'toggle'])->name('kampanyalar.toggle');

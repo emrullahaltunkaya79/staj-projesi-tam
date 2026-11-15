@@ -16,11 +16,34 @@
                                 <option value="{{ $cat->id }}" @selected(old('category_id', $product->category_id) == $cat->id)>{{ $cat->name }}</option>
                             @endforeach
                         </select>
-                        <form method="POST" action="{{ route('kategoriler.store') }}" class="mt-1.5 flex gap-1">
-                            @csrf
-                            <input type="text" name="name" placeholder="Yeni kategori…" class="w-full rounded-lg border-slate-200 bg-slate-50 px-2 py-1.5 text-xs focus:border-indigo-400 focus:bg-white focus:outline-none" style="min-height: 0;">
-                            <button type="submit" class="shrink-0 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100">+</button>
-                        </form>
+                        {{-- İç içe form YASAK: eski mini form ürün adı alanını (name="name") eziyordu.
+                             Yeni kategori artık JS ile ayrı istekle eklenir. --}}
+                        <div class="mt-1.5 flex gap-1">
+                            <input type="text" id="yeni_kategori_ad" placeholder="Yeni kategori…" class="w-full rounded-lg border-slate-200 bg-slate-50 px-2 py-1.5 text-xs focus:border-indigo-400 focus:bg-white focus:outline-none" style="min-height: 0;">
+                            <button type="button" id="yeni_kategori_ekle" class="shrink-0 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100">+</button>
+                        </div>
+                        <script>
+                            document.getElementById('yeni_kategori_ekle')?.addEventListener('click', async function () {
+                                const ad = document.getElementById('yeni_kategori_ad')?.value.trim();
+                                if (!ad) return;
+                                const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                                const yanit = await fetch('{{ route('kategoriler.store') }}', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf ?? '' },
+                                    body: JSON.stringify({ name: ad }),
+                                });
+                                if (!yanit.ok) return;
+                                const secici = document.getElementById('category_id');
+                                const varMi = Array.from(secici.options).some((o) => o.text === ad);
+                                if (!varMi) {
+                                    const opt = document.createElement('option');
+                                    opt.textContent = ad;
+                                    secici.appendChild(opt);
+                                }
+                                secici.value = Array.from(secici.options).find((o) => o.text === ad)?.value ?? '';
+                                document.getElementById('yeni_kategori_ad').value = '';
+                            });
+                        </script>
                     </div>
                 </div>
             </div>
