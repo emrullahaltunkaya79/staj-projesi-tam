@@ -56,6 +56,63 @@ const CEVIRILER: Record<string, Record<Dil, string>> = {
 
   // Kampanya
   "banner": { tr: "İlk siparişine %15 indirim — Kupon: ILKSIPARIS · 2.000 ₺ üzeri ÜCRETSİZ kargo!", en: "15% off your first order — Code: ILKSIPARIS · FREE shipping over ₺2,000!" },
+  "banner_ilk": { tr: "İlk siparişine", en: "First order" },
+  "banner_indirim": { tr: "%15 indirim", en: "15% off" },
+  "banner_kupon": { tr: "Kupon:", en: "Code:" },
+  "banner_kargo": { tr: "2.000 ₺ üzeri ÜCRETSİZ kargo!", en: "FREE shipping over ₺2,000!" },
+
+  // Kabuk / header
+  "logo_slogan": { tr: "Teknoloji & Ofis — her şey tek yerde", en: "Tech & Office — everything in one place" },
+  "ara_aria": { tr: "Ürün, marka veya kategori ara", en: "Search products, brands or categories" },
+  "son_aramalar": { tr: "Son Aramalar", en: "Recent Searches" },
+  "populer_aramalar": { tr: "Popüler Aramalar", en: "Popular Searches" },
+  "urunler_baslik": { tr: "Ürünler", en: "Products" },
+  "markalar_baslik": { tr: "Markalar", en: "Brands" },
+  "kuponlarim": { tr: "Kuponlarım", en: "My Coupons" },
+  "hesabim": { tr: "Hesabım", en: "My Account" },
+  "karanlik_mod": { tr: "Karanlık Mod", en: "Dark Mode" },
+  "bildirimler": { tr: "Bildirimler", en: "Notifications" },
+  "yeni_bildirim_yok": { tr: "Yeni bildirim yok.", en: "No new notifications." },
+  "karanlige_gec": { tr: "Karanlığa geç", en: "Switch to dark" },
+  "aydinliga_gec": { tr: "Aydınlığa geç", en: "Switch to light" },
+  "tr_gec": { tr: "Türkçe'ye geç", en: "Türkçe'ye geç" },
+  "en_gec": { tr: "Switch to English", en: "Switch to English" },
+
+  // Alt menü
+  "tum_kategoriler": { tr: "Tüm Kategoriler", en: "All Categories" },
+  "flas_indirimler": { tr: "⚡ Flaş İndirimler", en: "⚡ Flash Deals" },
+  "outlet": { tr: "Outlet", en: "Outlet" },
+  "cok_satanlar": { tr: "★ Çok Satanlar", en: "★ Best Sellers" },
+  "son_firsat": { tr: "Son Fırsat", en: "Last Deal" },
+  "son_kalan": { tr: "Son Kalan", en: "Last Few Left" },
+  "sezon": { tr: "Sezon", en: "Season" },
+  "tum_urunleri_gor": { tr: "Tüm Ürünleri Gör", en: "View All Products" },
+  "kategoriyi_gor": { tr: "Kategoriyi gör →", en: "View category →" },
+  "urun_sayisi": { tr: "ürün", en: "products" },
+  "marka_sayisi": { tr: "marka", en: "brands" },
+
+  // Alt bilgi
+  "footer_magaza": { tr: "Mağaza", en: "Shop" },
+  "footer_kurumsal": { tr: "Kurumsal", en: "Corporate" },
+  "footer_haberdar": { tr: "Kampanyalardan Haberdar Ol", en: "Get Campaign Updates" },
+  "footer_bilgi": { tr: "Bilgi", en: "Info" },
+  "footer_yasal": { tr: "Yasal", en: "Legal" },
+  "sss": { tr: "Sıkça Sorulan Sorular", en: "FAQ" },
+  "iade_degisim": { tr: "İade ve Değişim", en: "Returns & Exchange" },
+  "kargo_teslimat": { tr: "Kargo ve Teslimat", en: "Shipping & Delivery" },
+  "en_cok_satanlar": { tr: "★ En Çok Satanlar", en: "★ Best Sellers" },
+  "son_kalan_olculer": { tr: "📏 Son Kalan Ölçüler", en: "📏 Last Few Left" },
+  "sezon_urunleri": { tr: "🗓️ Sezon Ürünleri", en: "🗓️ Seasonal Products" },
+  "cspr_odeme": { tr: "⛓️ CSPR ile kripto ödeme", en: "⛓️ Crypto payment with CSPR" },
+  "guvenli_api": { tr: "🔒 Token ile korunan güvenli API", en: "🔒 Secure API protected by tokens" },
+  "iade_14_gun": { tr: "↩️ 14 gün içinde ücretsiz iade — İade ve kargo koşulları", en: "↩️ Free returns within 14 days — Return & shipping terms" },
+  "mesafeli_satis": { tr: "Mesafeli Satış Sözleşmesi", en: "Distance Sales Agreement" },
+  "uyelik_sozlesmesi": { tr: "Üyelik Sözleşmesi", en: "Membership Agreement" },
+  "kvkk_metni": { tr: "KVKK Aydınlatma Metni", en: "KVKK Privacy Notice" },
+  "cerez_politikasi": { tr: "Çerez Politikası", en: "Cookie Policy" },
+  "stok_siparis": { tr: "Stok & sipariş:", en: "Stock & orders:" },
+  "gercek_zamanli": { tr: "Ön Muhasebe API ile gerçek zamanlı.", en: "real-time via the Back Office API." },
+  "ac_kapa": { tr: "Kapat", en: "Close" },
 };
 
 type DilBaglami = {
@@ -74,6 +131,11 @@ export function DilProvider({ children }: { children: React.ReactNode }) {
     const kayitli = localStorage.getItem(ANAHTAR) as Dil | null;
     if (kayitli === "tr" || kayitli === "en") setDil(kayitli);
   }, []);
+
+  // <html lang> seçili dille senkron kalsın
+  useEffect(() => {
+    document.documentElement.lang = dil;
+  }, [dil]);
 
   const dilDegistir = (d: Dil) => {
     setDil(d);
