@@ -9,7 +9,7 @@ const gunAy = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" }
 const gunAdi = new Intl.DateTimeFormat("tr-TR", { weekday: "long" });
 
 /** Ürün sayfası: tahmini teslimat ve iade özeti. Saat istemcide hesaplanır (SSR ile saat farkı oluşmasın). */
-export function TeslimatBilgisi({ fiyat, stokta }: { fiyat: number; stokta: boolean }) {
+export function TeslimatBilgisi({ fiyat, stokta, onSiparis = false }: { fiyat: number; stokta: boolean; onSiparis?: boolean }) {
   const [tahmin, setTahmin] = useState<ReturnType<typeof tahminiTeslimat> | null>(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function TeslimatBilgisi({ fiyat, stokta }: { fiyat: number; stokta: bool
 
   return (
     <div className="mt-5 max-w-md divide-y divide-black/10 rounded-xl border border-black/10 text-[13px]">
-      {stokta && (
+      {stokta ? (
         <div className="flex gap-3 p-3.5">
           <Truck className="mt-0.5 h-4 w-4 shrink-0 text-black/45" />
           <div>
@@ -39,7 +39,17 @@ export function TeslimatBilgisi({ fiyat, stokta }: { fiyat: number; stokta: bool
             </p>
           </div>
         </div>
-      )}
+      ) : onSiparis ? (
+        <div className="flex gap-3 p-3.5">
+          <Truck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--marka)]" />
+          <div>
+            <p className="font-bold text-black">🛫 Ön sipariş — kargo stok girişinde</p>
+            <p className="mt-0.5 text-[12px] text-black/50">
+              Ödemeniz sipariş anında alınır; ürün stoğa girdiğinde ilk kargolar ön siparişlere göre gönderilir.
+            </p>
+          </div>
+        </div>
+      ) : null}
       <div className="flex gap-3 p-3.5">
         <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-black/45" />
         <div>

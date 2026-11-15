@@ -143,7 +143,14 @@ async function istek(path: string, init?: RequestInit) {
   return yanit.json();
 }
 
+/** Vitrin listeleri: katalogda gizli ürünler (üyelik paketi vb.) içermez. */
 export async function urunler(): Promise<Urun[]> {
+  const sonuc = await istek("/products?katalog=evet");
+  return (sonuc.data ?? []).map(gorselProxy);
+}
+
+/** Tam katalog: sepet/sipariş çözümlemesi gizli ürünleri de bilmelidir (Plus üyeliği). */
+export async function urunlerTam(): Promise<Urun[]> {
   const sonuc = await istek("/products");
   return (sonuc.data ?? []).map(gorselProxy);
 }

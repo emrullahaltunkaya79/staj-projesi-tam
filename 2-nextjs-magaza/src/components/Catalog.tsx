@@ -34,11 +34,20 @@ export function UrunKarti({ urun }: { urun: Urun }) {
             </span>
           )}
           <QuickViewButonu urunId={urun.id} />
-          {!urun.in_stock && (
+          {!urun.in_stock && urun.pre_order ? (
+            <>
+              <span className="absolute inset-0 flex items-center justify-center bg-[#f4f6ff]/80 text-xs font-bold uppercase tracking-widest text-[var(--marka)]">
+                🛫 Ön Sipariş
+              </span>
+              <span className="absolute bottom-3 left-3 bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-black/60 shadow-sm">
+                Stok girişinde kargo
+              </span>
+            </>
+          ) : !urun.in_stock ? (
             <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-xs font-bold uppercase tracking-widest text-black">
               Tükendi
             </span>
-          )}
+          ) : null}
           {urun.in_stock && urun.available_quantity <= 5 && (
             <span className={`absolute bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-orange-600 shadow-sm ${indirim > 0 ? "left-3 top-11" : "left-3 top-3"}`}>
               Son {urun.available_quantity} adet

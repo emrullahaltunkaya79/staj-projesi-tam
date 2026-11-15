@@ -58,6 +58,7 @@ export default function OdemeSayfasi() {
   const [puanKullanilsin, setPuanKullanilsin] = useState(false);
   const [sadakatPuanim, setSadakatPuanim] = useState(0);
   const [plusAktif, setPlusAktif] = useState(false);
+  const [plusUrunId, setPlusUrunId] = useState<number | null>(null);
 
   // Hesaba kayıtlı adresler (giriş yapmış müşteri)
   const [adresler, setAdresler] = useState<KayitliAdres[]>([]);
@@ -76,34 +77,41 @@ export default function OdemeSayfasi() {
   const [kupon, setKupon] = useState<{ code: string; name: string; discount: number; type: string; type_label: string } | null>(null);
   const [kuponMesaj, setKuponMesaj] = useState<string | null>(null);
   // Paket kampanyası önizlemesi — sunucu aynı kuralı sipariş anında uygular
-  const [kampanya, setKampanya] = useState<{ ad: string; tur: string; al_adet: number; ode_adet: number; esik: number; urun_id: number | null } | null>(null);
+  type KampanyaTipi = { ad: string; tur: string; al_adet: number; ode_adet: number; esik: number; urun_id: number | null };
+  const [kampanyalar, setKampanyalar] = useState<KampanyaTipi[]>([]);
 
   useEffect(() => {
     fetch("/api/kampanyalar")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const liste: { ad: string; tur: string; al_adet: number; ode_adet: number; esik: number; urun_id: number | null }[] = d?.data ?? [];
-        setKampanya(liste[0] ?? null);
-      })
+      .then((d) => setKampanyalar(d?.data ?? []))
       .catch(() => {});
   }, []);
 
   const kampanyaIndirimi = (() => {
-    if (!kampanya) return 0;
     let toplam = 0;
-    if (kampanya.tur === "x_al_y_ode") {
-      const al = Math.max(2, kampanya.al_adet || 3);
-      const ode = Math.max(1, Math.min(al - 1, kampanya.ode_adet || al - 1));
-      for (const o of ogeler) {
-        if (kampanya.urun_id && o.id !== kampanya.urun_id) continue;
-        const ucretsiz = Math.floor(o.adet / al) * (al - ode);
-        toplam += ucretsiz * o.fiyat;
-      }
-    } else if (kampanya.tur === "esik_yarim" && kampanya.urun_id) {
-      if (genelToplam >= kampanya.esik) {
+    for (const kampanya of kampanyalar) {
+      if (kampanya.tur === "x_al_y_ode") {
+        const al = Math.max(2, kampanya.al_adet || 3);
+        const ode = Math.max(1, Math.min(al - 1, kampanya.ode_adet || al - 1));
+        // sepet-geneli: farklı ürünlerin adetleri toplanır, bedava birimler en ucuzdan
+        const birimler: number[] = [];
         for (const o of ogeler) {
-          if (o.id !== kampanya.urun_id) continue;
-          toplam += o.fiyat * o.adet * 0.5;
+          if (kampanya.urun_id && o.id !== kampanya.urun_id) continue;
+          if (plusUrunId && o.id === plusUrunId) continue; // üyelik paketi kampanya dışı
+          for (let x = 0; x < o.adet; x++) birimler.push(o.fiyat);
+        }
+        const ucretsiz = Math.floor(birimler.length / al) * (al - ode);
+        if (ucretsiz > 0) {
+          birimler.sort((a, b) => a - b);
+          toplam += birimler.slice(0, ucretsiz).reduce((t, f) => t + f, 0);
+        }
+      } else if (kampanya.tur === "esik_yarim" && kampanya.urun_id) {
+        if (genelToplam >= kampanya.esik) {
+          for (const o of ogeler) {
+            if (o.id !== kampanya.urun_id) continue;
+            if (plusUrunId && o.id === plusUrunId) continue;
+            toplam += o.fiyat * o.adet * 0.5;
+          }
         }
       }
     }
@@ -150,6 +158,7 @@ export default function OdemeSayfasi() {
         if (!d) return;
         setSadakatPuanim(Number(d.data?.sadakat_puani ?? 0));
         setPlusAktif(Boolean(d.data?.plus_aktif));
+        setPlusUrunId(d.data?.plus_urun_id ?? null);
       })
       .catch(() => {});
   }, [kullanici?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -181,10 +190,14 @@ export default function OdemeSayfasi() {
     setKuponMesaj(null);
     setKupon(null);
     try {
+      // Kupon tabanı üyelik paketini içermez — sunucu da aynı tabanı kullanır
+      const uyelikTutari = plusUrunId
+        ? ogeler.filter((o) => o.id === plusUrunId).reduce((t, o) => t + o.fiyat * o.adet, 0)
+        : 0;
       const r = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: kuponKodu.trim(), cart_total: genelToplam }),
+        body: JSON.stringify({ code: kuponKodu.trim(), cart_total: Math.max(0, genelToplam - uyelikTutari) }),
       });
       const d = await r.json();
       if (d.valid && d.data) {
@@ -600,7 +613,7 @@ export default function OdemeSayfasi() {
               <div className="flex justify-between text-black/60"><span>Ürünler (KDV dahil)</span><span className="font-semibold text-black tabular-nums">{fmt(genelToplam)} ₺</span></div>
               {kampanyaIndirimi > 0 && (
                 <div className="flex justify-between text-emerald-600">
-                  <span>🎁 {kampanya?.ad}</span>
+                  <span>🎁 Paket kampanyası</span>
                   <span className="font-bold tabular-nums">−{fmt(kampanyaIndirimi)} ₺</span>
                 </div>
               )}

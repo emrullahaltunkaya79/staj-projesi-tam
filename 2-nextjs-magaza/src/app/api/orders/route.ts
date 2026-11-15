@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { urunler, siparisOlustur } from "@/lib/backoffice";
+import { urunlerTam, siparisOlustur } from "@/lib/backoffice";
 import { kdvDahil } from "@/lib/fiyat";
 import { KARGO_BOLGELERI, UCRETSIZ_KARGO_LIMITI } from "@/lib/kargo";
 import { kargoBolgesi } from "@/lib/adres";
@@ -29,8 +29,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1) Ürünler arka ofisten doğrulanır — istemci fiyatları hiç okunmaz
-    const katalog = await urunler();
+    // 1) Ürünler arka ofisten doğrulanır — istemci fiyatları hiç okunmaz.
+    //    Tam katalog kullanılır: katalogda gizli ürünler (Plus üyeliği) de çözümlenir.
+    const katalog = await urunlerTam();
     const harita = new Map(katalog.map((u) => [u.id, u]));
 
     let genelToplamDahil = 0;
@@ -38,7 +39,8 @@ export async function POST(request: NextRequest) {
     for (const i of govde.items as { product_id: number; quantity: number; variant_id?: number }[]) {
       const urun = harita.get(Number(i.product_id));
       if (!urun) throw new Error("Sepetinizdeki bir ürün artık mevcut değil.");
-      if (!urun.in_stock) throw new Error(`"${urun.name}" tükendi.`);
+      // Ön siparişe açık ürün stok girişi bekler — tükendi sayılmaz
+      if (!urun.in_stock && !urun.pre_order) throw new Error(`"${urun.name}" tükendi.`);
 
       genelToplamDahil += kdvDahil(urun.final_price ?? urun.sale_price) * Number(i.quantity);
       satirlar.push({
@@ -56,14 +58,22 @@ export async function POST(request: NextRequest) {
     let kargo = bolge ? bolge.fiyat : 0;
     if (genelToplamDahil >= UCRETSIZ_KARGO_LIMITI) kargo = 0;
 
-    // 3) Kupon: kod istemciden gelir, indirim arka ofiste doğrulanır
+    // Üyelik paketi (Plus) indirim dışıdır: kupon/kampanya tabanı bu kalemleri içermez
+    const uyelikTutari = satirlar.reduce((t, s) => {
+      const urun = harita.get(s.product_id)!;
+      return urun.code === "PLUS-1YIL" ? t + (urun.final_price ?? urun.sale_price) * s.quantity : t;
+    }, 0);
+    const uyelikmi = (s: { product_id: number }) => harita.get(s.product_id)!.code === "PLUS-1YIL";
+
+    // 3) Kupon: kod istemciden gelir, indirim arka ofiste doğrulanır — üyelik tutarı tabana dahil değil
     const couponCode = String(govde.couponCode ?? "").trim().toUpperCase();
     let indirim = 0;
     if (couponCode) {
+      const kuponTabani = Math.max(0, genelToplamDahil - uyelikTutari);
       const yanit = await fetch(`${BASE}/coupons/validate`, {
         method: "POST",
         headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode, cart_total: genelToplamDahil }),
+        body: JSON.stringify({ code: couponCode, cart_total: kuponTabani }),
       });
       const d = await yanit.json().catch(() => ({}));
       if (!d.valid) throw new Error(d.message ?? "Kupon geçersiz.");
@@ -84,7 +94,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3c) Paket kampanyaları: "X Al Y Öde" (adet bazlı bedava ürün) + "Eşik üstü yarı fiyat"
+    // 3c) Paket kampanyaları: "X Al Y Öde" + "Eşik üstü yarı fiyat".
+    //     Sepet-geneli (urun_id null) modda farklı ürünlerin adetleri TOPLANIR;
+    //     bedava birimler en ucuzdan seçilir. Üyelik paketi kampanya dışıdır.
     let kampanyaIndirimi = 0;
     try {
       const kampanyaYanit = await fetch(`${BASE}/campaigns`, {
@@ -97,13 +109,20 @@ export async function POST(request: NextRequest) {
         if (k.tur === "x_al_y_ode") {
           const al = Math.max(2, Number(k.al_adet) || 3);
           const ode = Math.max(1, Math.min(al - 1, Number(k.ode_adet) || al - 1));
+          // birimleri topla: [fiyat, fiyat, ...] (adet kadar tekrar)
+          const birimler: number[] = [];
           for (const s of satirlar) {
+            if (uyelikmi(s)) continue;
             if (k.urun_id && s.product_id !== k.urun_id) continue;
-            const ucretsiz = Math.floor(Number(s.quantity) / al) * (al - ode);
-            if (ucretsiz > 0) {
-              const urun = harita.get(s.product_id)!;
-              kampanyaIndirimi += ucretsiz * (urun.final_price ?? urun.sale_price);
-            }
+            const urun = harita.get(s.product_id)!;
+            const birim = urun.final_price ?? urun.sale_price;
+            for (let x = 0; x < Number(s.quantity); x++) birimler.push(birim);
+          }
+          const toplamAdet = birimler.length;
+          const ucretsiz = Math.floor(toplamAdet / al) * (al - ode);
+          if (ucretsiz > 0) {
+            birimler.sort((a, b) => a - b); // en ucuz birimler bedava
+            kampanyaIndirimi += birimler.slice(0, ucretsiz).reduce((t, f) => t + f, 0);
           }
         } else if (k.tur === "esik_yarim" && k.urun_id) {
           const ara = satirlar.reduce((t, s) => {
@@ -112,7 +131,7 @@ export async function POST(request: NextRequest) {
           }, 0);
           if (ara - indirim >= Number(k.esik || 0)) {
             for (const s of satirlar) {
-              if (s.product_id !== k.urun_id) continue;
+              if (s.product_id !== k.urun_id || uyelikmi(s)) continue;
               const urun = harita.get(s.product_id)!;
               kampanyaIndirimi += (urun.final_price ?? urun.sale_price) * s.quantity * 0.5;
             }

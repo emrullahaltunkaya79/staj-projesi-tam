@@ -334,7 +334,7 @@ export function UrunDetayOzellikleri({
           )}
         </div>
 
-        <TeslimatBilgisi fiyat={kdvDahil(netFiyat)} stokta={urun.in_stock} />
+        <TeslimatBilgisi fiyat={kdvDahil(netFiyat)} stokta={urun.in_stock} onSiparis={Boolean(urun.pre_order)} />
 
         {/* Karşılaştır + fiyat alarmı */}
         <KarsilastirEkle urun={{ id: urun.id, ad: urun.name, kategori: urun.category, fiyat: urun.final_price ?? urun.sale_price, marka: urun.brand ?? null, puan: ratingAvg, stokta: urun.in_stock, gorsel: urun.image_url }} />

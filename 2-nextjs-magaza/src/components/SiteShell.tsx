@@ -508,14 +508,15 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <KaydirmaYardimcisi />
       <LiveChat />
 
-      {/* WhatsApp destek köprüsü — sol altta sabit */}
+      {/* WhatsApp destek köprüsü — sol altta sabit.
+          Mobilde sepet çubuğu (inset-x-3 bottom-3) ile çakışmasın diye çubuğun üstünde durur. */}
       <a
         href={waLink("Merhaba, HepsiBirarada destek ekibine ulaşmak istiyorum.")}
         target="_blank"
         rel="noopener"
         aria-label="WhatsApp destek"
         title="WhatsApp'tan destek al"
-        className="fixed bottom-5 left-5 z-[50] flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition hover:scale-105 active:scale-95"
+        className="fixed bottom-20 left-5 z-[50] flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition hover:scale-105 active:scale-95 sm:bottom-5"
       >
         <MessageCircle className="h-6 w-6" />
       </a>
