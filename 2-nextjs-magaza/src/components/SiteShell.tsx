@@ -44,7 +44,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [bildirimAcik, setBildirimAcik] = useState(false);
   const [bildirimler, setBildirimler] = useState<{ baslik: string; metin: string; link: string; zaman: string }[]>([]);
   const [okunmamis, setOkunmamis] = useState(0);
-  const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[] }> | null>(null);
+  const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[]; oneCikanlar?: { id: number; ad: string; fiyat: number; stokta: boolean }[] }> | null>(null);
   const [oneriler, setOneriler] = useState<{
     urunler: { id: number; name: string; brand?: string | null; fiyat: number; image: string | null }[];
     markalar: string[];
@@ -477,7 +477,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        {/* Mega menü paneli — hover edilen kategorinin markaları */}
+        {/* Mega menü paneli — hover edilen kategorinin markaları + ürün önizlemesi (tıklamadan gezinme) */}
         {megaAcik && menuVerisi?.[megaAcik] && (
           <div className="absolute inset-x-0 top-full z-50 hidden lg:block">
             <div className="mx-auto max-w-7xl rounded-b-2xl border-x border-b border-black/10 bg-white p-5 shadow-2xl">
@@ -490,14 +490,44 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                   Kategoriyi gör →
                 </a>
               </div>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {menuVerisi[megaAcik].markalar.map((m) => (
-                  <a key={m.ad} href={`/marka/${encodeURIComponent(m.ad)}`}
-                     className="flex items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-[11.5px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white">
-                    {m.ad}
-                    <span className="text-black/30">{m.sayi}</span>
-                  </a>
-                ))}
+
+              <div className="mt-4 grid grid-cols-[1fr_1.2fr] gap-6">
+                {/* Sol: markalar */}
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Markalar</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {menuVerisi[megaAcik].markalar.map((m) => (
+                      <a key={m.ad} href={`/marka/${encodeURIComponent(m.ad)}`}
+                         className="flex items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-[11.5px] font-bold text-black/60 transition hover:border-[var(--marka)] hover:bg-[var(--marka)] hover:text-white">
+                        {m.ad}
+                        <span className="text-black/30">{m.sayi}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sağ: ürün önizlemesi — hover'da tıklamadan gezinme */}
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Öne çıkanlar</p>
+                  {(menuVerisi[megaAcik]?.oneCikanlar?.length ?? 0) > 0 ? (
+                    <div className="grid grid-cols-4 gap-2.5">
+                      {menuVerisi[megaAcik]?.oneCikanlar?.map((u) => (
+                        <a key={u.id} href={`/urun/${u.id}`}
+                           className="group rounded-xl border border-black/10 p-2 transition hover:border-[var(--marka)] hover:shadow-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={`/api/img/${u.id}`} alt={u.ad} loading="lazy"
+                               className="mx-auto h-16 w-full object-contain transition-transform duration-200 group-hover:-translate-y-0.5" />
+                          <p className="mt-1.5 line-clamp-2 min-h-[28px] text-[11px] font-semibold leading-tight text-black group-hover:text-[var(--marka)]">{u.ad}</p>
+                          <p className="mt-0.5 text-[11px] font-black tabular-nums text-black/70">
+                            {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(u.fiyat)} ₺
+                          </p>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[12px] text-black/40">Bu kategoride şu an stokta ürün yok.</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
