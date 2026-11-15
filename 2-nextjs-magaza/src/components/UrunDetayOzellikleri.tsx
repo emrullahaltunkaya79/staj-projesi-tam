@@ -33,6 +33,7 @@ export function UrunDetayOzellikleri({
     barcode: string | null;
     category: string | null;
     video_url?: string | null;
+    pre_order?: boolean;
     unit: string;
     sale_price: number;
     discount_percent?: number | null;
@@ -150,6 +151,7 @@ export function UrunDetayOzellikleri({
 
         <SosyalKanit urunId={urun.id} />
         <FiyatGecmisi urunId={urun.id} guncelFiyat={kdvDahil(netFiyat)} />
+        <KampanyaRozeti urunId={urun.id} />
 
         <p className="mt-3 text-sm font-medium">
           {urun.in_stock ? (
@@ -157,11 +159,20 @@ export function UrunDetayOzellikleri({
               Stokta — {urun.available_quantity} {urun.unit} müsait
             </span>
           ) : (
-            <span className="text-black/40">Tükendi</span>
+            <span className="text-black/40">{urun.pre_order ? "Stokta yok — ön sipariş verilebilir" : "Tükendi"}</span>
           )}
         </p>
 
-        {!urun.in_stock && <StokBildirimi urunId={urun.id} />}
+        {!urun.in_stock && urun.pre_order && (
+          <div className="mt-3 max-w-md rounded-xl border border-black/10 bg-[#f4f6ff] px-4 py-3 text-[13px]">
+            <p className="font-bold text-black">🛫 Ön sipariş açık</p>
+            <p className="mt-0.5 leading-relaxed text-black/60">
+              Stok girişinde ilk kargolar ön sipariş verdiklerinize göre gönderilir.
+            </p>
+          </div>
+        )}
+
+        {!urun.in_stock && !urun.pre_order && <StokBildirimi urunId={urun.id} />}
 
         {/* Stok aciliyet */}
         {urun.in_stock && urun.available_quantity <= 5 && (
@@ -312,7 +323,7 @@ export function UrunDetayOzellikleri({
                 id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), birim: urun.unit,
                 ...(seciliVaryant ? { secenek: seciliVaryant.name, varyantId: seciliVaryant.id } : {}),
               }}
-              musait={gercekVaryantlar.length > 0 ? (seciliVaryant?.stock_quantity ?? 0) : urun.available_quantity}
+              musait={gercekVaryantlar.length > 0 ? (seciliVaryant?.stock_quantity ?? 0) : urun.pre_order && !urun.in_stock ? 99 : urun.available_quantity}
             />
           ) : (
             <button disabled className="h-12 w-full max-w-xs cursor-not-allowed bg-black/10 text-sm font-bold text-black/30">
@@ -395,26 +406,64 @@ function StokBildirimi({ urunId }: { urunId: number }) {
   );
 }
 
+/** Paket kampanya rozeti — ürün için geçerli aktif kampanyayı gösterir. */
+function KampanyaRozeti({ urunId }: { urunId: number }) {
+  const [kampanya, setKampanya] = useState<{ ad: string; tur: string; al_adet: number; ode_adet: number; esik: number; urun_id: number | null } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/kampanyalar")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const liste: { ad: string; tur: string; al_adet: number; ode_adet: number; esik: number; urun_id: number | null }[] = d?.data ?? [];
+        const eslesen = liste.find((k) => k.urun_id === urunId) ?? liste.find((k) => k.urun_id === null);
+        setKampanya(eslesen ?? null);
+      })
+      .catch(() => {});
+  }, [urunId]);
+
+  if (!kampanya) return null;
+  const metin =
+    kampanya.tur === "x_al_y_ode"
+      ? `🎁 ${kampanya.al_adet} Al ${kampanya.ode_adet} Öde — ${kampanya.al_adet}. ürün bedava!`
+      : `${new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(Number(kampanya.esik))} ₺ üstü sepette bu ürün yarı fiyat`;
+  return (
+    <p className="mt-2 inline-flex max-w-md items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[12px] font-bold text-amber-800">
+      {metin}
+    </p>
+  );
+}
+
 /** "Şu an X kişi görüntülüyor" — ürüne özgü sabit taban + dakikalık hafif dalga (sosyal kanıt). */
 function SosyalKanit({ urunId }: { urunId: number }) {
   const [kisi, setKisi] = useState<number | null>(null);
+  const [aylikAdet, setAylikAdet] = useState<number | null>(null);
 
   useEffect(() => {
     const hesapla = () => ((urunId * 97) % 13) + 4 + ((Math.floor(Date.now() / 60_000) + urunId) % 9);
     setKisi(hesapla());
     const zegerek = setInterval(() => setKisi(hesapla()), 45_000);
+    // Gerçek satış verisi — arka ofis siparişlerinden
+    fetch(`/api/products/${urunId}/satis`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setAylikAdet(Number(d?.data?.aylik_adet ?? 0)))
+      .catch(() => setAylikAdet(null));
     return () => clearInterval(zegerek);
   }, [urunId]);
 
   if (kisi == null) return null;
   return (
-    <p className="mt-2 flex items-center gap-2 text-[12px] font-semibold text-emerald-700">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-      </span>
-      Şu an {kisi} kişi bu ürünü görüntülüyor
-    </p>
+    <div className="mt-2 space-y-1">
+      <p className="flex items-center gap-2 text-[12px] font-semibold text-emerald-700">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+        </span>
+        Şu an {kisi} kişi bu ürünü görüntülüyor
+      </p>
+      {aylikAdet != null && aylikAdet > 0 && (
+        <p className="text-[12px] font-semibold text-black/50">🔥 Bu ay {aylikAdet} adet satıldı</p>
+      )}
+    </div>
   );
 }
 

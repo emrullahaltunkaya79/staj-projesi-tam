@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { X, LogIn, UserPlus, Loader2, KeyRound, MailCheck } from "lucide-react";
 import { auth } from "./AuthProvider";
 
-type Mod = "giris" | "kayit" | "sifirla" | "sifirla-kod" | "dogrula";
+type Mod = "giris" | "kayit" | "sifirla" | "sifirla-kod" | "dogrula" | "iki-adim";
 
 const MOD_BASLIK: Record<Mod, { ad: string; alt: string; ikon: typeof LogIn }> = {
   giris: { ad: "Giriş Yap", alt: "Hesabınıza erişin", ikon: LogIn },
@@ -12,10 +12,11 @@ const MOD_BASLIK: Record<Mod, { ad: string; alt: string; ikon: typeof LogIn }> =
   sifirla: { ad: "Şifremi Unuttum", alt: "E-postanıza kod gönderelim", ikon: KeyRound },
   "sifirla-kod": { ad: "Yeni Şifre Belirle", alt: "Gönderdiğimiz 6 haneli kodu girin", ikon: KeyRound },
   dogrula: { ad: "E-postanı Doğrula", alt: "Gönderdiğimiz 6 haneli kodu girin", ikon: MailCheck },
+  "iki-adim": { ad: "İki Adımlı Doğrulama", alt: "E-postanıza gönderilen 6 haneli kodu girin", ikon: MailCheck },
 };
 
 export function AuthModal({ acik, kapat }: { acik: boolean; kapat: () => void }) {
-  const { giris, googleDemoGiris, kayit, emailDogrula } = auth();
+  const { giris, ikiAdimDogrula, googleDemoGiris, kayit, emailDogrula } = auth();
   const [mod, setMod] = useState<Mod>("giris");
   const [ad, setAd] = useState("");
   const [email, setEmail] = useState("");
@@ -61,8 +62,17 @@ export function AuthModal({ acik, kapat }: { acik: boolean; kapat: () => void })
     setYukleniyor(true);
     try {
       if (mod === "giris") {
-        await giris(email, sifre);
-        kapat();
+        try {
+          await giris(email, sifre);
+          kapat();
+        } catch (err) {
+          if ((err as Error & { ikiAdim?: boolean }).ikiAdim) {
+            setBilgi((err as Error).message);
+            setMod("iki-adim");
+          } else {
+            throw err;
+          }
+        }
       } else if (mod === "kayit") {
         const sonuc = await kayit(ad, email, sifre);
         setKod(sonuc.dogrulamaKodu);
@@ -95,6 +105,9 @@ export function AuthModal({ acik, kapat }: { acik: boolean; kapat: () => void })
       } else if (mod === "dogrula") {
         await emailDogrula(email, kod);
         setBilgi("E-postanız doğrulandı.");
+        kapat();
+      } else if (mod === "iki-adim") {
+        await ikiAdimDogrula(email, kod);
         kapat();
       }
     } catch (err) {
@@ -144,7 +157,7 @@ export function AuthModal({ acik, kapat }: { acik: boolean; kapat: () => void })
             </div>
           )}
 
-          {(mod === "sifirla-kod" || mod === "dogrula") && (
+          {(mod === "sifirla-kod" || mod === "dogrula" || mod === "iki-adim") && (
             <div>
               <label className={etiket}>6 Haneli Kod *</label>
               <input required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={kod}

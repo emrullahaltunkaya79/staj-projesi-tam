@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/components/AuthProvider";
 import { AuthModal } from "@/components/AuthModal";
+import { sepet } from "@/components/CartProvider";
 
 type Adres = { id: number; baslik: string; ad_soyad: string; telefon: string; il: string; ilce: string; acik_adres: string; is_default?: boolean };
 
@@ -12,6 +13,7 @@ const alan = "h-11 w-full border border-black/15 bg-white px-3.5 text-sm focus:b
 
 export default function HesabimSayfasi() {
   const { kullanici, girisYapmis, cikis } = auth();
+  const { ekle } = sepet();
   const router = useRouter();
   const [girisAcik, setGirisAcik] = useState(false);
 
@@ -28,6 +30,12 @@ export default function HesabimSayfasi() {
 
   const [adresler, setAdresler] = useState<Adres[]>([]);
   const [sadakatPuan, setSadakatPuan] = useState<number | null>(null);
+  const [referansKodum, setReferansKodum] = useState<string | null>(null);
+  const [dogumTarihi, setDogumTarihi] = useState("");
+  const [kopyalandi, setKopyalandi] = useState(false);
+  const [ikiAdim, setIkiAdim] = useState(false);
+  const [plusAktif, setPlusAktif] = useState(false);
+  const [plusUrunId, setPlusUrunId] = useState<number | null>(null);
   const [yeniAdres, setYeniAdres] = useState({ baslik: "", ad_soyad: "", telefon: "", il: "", ilce: "", acik_adres: "" });
   const [adresFormAcik, setAdresFormAcik] = useState(false);
   const [hesapSilAcik, setHesapSilAcik] = useState(false);
@@ -45,7 +53,15 @@ export default function HesabimSayfasi() {
         .catch(() => {});
       fetch("/api/hesap/durum")
         .then((r) => (r.ok ? r.json() : null))
-        .then((d) => d && setSadakatPuan(Number(d.data?.sadakat_puani ?? 0)))
+        .then((d) => {
+          if (!d) return;
+          setSadakatPuan(Number(d.data?.sadakat_puani ?? 0));
+          setReferansKodum(d.data?.referans_kodu ?? null);
+          setDogumTarihi(d.data?.dogum_tarihi ?? "");
+          setIkiAdim(Boolean(d.data?.iki_adim));
+          setPlusAktif(Boolean(d.data?.plus_aktif));
+          setPlusUrunId(d.data?.plus_urun_id ?? null);
+        })
         .catch(() => {});
     }
   }, [girisYapmis, kullanici?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -73,7 +89,7 @@ export default function HesabimSayfasi() {
       const yanit = await fetch("/api/hesap/profil", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: ad, phone: telefon || null }),
+        body: JSON.stringify({ name: ad, phone: telefon || null, dogum_tarihi: dogumTarihi || null }),
       });
       const sonuc = await yanit.json();
       if (!yanit.ok) throw new Error(sonuc.message ?? "Kaydedilemedi.");
@@ -176,6 +192,11 @@ export default function HesabimSayfasi() {
                 <label className={etiket}>Telefon</label>
                 <input type="tel" value={telefon} onChange={(e) => setTelefon(e.target.value)} placeholder="0532 123 45 67" className={alan} />
               </div>
+              <div>
+                <label className={etiket}>Doğum günü</label>
+                <input type="date" value={dogumTarihi} onChange={(e) => setDogumTarihi(e.target.value)} max={new Date().toISOString().slice(0, 10)} className={alan} />
+                <p className="mt-1 text-[10px] text-black/35">Doğum gününde %15 hediye kuponu e-posta ile gelir 🎂</p>
+              </div>
             </div>
             {profilMesaj && <p className="mt-3 text-xs font-semibold text-emerald-600">{profilMesaj}</p>}
             {profilHata && <p className="mt-3 text-xs font-semibold text-red-600">{profilHata}</p>}
@@ -194,6 +215,98 @@ export default function HesabimSayfasi() {
             <p className="mt-2 text-[11px] text-black/35">
               Puanlar fatura kesildiğinde yüklenir · {sadakatPuan ? sadakatPuan.toLocaleString("tr-TR") : "0"} ₺ değerinde · checkout adımında harcanabilir
             </p>
+          </div>
+
+          {/* HepsiBirarada Plus — ücretsiz kargo + 2 kat puan */}
+          <div className={plusAktif ? "rounded-2xl border-2 border-[var(--marka)] bg-white p-6" : kart}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-black text-black">
+                  ⚡ HepsiBirarada Plus {plusAktif && <span className="ml-1 rounded-full bg-[var(--marka)] px-2 py-0.5 text-[10px] font-black text-white">ÜYELİĞİN AKTİF</span>}
+                </h2>
+                <p className="mt-1 text-xs leading-relaxed text-black/45">
+                  Yıllık 199 ₺ — her siparişte <b className="text-black">ücretsiz kargo</b> ve <b className="text-black">2 kat sadakat puanı</b>.
+                  {plusAktif && " Avantajlar checkout'ta otomatik uygulanır."}
+                </p>
+              </div>
+              {!plusAktif && plusUrunId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    ekle({ id: plusUrunId, ad: "HepsiBirarada Plus — 1 Yıl Üyelik", fiyat: 199, gorsel: `/api/img/${plusUrunId}` }, 1);
+                    router.push("/odeme");
+                  }}
+                  className="rounded-full bg-[var(--marka)] px-5 py-2.5 text-xs font-black text-white transition hover:opacity-90 active:scale-95"
+                >
+                  Plus'a katıl — 199 ₺
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* İki adımlı doğrulama */}
+          <div className={kart}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-black">🔐 İki Adımlı Doğrulama</h2>
+                <p className="mt-1 text-xs text-black/45">
+                  Açıkken girişte şifrenizden sonra e-postanıza gelen 6 haneli kodu da girmeniz gerekir.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const yanit = await fetch("/api/hesap/iki-adim", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ aktif: !ikiAdim }),
+                    });
+                    const sonuc = await yanit.json();
+                    if (!yanit.ok) throw new Error(sonuc.message ?? "Ayarlanamadı.");
+                    setIkiAdim(!ikiAdim);
+                    setProfilMesaj(sonuc.message);
+                    setProfilHata(null);
+                  } catch (err) {
+                    setProfilHata(err instanceof Error ? err.message : "Ayarlanamadı.");
+                  }
+                }}
+                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${ikiAdim ? "bg-emerald-600" : "bg-black/15"}`}
+                aria-label="İki adımlı doğrulama"
+              >
+                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${ikiAdim ? "left-[22px]" : "left-0.5"}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Arkadaşını getir — referans programı */}
+          <div className={kart}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-black">🤝 Arkadaşını Getir</h2>
+                <p className="mt-1 text-xs text-black/45">
+                  Kodunu paylaş: arkadaşın ilk siparişinde <b className="text-black">50 ₺</b> indirim kazanır,
+                  o sipariş ödendiğinde <b className="text-black">500 sadakat puanı</b> hesabına eklenir.
+                </p>
+              </div>
+              {referansKodum && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(referansKodum);
+                      setKopyalandi(true);
+                      setTimeout(() => setKopyalandi(false), 2000);
+                    } catch {
+                      window.prompt("Referans kodun:", referansKodum);
+                    }
+                  }}
+                  className="rounded-full bg-black px-5 py-2.5 font-mono text-xs font-black tracking-wider text-white transition hover:bg-black/80 active:scale-95"
+                >
+                  {kopyalandi ? "✓ Kopyalandı" : referansKodum}
+                </button>
+              )}
+            </div>
           </div>
 
           <form onSubmit={sifreKaydet} className={kart}>

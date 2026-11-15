@@ -113,9 +113,25 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
     },
   };
 
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3001";
+  const breadcrumbJsonLd = u.category
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: u.category, item: `${SITE_URL}/kategori/${encodeURIComponent(u.category)}` },
+          { "@type": "ListItem", position: 3, name: u.name, item: `${SITE_URL}/urun/${u.id}` },
+        ],
+      }
+    : null;
+
   return (
     <div className="px-5 pb-24 pt-10 sm:px-10"><div className="mx-auto max-w-7xl">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {breadcrumbJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      )}
       <div className="px-5 pb-6 pt-8 sm:px-10">
         <div className="mx-auto max-w-7xl text-[13px] font-medium text-black/50">
           <a href="/" className="hover:underline underline-offset-4">Mağaza</a>

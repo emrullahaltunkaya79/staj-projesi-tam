@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Bot } from "lucide-react";
+import { waLink } from "@/lib/iletisim";
 
 type Mesaj = {
   kimden: "bot" | "ben";
@@ -97,6 +98,10 @@ export function LiveChat() {
           </span>
           <div>
             <p className="text-sm font-bold text-white">HepsiBirarada Destek</p>
+            <a href={waLink("Merhaba, canlı destekten WhatsApp'a geçmek istiyorum.")} target="_blank" rel="noopener"
+               className="text-[11px] font-semibold text-white/85 underline underline-offset-2 transition hover:text-white">
+              WhatsApp'tan devam et →
+            </a>
             <p className="flex items-center gap-1 text-[11px] text-white/70">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Çevrimiçi
             </p>

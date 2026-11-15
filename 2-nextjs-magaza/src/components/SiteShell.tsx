@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Moon, Sun, Menu, Bell, Ticket } from "lucide-react";
+import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Moon, Sun, Menu, Bell, Ticket, MessageCircle } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { auth } from "./AuthProvider";
 import { favori } from "./FavoriProvider";
@@ -17,6 +17,7 @@ import { KaydirmaYardimcisi } from "./KaydirmaYardimcisi";
 import { AuthModal } from "./AuthModal";
 import { BultenFormu } from "./BultenFormu";
 import { KargoTakip } from "./KargoTakip";
+import { waLink } from "@/lib/iletisim";
 
 /**
  * Tüm mağaza sayfalarını saran kabuk: duyuru bandı + header + kategori menüsü + alt bilgi.
@@ -507,6 +508,18 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <KaydirmaYardimcisi />
       <LiveChat />
 
+      {/* WhatsApp destek köprüsü — sol altta sabit */}
+      <a
+        href={waLink("Merhaba, HepsiBirarada destek ekibine ulaşmak istiyorum.")}
+        target="_blank"
+        rel="noopener"
+        aria-label="WhatsApp destek"
+        title="WhatsApp'tan destek al"
+        className="fixed bottom-5 left-5 z-[50] flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition hover:scale-105 active:scale-95"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </a>
+
       <div className="page-enter flex-1">{children}</div>
 
       <div className="px-5 pt-6 sm:px-10">
@@ -536,6 +549,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             <div className="flex-1 min-w-[160px]">
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Kurumsal</div>
               <div className="flex flex-col gap-2">
+                <a href="/yardim" className="hover:text-white transition">Yardım Merkezi</a>
                 <a href="/hakkinda" className="hover:text-white transition">Hakkında</a>
                 <a href="/iletisim" className="hover:text-white transition">İletişim</a>
                 <a href="/sss" className="hover:text-white transition">Sıkça Sorulan Sorular</a>

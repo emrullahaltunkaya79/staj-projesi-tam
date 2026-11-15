@@ -284,6 +284,10 @@ export default async function SiparisSayfasi({
               📄 Faturayı İndir (PDF)
             </a>
           )}
+          <a href={`/iletisim?siparis=${encodeURIComponent(s.order_no)}`}
+             className="text-sm font-bold text-black/60 underline underline-offset-4 transition hover:text-black">
+            🆘 Bu siparişle ilgili yardım al
+          </a>
           {s.status === "delivered" && (
             iadeSuresiDoldu ? (
               <p className="border border-black/15 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-black/60">

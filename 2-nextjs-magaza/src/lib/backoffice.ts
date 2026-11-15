@@ -31,6 +31,8 @@ export type Urun = {
   rating_avg?: number | null;
   review_count?: number;
   is_bestseller?: boolean;
+  /** Tükendi üründe satıcı ön siparişe açtıysa true — sepete eklemeye izin verir */
+  pre_order?: boolean;
   varyant_adlari?: string[];
   varyant_min_stok?: number | null;
   varyantlar?: VaryantOzeti[];

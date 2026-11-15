@@ -57,6 +57,7 @@ export default function OdemeSayfasi() {
   const [taksitAcik, setTaksitAcik] = useState(false);
   const [puanKullanilsin, setPuanKullanilsin] = useState(false);
   const [sadakatPuanim, setSadakatPuanim] = useState(0);
+  const [plusAktif, setPlusAktif] = useState(false);
 
   // Hesaba kayıtlı adresler (giriş yapmış müşteri)
   const [adresler, setAdresler] = useState<KayitliAdres[]>([]);
@@ -68,20 +69,23 @@ export default function OdemeSayfasi() {
 
   // Kupon
   const [kuponKodu, setKuponKodu] = useState("");
+  const [referansKodu, setReferansKodu] = useState("");
+  const [referansDurumu, setReferansDurumu] = useState<"bos" | "gecerli" | "gecersiz" | "kendi">("bos");
+  const referansIndirimi = referansDurumu === "gecerli" ? 50 : 0;
   const [kuponYukleniyor, setKuponYukleniyor] = useState(false);
   const [kupon, setKupon] = useState<{ code: string; name: string; discount: number; type: string; type_label: string } | null>(null);
   const [kuponMesaj, setKuponMesaj] = useState<string | null>(null);
 
   // Kargo bölgesi teslimat adresinden belirlenir — ayrı seçilemez, adresle çelişemez
   const bolge = useMemo(() => KARGO_BOLGELERI.find((b) => b.id === kargoBolgesi(il, ilce)) ?? null, [il, ilce]);
-  const ucretsizKargo = genelToplam >= UCRETSIZ_KARGO_LIMITI || kupon?.type === "free_shipping";
+  const ucretsizKargo = plusAktif || genelToplam >= UCRETSIZ_KARGO_LIMITI || kupon?.type === "free_shipping";
   const toplamKargo = ucretsizKargo || !bolge ? 0 : bolge.fiyat;
   const indirimTutari = kupon ? kupon.discount : 0;
-  const havaleIndirimi = odemeYontemi === "havale" ? Math.round((genelToplam - indirimTutari) * HAVALE_ORANI * 100) / 100 : 0;
+  const havaleIndirimi = odemeYontemi === "havale" ? Math.round((genelToplam - indirimTutari - referansIndirimi) * HAVALE_ORANI * 100) / 100 : 0;
   // Sadakat puanı: 1 puan = 1 ₺, en fazla ara toplamın yarısı (sunucu da aynı kuralı uygular)
   const kullanilabilirPuan = Math.min(sadakatPuanim, Math.floor((genelToplam - indirimTutari) / 2));
   const puanIndirimi = puanKullanilsin && kullanilabilirPuan > 0 ? kullanilabilirPuan : 0;
-  const odenecekTutar = Math.max(0, genelToplam - indirimTutari - havaleIndirimi - puanIndirimi) + toplamKargo + (odemeYontemi === "kapida" ? KAPIDA_BEDEL : 0);
+  const odenecekTutar = Math.max(0, genelToplam - indirimTutari - referansIndirimi - havaleIndirimi - puanIndirimi) + toplamKargo + (odemeYontemi === "kapida" ? KAPIDA_BEDEL : 0);
 
   useEffect(() => {
     if (!kullanici) return;
@@ -108,7 +112,11 @@ export default function OdemeSayfasi() {
       .catch(() => {});
     fetch("/api/hesap/durum")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setSadakatPuanim(Number(d.data?.sadakat_puani ?? 0)))
+      .then((d) => {
+        if (!d) return;
+        setSadakatPuanim(Number(d.data?.sadakat_puani ?? 0));
+        setPlusAktif(Boolean(d.data?.plus_aktif));
+      })
       .catch(() => {});
   }, [kullanici?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -118,6 +126,19 @@ export default function OdemeSayfasi() {
     setIl(a.il);
     setIlce(a.ilce);
     setAcikAdres(a.acik_adres);
+  };
+
+  // Referans kodu doğrula (blur'da) — 50 ₺ indirim önizlemesi
+  const referansKontrol = async () => {
+    const kod = referansKodu.trim().toUpperCase();
+    if (!kod || !email.trim()) return;
+    try {
+      const r = await fetch(`/api/referans/${encodeURIComponent(kod)}?eposta=${encodeURIComponent(email.trim())}`);
+      const d = await r.json();
+      setReferansDurumu(d.data?.kendi_kodu ? "kendi" : d.data?.gecerli ? "gecerli" : "gecersiz");
+    } catch {
+      setReferansDurumu("gecersiz");
+    }
   };
 
   const kuponUygula = async () => {
@@ -183,6 +204,7 @@ export default function OdemeSayfasi() {
           odemeYontemi,
           puanKullan: puanIndirimi > 0,
           couponCode: kupon?.code ?? null,
+          referansKodu: referansIndirimi > 0 ? referansKodu.trim().toUpperCase() : null,
           fatura: {
             tipi: faturaTipi,
             ...(faturaTipi === "kurumsal" ? { unvan, vergiDairesi, vergiNo } : {}),
@@ -513,6 +535,21 @@ export default function OdemeSayfasi() {
                 </div>
               )}
               {kuponMesaj && !kupon && <p className="mt-1.5 text-xs font-semibold text-red-500">{kuponMesaj}</p>}
+            </div>
+
+            {/* Referans kodu — arkadaşını getir */}
+            <div className="rounded-xl border border-black/10 bg-[#f8f8f8] p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40">Arkadaşını Getir</p>
+              <div className="mt-2 flex gap-2">
+                <input value={referansKodu} onChange={(e) => { setReferansKodu(e.target.value.toUpperCase()); setReferansDurumu("bos"); }}
+                       onBlur={referansKontrol}
+                       placeholder="REFERANS KODU (VARSA)"
+                       className="h-10 flex-1 border border-black/15 bg-white px-3 font-mono text-xs font-bold uppercase focus:border-black focus:outline-none" />
+              </div>
+              {referansDurumu === "gecerli" && <p className="mt-1.5 text-xs font-semibold text-emerald-600">✓ Geçerli — 50 ₺ indirim uygulandı</p>}
+              {referansDurumu === "kendi" && <p className="mt-1.5 text-xs font-semibold text-amber-600">Bu senin kodun — kendine uygulayamazsın 🙂</p>}
+              {referansDurumu === "gecersiz" && <p className="mt-1.5 text-xs font-semibold text-red-500">Referans kodu bulunamadı.</p>}
+              {referansDurumu === "bos" && <p className="mt-1.5 text-xs text-black/40">Davet eden arkadaşının kodunu gir: ilk siparişinde 50 ₺ indirim, o da 500 puan kazanır.</p>}
             </div>
           </div>
 

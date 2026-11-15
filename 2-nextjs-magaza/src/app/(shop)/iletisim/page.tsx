@@ -1,12 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function Iletisim() {
+  return (
+    <Suspense fallback={<div className="min-h-[40vh]" />}>
+      <IletisimIcerik />
+    </Suspense>
+  );
+}
+
+/** ?siparis= parametresi gelirse mesaj sipariş numarasıyla ön-doldurulur. */
+function IletisimIcerik() {
+  const arama = useSearchParams();
+  const siparisNo = arama.get("siparis");
+
   const [gonderildi, setGonderildi] = useState(false);
   const [ad, setAd] = useState("");
   const [eposta, setEposta] = useState("");
-  const [mesaj, setMesaj] = useState("");
+  const [mesaj, setMesaj] = useState(siparisNo ? `Sipariş numaram: ${siparisNo}\n` : "");
+  const [konu, setKonu] = useState(siparisNo ? "Siparişe özel destek" : "İletişim formu");
 
   const [gonderiliyor, setGonderiliyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
@@ -19,7 +33,7 @@ export default function Iletisim() {
       const r = await fetch("/api/iletisim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ad, eposta, konu: "İletişim formu", mesaj }),
+        body: JSON.stringify({ ad, eposta, konu, mesaj }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.message ?? "Mesaj gönderilemedi.");
@@ -80,6 +94,13 @@ export default function Iletisim() {
                        className="h-11 w-full border border-black/15 bg-white px-3.5 text-sm focus:border-black focus:outline-none" />
               </div>
               <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-black/40">Konu</label>
+                <select value={konu} onChange={(e) => setKonu(e.target.value)}
+                        className="mb-4 w-full border border-black/15 bg-white px-3 py-2.5 text-sm focus:border-black focus:outline-none">
+                  {["İletişim formu", "Siparişe özel destek", "Kargo & teslimat", "İade & değişim", "Ödeme & fatura", "Diğer"].map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
                 <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-black/40">Mesajınız *</label>
                 <textarea required rows={5} value={mesaj} onChange={(e) => setMesaj(e.target.value)}
                           className="w-full border border-black/15 bg-white px-3.5 py-2.5 text-sm focus:border-black focus:outline-none" />

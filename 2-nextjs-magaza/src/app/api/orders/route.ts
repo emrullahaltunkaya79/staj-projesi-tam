@@ -71,13 +71,73 @@ export async function POST(request: NextRequest) {
       if (d.data?.type === "free_shipping") kargo = 0;
     }
 
+    // 3b) Referans kodu: davet programı — geçerliyse 50 ₺ indirim (davet edenin kendi kodu geçersiz)
+    const referansKodu = String(govde.referansKodu ?? "").trim().toUpperCase();
+    let referansIndirimi = 0;
+    if (referansKodu) {
+      const yanit = await fetch(`${BASE}/referans/${encodeURIComponent(referansKodu)}?eposta=${encodeURIComponent(String(govde.email))}`, {
+        headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json" },
+      });
+      const d = await yanit.json().catch(() => ({}));
+      if (d.data?.gecerli && !d.data.kendi_kodu) {
+        referansIndirimi = Math.min(50, Math.max(0, genelToplamDahil - indirim));
+      }
+    }
+
+    // 3c) Paket kampanyaları: "X Al Y Öde" (adet bazlı bedava ürün) + "Eşik üstü yarı fiyat"
+    let kampanyaIndirimi = 0;
+    try {
+      const kampanyaYanit = await fetch(`${BASE}/campaigns`, {
+        headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json" },
+      });
+      const kampanyaData = await kampanyaYanit.json().catch(() => ({}));
+      type Kampanya = { tur: string; urun_id: number | null; al_adet: number; ode_adet: number; esik: number };
+      const aktifler: Kampanya[] = kampanyaData.data ?? [];
+      for (const k of aktifler) {
+        if (k.tur === "x_al_y_ode") {
+          const al = Math.max(2, Number(k.al_adet) || 3);
+          const ode = Math.max(1, Math.min(al - 1, Number(k.ode_adet) || al - 1));
+          for (const s of satirlar) {
+            if (k.urun_id && s.product_id !== k.urun_id) continue;
+            const ucretsiz = Math.floor(Number(s.quantity) / al) * (al - ode);
+            if (ucretsiz > 0) {
+              const urun = harita.get(s.product_id)!;
+              kampanyaIndirimi += ucretsiz * (urun.final_price ?? urun.sale_price);
+            }
+          }
+        } else if (k.tur === "esik_yarim" && k.urun_id) {
+          const ara = satirlar.reduce((t, s) => {
+            const urun = harita.get(s.product_id)!;
+            return t + (urun.final_price ?? urun.sale_price) * s.quantity;
+          }, 0);
+          if (ara - indirim >= Number(k.esik || 0)) {
+            for (const s of satirlar) {
+              if (s.product_id !== k.urun_id) continue;
+              const urun = harita.get(s.product_id)!;
+              kampanyaIndirimi += (urun.final_price ?? urun.sale_price) * s.quantity * 0.5;
+            }
+          }
+        }
+      }
+      kampanyaIndirimi = Math.round(kampanyaIndirimi * 100) / 100;
+    } catch {}
+
+    // 3d) Plus üyeliği: aktifse kargo her koşulda ücretsiz (arka ofisten doğrulanır)
+    try {
+      const plusYanit = await fetch(`${BASE}/plus-durum?email=${encodeURIComponent(String(govde.email))}`, {
+        headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json" },
+      });
+      const plusData = await plusYanit.json().catch(() => ({}));
+      if (plusData.data?.aktif) kargo = 0;
+    } catch {}
+
     // 4) Ödeme yöntemi: kapıda ödeme +hizmet bedeli, havale/EFT −%2 indirim (sunucu uygular)
     const yontem = ["cspr", "kapida", "havale"].includes(String(govde.odemeYontemi)) ? String(govde.odemeYontemi) : "cspr";
 
     // 5) Ödenecek tutar (KDV dahil) → kalem net fiyatları bu tutara ölçeklenir;
     //    böylece arka ofisteki sipariş/fatura tutarı müşterinin ödediğiyle birebir olur.
-    const havaleIndirimi = yontem === "havale" ? Math.round((genelToplamDahil - indirim) * HAVALE_INDIRIM_ORANI * 100) / 100 : 0;
-    const odenecek = Math.max(0, genelToplamDahil - indirim - havaleIndirimi) + kargo + (yontem === "kapida" ? KAPIDA_BEDEL : 0);
+    const havaleIndirimi = yontem === "havale" ? Math.round((genelToplamDahil - indirim - referansIndirimi - kampanyaIndirimi) * HAVALE_INDIRIM_ORANI * 100) / 100 : 0;
+    const odenecek = Math.max(0, genelToplamDahil - indirim - referansIndirimi - kampanyaIndirimi - havaleIndirimi) + kargo + (yontem === "kapida" ? KAPIDA_BEDEL : 0);
     const oran = genelToplamDahil > 0 ? odenecek / genelToplamDahil : 1;
     const items = satirlar.map((s) => {
       const urun = harita.get(s.product_id)!;
@@ -86,6 +146,8 @@ export async function POST(request: NextRequest) {
     });
 
     const notesNotlari = [
+      ...(referansKodu && referansIndirimi > 0 ? [`Referans: ${referansKodu} (-${fmt(referansIndirimi)} TL)`] : []),
+      ...(kampanyaIndirimi > 0 ? [`Paket kampanyası: -${fmt(kampanyaIndirimi)} TL`] : []),
       ...(couponCode ? [`Kupon ${couponCode}: -${fmt(indirim)} TL`] : []),
       ...(havaleIndirimi > 0 ? [`Havale indirimi: -${fmt(havaleIndirimi)} TL`] : []),
       ...(yontem === "kapida" ? [`Kapıda ödeme bedeli: +${fmt(KAPIDA_BEDEL)} TL`] : []),

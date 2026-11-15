@@ -27,6 +27,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   const [gonderildi, setGonderildi] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [buyuyen, setBuyuyen] = useState<string | null>(null);
+  const [galeriAcik, setGaleriAcik] = useState(false);
   const [foto, setFoto] = useState<File | null>(null);
   const [fotoOnizleme, setFotoOnizleme] = useState<string | null>(null);
 
@@ -193,6 +194,19 @@ export function Yorumlar({ urunId }: { urunId: number }) {
 
           {/* Yorum listesi */}
           <div className="lg:col-span-2">
+            {(() => {
+              const fotolar = yorumlar.map((y) => y.gorsel).filter((g): g is string => Boolean(g));
+              if (fotolar.length === 0) return null;
+              return (
+                <button
+                  type="button"
+                  onClick={() => setGaleriAcik(true)}
+                  className="mb-4 flex items-center gap-2 rounded-full border border-black/15 px-4 py-1.5 text-[12px] font-bold text-black/60 transition hover:border-black hover:text-black"
+                >
+                  📸 {fotolar.length} müşteri fotoğrafı
+                </button>
+              );
+            })()}
             {yorumlar.length === 0 ? (
               <p className="py-12 text-center text-sm text-black/40">Henüz değerlendirme yok. İlk yazan siz olun!</p>
             ) : (
@@ -254,6 +268,42 @@ export function Yorumlar({ urunId }: { urunId: number }) {
           </div>
         </div>
       </div>
+      {galeriAcik && (
+        <div
+          onClick={() => setGaleriAcik(false)}
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-6 backdrop-blur-sm"
+          role="dialog"
+          aria-label="Müşteri fotoğrafları"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl"
+          >
+            <p className="mb-3 text-sm font-black uppercase tracking-wide text-black">Müşteri fotoğrafları</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {yorumlar
+                .map((y) => y.gorsel)
+                .filter((g): g is string => Boolean(g))
+                .map((f, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <button key={i} type="button" onClick={() => { setGaleriAcik(false); setBuyuyen(f); }}
+                          className="overflow-hidden rounded-xl border border-black/10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={f} alt={`Müşteri fotoğrafı ${i + 1}`} loading="lazy" className="h-36 w-full object-cover transition hover:scale-105" />
+                  </button>
+                ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setGaleriAcik(false)}
+              aria-label="Kapat"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 text-sm text-black/60 transition hover:bg-black/10"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       {buyuyen && (
         <div
           onClick={() => setBuyuyen(null)}
