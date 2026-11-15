@@ -21,7 +21,8 @@ const etiket = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-blac
 const alan = "h-12 w-full border border-black/20 bg-white px-4 text-sm focus:border-black focus:outline-none";
 
 /** Ödeme yöntemleri — tutara etkisi güvenilir sunucuda uygulanır (api/orders), burada yansısı var */
-const YONTEMLER: { id: "cspr" | "kapida" | "havale"; ad: string; aciklama: string; not: string }[] = [
+const YONTEMLER: { id: "cspr" | "kapida" | "havale" | "kart"; ad: string; aciklama: string; not: string }[] = [
+  { id: "kart", ad: "💳 Kart ile Öde (3D Secure)", aciklama: "Banka/kredi kartıyla online ödeme — bankanın 3D Secure ekranında SMS koduyla onaylarsın.", not: "3D Secure korumalı" },
   { id: "cspr", ad: "⛓️ CSPR ile Öde", aciklama: "Kripto ile online ödeyin, blok zincirde anında onaylanır.", not: "Anında onay" },
   { id: "havale", ad: "🏦 Havale / EFT", aciklama: "Banka transferi; ödemen onaylandığında sipariş hazırlanır.", not: "%2 indirim" },
   { id: "kapida", ad: "🚚 Kapıda Ödeme", aciklama: "Paket eline ulaşınca kargo görevlisine nakit/kart ile öde.", not: "+25,00 ₺ hizmet bedeli" },
@@ -53,7 +54,7 @@ export default function OdemeSayfasi() {
   const [hediyeNotu, setHediyeNotu] = useState("");
 
   // Ödeme yöntemi
-  const [odemeYontemi, setOdemeYontemi] = useState<"cspr" | "kapida" | "havale">("cspr");
+  const [odemeYontemi, setOdemeYontemi] = useState<"cspr" | "kapida" | "havale" | "kart">("cspr");
   const [taksitAcik, setTaksitAcik] = useState(false);
   const [puanKullanilsin, setPuanKullanilsin] = useState(false);
   const [sadakatPuanim, setSadakatPuanim] = useState(0);

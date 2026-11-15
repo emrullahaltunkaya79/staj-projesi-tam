@@ -1,4 +1,5 @@
 import { OdemeButonu } from "./OdemeButonu";
+import { KartOdemeButonu } from "./KartOdemeButonu";
 import { IptalButonu } from "./IptalButonu";
 import { IadeFormu } from "./IadeFormu";
 import { Konfeti } from "@/components/Konfeti";
@@ -31,6 +32,7 @@ const ODEME_YONTEM: Record<string, string> = {
   cspr: "⛓️ Online (CSPR)",
   kapida: "🚚 Kapıda Ödeme",
   havale: "🏦 Havale / EFT",
+  kart: "💳 Kart (3D Secure)",
 };
 
 export default async function SiparisSayfasi({
@@ -276,6 +278,8 @@ export default async function SiparisSayfasi({
                     nakit veya kredi kartıyla ödeyin. Siparişiniz şu an hazırlanmak üzere satıcıda.
                   </p>
                 </div>
+              ) : yontem === "kart" ? (
+                <KartOdemeButonu orderNo={s.order_no} erisim={k ?? null} />
               ) : (
                 <OdemeButonu orderNo={s.order_no} erisim={k ?? null} />
               )}

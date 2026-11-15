@@ -73,7 +73,7 @@ export type Siparis = {
   access_key?: string;
   status: string;
   status_label?: string;
-  payment_method?: "cspr" | "kapida" | "havale" | null;
+  payment_method?: "cspr" | "kapida" | "havale" | "kart" | null;
   odeme_yontemi?: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
@@ -224,7 +224,7 @@ export type SiparisVerisi = {
   hediyePaket: boolean;
   hediyeNotu: string | null;
   /** cspr: online kripto (QR) · kapida: kapıda ödeme (+hizmet bedeli) · havale: banka transferi (%2 indirim) */
-  odemeYontemi?: "cspr" | "kapida" | "havale";
+  odemeYontemi?: "cspr" | "kapida" | "havale" | "kart";
   /** Sadakat puanı harcama — 1 puan = 1 ₺, en fazla ara toplamın yarısı */
   puanKullan?: boolean;
   fatura: { tipi: "bireysel" | "kurumsal"; unvan?: string; vergiDairesi?: string; vergiNo?: string; adres?: string };
