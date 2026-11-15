@@ -76,6 +76,17 @@ export default async function SiparisSayfasi({
   const adimlar = Object.keys(ADIMLAR);
   const aktifIndex = adimlar.indexOf(s.status);
   const yontem = s.payment_method ?? "cspr";
+  // Zaman çizelgesi damgaları — hangi tarihte ne olduğu adım altında görünür
+  const damga = (d: string | null | undefined) =>
+    d
+      ? new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" }).format(new Date(d))
+      : null;
+  const damgalar: Record<string, string | null> = {
+    pending: damga(s.created_at),
+    paid: damga(s.paid_at),
+    shipped: damga(s.shipped_at),
+    delivered: damga(s.delivered_at),
+  };
   const iptal = s.status === "cancelled";
   const iadeDurumu = IADE_DURUM[s.status];
   const iadeSon = s.iade_son_tarih ? new Date(s.iade_son_tarih) : null;
@@ -191,6 +202,11 @@ export default async function SiparisSayfasi({
                     <span className={`text-center text-[10px] font-bold ${aktif ? "text-black" : tam ? "text-black/60" : "text-black/30"}`}>
                       {ADIMLAR[adim]}
                     </span>
+                    {damgalar[adim] && (
+                      <span className={`text-center text-[9px] font-medium tabular-nums ${aktif ? "text-black/70" : "text-black/40"}`}>
+                        {damgalar[adim]}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -213,6 +229,12 @@ export default async function SiparisSayfasi({
         <div className="mt-6 space-y-1 border-t border-black/10 pt-4 text-[13px] text-black/60">
           {s.subtotal != null && <div className="flex justify-between"><span>KDV hariç tutar</span><span className="tabular-nums">{fmt(s.subtotal)} ₺</span></div>}
           {s.tax_amount != null && <div className="flex justify-between"><span>KDV (%{s.tax_rate})</span><span className="tabular-nums">{fmt(s.tax_amount)} ₺</span></div>}
+          {(s.kullanilan_puan ?? 0) > 0 && (
+            <div className="flex justify-between font-semibold text-emerald-700">
+              <span>🎁 {s.kullanilan_puan} sadakat puanı harcandı</span>
+              <span className="tabular-nums">−{fmt(Number(s.kullanilan_puan))} ₺</span>
+            </div>
+          )}
           <div className="flex items-baseline justify-between pt-2">
             <span className="text-sm font-medium text-black/60">Toplam (KDV dahil)</span>
             <span className="text-3xl font-black tabular-nums text-black">{fmt(s.total)} ₺</span>

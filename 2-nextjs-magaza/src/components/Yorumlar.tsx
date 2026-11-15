@@ -17,6 +17,7 @@ type Yorum = {
 export function Yorumlar({ urunId }: { urunId: number }) {
   const { girisYapmis } = auth();
   const [yorumlar, setYorumlar] = useState<Yorum[]>([]);
+  const [sirala, setSirala] = useState<"yeni" | "yararli">("yeni");
   const [oyVerilenler, setOyVerilenler] = useState<Set<number>>(new Set());
   const [oyMesaji, setOyMesaji] = useState<string | null>(null);
   const [ortalam, setOrtalam] = useState(0);
@@ -29,8 +30,8 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   const [foto, setFoto] = useState<File | null>(null);
   const [fotoOnizleme, setFotoOnizleme] = useState<string | null>(null);
 
-  const yorumlariYukle = () =>
-    fetch(`/api/products/${urunId}/reviews`)
+  const yorumlariYukle = (siralamatur: "yeni" | "yararli" = sirala) =>
+    fetch(`/api/products/${urunId}/reviews?sirala=${siralamatur}`)
       .then((r) => r.json())
       .then((d) => {
         setYorumlar((d.data?.yorumlar ?? []).map((y: { image_path?: string } & Record<string, unknown>) => ({ ...y, gorsel: y.image_path ? `/api/yorum-gorseli/${String(y.image_path).split("/").pop()}` : null })));
@@ -42,7 +43,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   useEffect(() => {
     yorumlariYukle();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urunId]);
+  }, [urunId, sirala]);
 
   const oyVer = async (id: number) => {
     if (!girisYapmis) {
@@ -85,7 +86,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
         setMesaj("");
         setFoto(null);
         setFotoOnizleme(null);
-        const d = await fetch(`/api/products/${urunId}/reviews`).then((r) => r.json());
+        const d = await fetch(`/api/products/${urunId}/reviews?sirala=${sirala}`).then((r) => r.json());
         setYorumlar((d.data?.yorumlar ?? []).map((y: { image_path?: string } & Record<string, unknown>) => ({ ...y, gorsel: y.image_path ? `/api/yorum-gorseli/${String(y.image_path).split("/").pop()}` : null })));
         setOrtalam(d.data?.ortalam_puan ?? 0);
         setSayi(d.data?.yorum_sayisi ?? 0);
@@ -103,7 +104,16 @@ export function Yorumlar({ urunId }: { urunId: number }) {
             Değerlendirmeler
           </h2>
           {sayi > 0 && (
-            <div className="flex items-center gap-2 pb-1">
+            <div className="flex items-center gap-3 pb-1">
+              <div className="flex overflow-hidden rounded-full border border-black/15">
+                {([["yeni", "En yeni"], ["yararli", "En yararlı"]] as const).map(([anahtar, etiket]) => (
+                  <button key={anahtar} type="button" onClick={() => setSirala(anahtar)}
+                          className={`px-3 py-1 text-[11px] font-bold transition ${sirala === anahtar ? "bg-black text-white" : "text-black/50 hover:text-black"}`}>
+                    {etiket}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
               <div className="flex text-amber-400">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star key={i} className={`h-4 w-4 ${i <= Math.round(ortalam) ? "fill-current" : "text-black/10"}`} />
@@ -111,6 +121,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
               </div>
               <span className="text-lg font-black">{ortalam.toFixed(1)}</span>
               <span className="text-sm text-black/40">({sayi})</span>
+              </div>
             </div>
           )}
         </div>
@@ -186,14 +197,19 @@ export function Yorumlar({ urunId }: { urunId: number }) {
               <p className="py-12 text-center text-sm text-black/40">Henüz değerlendirme yok. İlk yazan siz olun!</p>
             ) : (
               <div className="divide-y divide-black/10">
-                {yorumlar.map((y) => (
+                {yorumlar.map((y, i) => (
                   <div key={y.id} className="py-4">
                     <div className="flex items-center gap-3">
                       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/5 text-sm font-black text-black/50">
                         {y.user_name.charAt(0).toUpperCase()}
                       </span>
                       <div>
-                        <p className="text-sm font-bold text-black">{y.user_name}</p>
+                        <p className="flex items-center gap-2 text-sm font-bold text-black">
+                          {y.user_name}
+                          {i === 0 && sirala === "yararli" && (y.faydali ?? 0) > 0 && (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-700">⭐ En yararlı</span>
+                          )}
+                        </p>
                         <div className="flex items-center gap-1 text-amber-400">
                           {[1, 2, 3, 4, 5].map((i) => (
                             <Star key={i} className={`h-3 w-3 ${i <= y.rating ? "fill-current" : "text-black/10"}`} />

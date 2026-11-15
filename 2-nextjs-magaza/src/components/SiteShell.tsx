@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Globe, Moon, Sun, Menu, Bell } from "lucide-react";
+import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Globe, Moon, Sun, Menu, Bell, Ticket } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { auth } from "./AuthProvider";
 import { favori } from "./FavoriProvider";
@@ -409,6 +409,10 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
                       <ShoppingCart className="h-4 w-4" /> Siparişlerim
                     </a>
+                    <a href="/kuponlarim" onClick={() => setMenuAcik(false)}
+                       className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
+                      <Ticket className="h-4 w-4" /> Kuponlarım
+                    </a>
                     <a href="/hesabim" onClick={() => setMenuAcik(false)}
                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
                       <User className="h-4 w-4" /> Hesabım
@@ -538,6 +542,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 <a href="/sezon" className="hover:text-white transition">🗓️ Sezon Ürünleri</a>
                 <a href="/sepet" className="hover:text-white transition">Sepetim</a>
                 <a href="/siparislerim" className="hover:text-white transition">Siparişlerim</a>
+                <a href="/kuponlarim" className="hover:text-white transition">Kuponlarım</a>
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">

@@ -4,7 +4,7 @@ import { OTURUM_CEREZI } from "@/lib/kimlik";
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 
 /** "Hesabım" uçları: profil, şifre, adresler, favori/sepet durumu — müşterinin kendi oturumuyla. */
-const IZINLI = /^(profil|sifre|adresler(\/\d+)?|durum)$/;
+const IZINLI = /^(hesap|profil|sifre|adresler(\/\d+)?(\/varsayilan)?|durum)$/;
 
 async function ilet(request: NextRequest, yol: string[], method: string) {
   const hedef = yol.join("/");

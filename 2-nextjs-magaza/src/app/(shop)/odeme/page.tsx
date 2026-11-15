@@ -15,7 +15,7 @@ import { kdvDahil } from "@/lib/fiyat";
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
-type KayitliAdres = { id: number; baslik: string; ad_soyad: string; telefon: string; il: string; ilce: string; acik_adres: string };
+type KayitliAdres = { id: number; baslik: string; ad_soyad: string; telefon: string; il: string; ilce: string; acik_adres: string; is_default?: boolean };
 
 const etiket = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/50";
 const alan = "h-12 w-full border border-black/20 bg-white px-4 text-sm focus:border-black focus:outline-none";
@@ -90,7 +90,21 @@ export default function OdemeSayfasi() {
     if (kullanici.phone) setTelefon((t) => t || kullanici.phone!);
     fetch("/api/hesap/adresler")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setAdresler(d.data ?? []))
+      .then((d) => {
+        if (!d) return;
+        const liste: KayitliAdres[] = d.data ?? [];
+        setAdresler(liste);
+        // Varsayılan adres (yoksa ilk kayıt) forma önceden girilir — checkout seçili gelir
+        const onerilen = liste.find((a) => Boolean(a.is_default)) ?? liste[0];
+        if (onerilen) {
+          // Varsayılan adres yetkili kaynaktır — profil varsayılanlarını ezer (checkout seçili gelir)
+          setName(onerilen.ad_soyad);
+          setTelefon(onerilen.telefon);
+          setIl(onerilen.il);
+          setIlce(onerilen.ilce);
+          setAcikAdres(onerilen.acik_adres);
+        }
+      })
       .catch(() => {});
     fetch("/api/hesap/durum")
       .then((r) => (r.ok ? r.json() : null))

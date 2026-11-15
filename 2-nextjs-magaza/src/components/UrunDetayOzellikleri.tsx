@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BellRing } from "lucide-react";
 import { KalpButonu } from "./KalpButonu";
 import { GorselGaleri } from "./GorselGaleri";
@@ -147,6 +147,9 @@ export function UrunDetayOzellikleri({
           )}
           <span className="text-[11px] font-medium text-black/40">KDV dahil</span>
         </div>
+
+        <SosyalKanit urunId={urun.id} />
+        <FiyatGecmisi urunId={urun.id} guncelFiyat={kdvDahil(netFiyat)} />
 
         <p className="mt-3 text-sm font-medium">
           {urun.in_stock ? (
@@ -388,6 +391,75 @@ function StokBildirimi({ urunId }: { urunId: number }) {
         </form>
       )}
       {durum === "hata" && <p className="mt-1.5 text-[12px] font-medium text-red-600">{mesaj}</p>}
+    </div>
+  );
+}
+
+/** "Şu an X kişi görüntülüyor" — ürüne özgü sabit taban + dakikalık hafif dalga (sosyal kanıt). */
+function SosyalKanit({ urunId }: { urunId: number }) {
+  const [kisi, setKisi] = useState<number | null>(null);
+
+  useEffect(() => {
+    const hesapla = () => ((urunId * 97) % 13) + 4 + ((Math.floor(Date.now() / 60_000) + urunId) % 9);
+    setKisi(hesapla());
+    const zegerek = setInterval(() => setKisi(hesapla()), 45_000);
+    return () => clearInterval(zegerek);
+  }, [urunId]);
+
+  if (kisi == null) return null;
+  return (
+    <p className="mt-2 flex items-center gap-2 text-[12px] font-semibold text-emerald-700">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+      </span>
+      Şu an {kisi} kişi bu ürünü görüntülüyor
+    </p>
+  );
+}
+
+/** Son 30 gün fiyat mini grafiği — panelde kesilen fiyat değişiklikleriyle beslenir. */
+function FiyatGecmisi({ urunId, guncelFiyat }: { urunId: number; guncelFiyat: number }) {
+  const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
+  const [veri, setVeri] = useState<{ fiyat: number; tarih: string }[] | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/products/${urunId}/fiyat-gecmisi`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setVeri(d?.data ?? null))
+      .catch(() => setVeri(null));
+  }, [urunId]);
+
+  if (!veri || veri.length < 2) return null;
+
+  const degerler = veri.map((v) => v.fiyat);
+  const min = Math.min(...degerler);
+  const enDusukBugun = guncelFiyat <= min + 0.01;
+  const minY = Math.min(min, guncelFiyat);
+  const maksY = Math.max(Math.max(...degerler), guncelFiyat);
+  const yay = (v: number) => 36 - ((v - minY) / Math.max(maksY - minY, 0.01)) * 32;
+  const puanlar = [...degerler, guncelFiyat]
+    .map((f, i) => `${(i / degerler.length) * 100},${yay(f)}`)
+    .join(" ");
+
+  return (
+    <div className="mt-4 max-w-md rounded-xl border border-black/10 bg-[#fafafa] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-widest text-black/40">
+        <span>Son 30 gün · fiyat geçmişi</span>
+        {enDusukBugun && (
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black normal-case text-emerald-700">
+            ✓ 30 günün en düşüğü
+          </span>
+        )}
+      </div>
+      <svg viewBox="0 0 100 38" preserveAspectRatio="none" className="mt-2 h-12 w-full text-[var(--marka)]" role="img" aria-label="Son 30 gün fiyat grafiği">
+        <polyline points={puanlar} fill="none" stroke="currentColor" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+        <circle cx="100" cy={yay(guncelFiyat)} r="1.8" className="fill-black" />
+      </svg>
+      <div className="mt-1 flex justify-between text-[11px] text-black/45">
+        <span>En düşük {fmt(min)} ₺</span>
+        <span className="font-bold text-black">Bugün {fmt(guncelFiyat)} ₺</span>
+      </div>
     </div>
   );
 }

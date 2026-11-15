@@ -82,9 +82,14 @@ export type Siparis = {
   tax_rate?: number;
   tax_amount?: number;
   total: number;
+  /** Checkout'ta harcanan sadakat puanı (1 puan = 1 ₺, ara toplama işlenmiştir) */
+  kullanilan_puan?: number;
   iade_talebi?: IadeTalebi | null;
   iade_tutari?: number | null;
   created_at?: string;
+  paid_at?: string | null;
+  /** Kargoya verilme anı — sipariş zaman çizelgesi damgası */
+  shipped_at?: string | null;
   expires_at?: string | null;
   delivered_at?: string | null;
   /** Teslimden itibaren 14 günlük iade hakkının son anı */

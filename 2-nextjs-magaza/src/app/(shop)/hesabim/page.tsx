@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/components/AuthProvider";
 import { AuthModal } from "@/components/AuthModal";
 
-type Adres = { id: number; baslik: string; ad_soyad: string; telefon: string; il: string; ilce: string; acik_adres: string };
+type Adres = { id: number; baslik: string; ad_soyad: string; telefon: string; il: string; ilce: string; acik_adres: string; is_default?: boolean };
 
 const etiket = "mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-black/40";
 const alan = "h-11 w-full border border-black/15 bg-white px-3.5 text-sm focus:border-black focus:outline-none";
@@ -30,6 +30,10 @@ export default function HesabimSayfasi() {
   const [sadakatPuan, setSadakatPuan] = useState<number | null>(null);
   const [yeniAdres, setYeniAdres] = useState({ baslik: "", ad_soyad: "", telefon: "", il: "", ilce: "", acik_adres: "" });
   const [adresFormAcik, setAdresFormAcik] = useState(false);
+  const [hesapSilAcik, setHesapSilAcik] = useState(false);
+  const [hesapSilOnay, setHesapSilOnay] = useState("");
+  const [hesapSililiyor, setHesapSililiyor] = useState(false);
+  const [hesapSilHata, setHesapSilHata] = useState<string | null>(null);
 
   useEffect(() => {
     if (girisYapmis && kullanici) {
@@ -125,6 +129,30 @@ export default function HesabimSayfasi() {
     setAdresler((l) => l.filter((a) => a.id !== id));
   };
 
+  const adresVarsayilan = async (id: number) => {
+    try {
+      const yanit = await fetch(`/api/hesap/adresler/${id}/varsayilan`, { method: "POST" });
+      if (!yanit.ok) return;
+      setAdresler((l) => l.map((a) => ({ ...a, is_default: a.id === id })));
+    } catch {}
+  };
+
+  // KVKK "unutulma hakkı": hesabı ve kişisel verileri kalıcı sil/anonimleştir
+  const hesapSil = async () => {
+    setHesapSilHata(null);
+    setHesapSililiyor(true);
+    try {
+      const yanit = await fetch("/api/hesap", { method: "DELETE" });
+      const sonuc = await yanit.json().catch(() => ({}));
+      if (!yanit.ok) throw new Error(sonuc.message ?? "Hesap silinemedi.");
+      cikis();
+      router.push("/");
+    } catch (err) {
+      setHesapSilHata(err instanceof Error ? err.message : "Beklenmeyen hata.");
+      setHesapSililiyor(false);
+    }
+  };
+
   const kart = "rounded-2xl border border-black/10 bg-white p-6";
 
   return (
@@ -208,22 +236,64 @@ export default function HesabimSayfasi() {
             <div className="mt-4 space-y-3">
               {adresler.length === 0 && <p className="text-[13px] text-black/45">Kayıtlı adresiniz yok. Ödeme sırasında girdiğiniz adresi "hesabıma kaydet" ile buraya ekleyebilirsiniz.</p>}
               {adresler.map((a) => (
-                <div key={a.id} className="flex items-start justify-between gap-4 rounded-xl border border-black/10 p-4 text-[13px]">
+                <div key={a.id} className={`flex items-start justify-between gap-4 rounded-xl border p-4 text-[13px] ${Boolean(a.is_default) ? "border-emerald-300 bg-emerald-50/40" : "border-black/10"}`}>
                   <div>
-                    <p className="font-bold text-black">📍 {a.baslik} <span className="font-medium text-black/50">· {a.ad_soyad}</span></p>
+                    <p className="font-bold text-black">
+                      📍 {a.baslik}{" "}
+                      {Boolean(a.is_default) && <span className="ml-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">⭐ Varsayılan</span>}
+                      <span className="font-medium text-black/50"> · {a.ad_soyad}</span>
+                    </p>
                     <p className="mt-0.5 text-black/60">{a.telefon}</p>
                     <p className="mt-0.5 text-black/60">{a.acik_adres}, {a.ilce} / {a.il}</p>
                   </div>
-                  <button type="button" onClick={() => adresSil(a.id)} className="shrink-0 text-[11px] font-bold text-black/30 transition hover:text-red-600">Sil</button>
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    {!Boolean(a.is_default) && (
+                      <button type="button" onClick={() => adresVarsayilan(a.id)} className="text-[11px] font-bold text-black/40 transition hover:text-black">Varsayılan yap</button>
+                    )}
+                    <button type="button" onClick={() => adresSil(a.id)} className="text-[11px] font-bold text-black/30 transition hover:text-red-600">Sil</button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <button type="button" onClick={cikis}
-                  className="flex h-11 items-center gap-2 rounded-full border border-red-200 px-6 text-sm font-bold text-red-600 transition hover:bg-red-50">
-            Çıkış yap
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button type="button" onClick={cikis}
+                    className="flex h-11 items-center gap-2 rounded-full border border-red-200 px-6 text-sm font-bold text-red-600 transition hover:bg-red-50">
+              Çıkış yap
+            </button>
+          </div>
+
+          {/* KVKK "unutulma hakkı" — hesabı ve kişisel verileri sil */}
+          <div className="rounded-2xl border border-red-200 bg-red-50/50 p-6">
+            <h2 className="text-[14px] font-black text-red-700">Hesabımı sil</h2>
+            <p className="mt-1 text-xs leading-relaxed text-black/55">
+              KVKK kapsamındaki “unutulma hakkı” ile hesabınızı ve kişisel verilerinizi silebilirsiniz.
+              Faturalı siparişleriniz yasal saklama süresi boyunca anonimleştirilmiş biçimde korunur.
+              Bu işlem <b className="text-red-700">geri alınamaz</b>.
+            </p>
+            {hesapSilAcik ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-red-700">Eminseniz “SİL” yazın:</span>
+                <input value={hesapSilOnay} onChange={(e) => setHesapSilOnay(e.target.value)} placeholder="SİL"
+                       className="h-9 w-24 border border-red-300 bg-white px-2.5 text-sm focus:border-red-600 focus:outline-none" />
+                <button type="button" disabled={hesapSilOnay.trim().toUpperCase() !== "SİL" || hesapSililiyor} onClick={hesapSil}
+                        className="h-9 rounded-full bg-red-600 px-5 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40">
+                  {hesapSililiyor ? "Siliniyor…" : "Hesabımı kalıcı sil"}
+                </button>
+                <button type="button" onClick={() => { setHesapSilAcik(false); setHesapSilOnay(""); }}
+                        className="h-9 rounded-full border border-black/15 px-4 text-xs font-bold text-black/60 transition hover:border-black hover:text-black">
+                  Vazgeç
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setHesapSilAcik(true)}
+                      className="mt-3 h-9 rounded-full border border-red-300 px-5 text-xs font-bold text-red-600 transition hover:bg-red-100">
+                Hesabı sil
+              </button>
+            )}
+            {hesapSilHata && <p className="mt-2 text-xs font-semibold text-red-600">{hesapSilHata}</p>}
+          </div>
         </div>
       </div>
     </div>

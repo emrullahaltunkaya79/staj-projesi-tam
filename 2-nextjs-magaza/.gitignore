@@ -43,3 +43,4 @@ dev.log
 e2e/.sonuclar/
 playwright-report/
 .env.local
+storage-next.log
