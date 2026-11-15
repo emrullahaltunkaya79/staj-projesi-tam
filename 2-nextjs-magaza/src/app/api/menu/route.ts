@@ -46,6 +46,8 @@ export async function GET() {
           ad: u.name,
           fiyat: Math.round((u.final_price ?? u.sale_price) * KDV_ORANI * 100) / 100,
           stokta: Boolean(u.in_stock),
+          // varyantlı ürünlerde seçenek zorunlu — hızlı ekleme yalnız düz ürünlere açık
+          varyantYok: (u.varyant_adlari ?? []).length === 0,
         }));
 
     const data = Object.fromEntries(

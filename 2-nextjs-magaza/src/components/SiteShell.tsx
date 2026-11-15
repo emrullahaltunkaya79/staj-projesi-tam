@@ -29,7 +29,7 @@ const KATEGORI_LINKLERI = [
 ];
 
 export default function SiteShell({ children }: { children: React.ReactNode }) {
-  const { toplamAdet } = sepet();
+  const { toplamAdet, ekle } = sepet();
   const router = useRouter();
   const [bannerAcik, setBannerAcik] = useState(true);
   const [q, setQ] = useState("");
@@ -44,7 +44,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [bildirimAcik, setBildirimAcik] = useState(false);
   const [bildirimler, setBildirimler] = useState<{ baslik: string; metin: string; link: string; zaman: string }[]>([]);
   const [okunmamis, setOkunmamis] = useState(0);
-  const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[]; oneCikanlar?: { id: number; ad: string; fiyat: number; stokta: boolean }[] }> | null>(null);
+  const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[]; oneCikanlar?: { id: number; ad: string; fiyat: number; stokta: boolean; varyantYok?: boolean }[] }> | null>(null);
+  const [eklenenUrun, setEklenenUrun] = useState<number | null>(null);
   const [oneriler, setOneriler] = useState<{
     urunler: { id: number; name: string; brand?: string | null; fiyat: number; image: string | null }[];
     markalar: string[];
@@ -463,7 +464,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 {KATEGORI_LINKLERI.map((k) => (
                   <Link key={k} href={`/kategori/${encodeURIComponent(k)}`}
                         onClick={() => setTumKategorilerAcik(false)}
-                        className="flex items-center justify-between rounded-lg px-3 py-2 text-[13px] font-bold text-black/70 transition hover:bg-[var(--marka)]/10 hover:text-[var(--marka)]">
+                        className="flex items-center justify-between rounded-lg px-3 py-2 text-[13px] font-bold text-black/70 transition-all hover:translate-x-1 hover:bg-[var(--marka)]/10 hover:text-[var(--marka)]">
                     {k}
                     <ChevronRight className="h-3.5 w-3.5 text-black/25" />
                   </Link>
@@ -506,22 +507,44 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
 
-                {/* Sağ: ürün önizlemesi — hover'da tıklamadan gezinme */}
+                {/* Sağ: ürün önizlemesi — hover'da tıklamadan gezinme; kart hover'ında hızlı ekleme */}
                 <div>
                   <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Öne çıkanlar</p>
                   {(menuVerisi[megaAcik]?.oneCikanlar?.length ?? 0) > 0 ? (
                     <div className="grid grid-cols-4 gap-2.5">
                       {menuVerisi[megaAcik]?.oneCikanlar?.map((u) => (
-                        <a key={u.id} href={`/urun/${u.id}`}
-                           className="group rounded-xl border border-black/10 p-2 transition hover:border-[var(--marka)] hover:shadow-md">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={`/api/img/${u.id}`} alt={u.ad} loading="lazy"
-                               className="mx-auto h-16 w-full object-contain transition-transform duration-200 group-hover:-translate-y-0.5" />
-                          <p className="mt-1.5 line-clamp-2 min-h-[28px] text-[11px] font-semibold leading-tight text-black group-hover:text-[var(--marka)]">{u.ad}</p>
-                          <p className="mt-0.5 text-[11px] font-black tabular-nums text-black/70">
-                            {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(u.fiyat)} ₺
-                          </p>
-                        </a>
+                        <div key={u.id} className="group relative rounded-xl border border-black/10 p-2 transition hover:border-[var(--marka)] hover:shadow-md">
+                          <a href={`/urun/${u.id}`} className="block">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={`/api/img/${u.id}`} alt={u.ad} loading="lazy"
+                                 className="mx-auto h-16 w-full object-contain transition-transform duration-200 group-hover:-translate-y-0.5" />
+                            <p className="mt-1.5 line-clamp-2 min-h-[28px] text-[11px] font-semibold leading-tight text-black group-hover:text-[var(--marka)]">{u.ad}</p>
+                            <p className="mt-0.5 text-[11px] font-black tabular-nums text-black/70">
+                              {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(u.fiyat)} ₺
+                            </p>
+                          </a>
+                          {/* Hızlı sepete ekleme — yalnız seçenek gerektirmeyen stoktaki ürünlere */}
+                          {u.stokta && u.varyantYok && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                ekle({ id: u.id, ad: u.ad, fiyat: u.fiyat / 1.2, gorsel: `/api/img/${u.id}` }, 1);
+                                setEklenenUrun(u.id);
+                                setTimeout(() => setEklenenUrun((mevcut) => (mevcut === u.id ? null : mevcut)), 1600);
+                              }}
+                              aria-label={`${u.ad} — sepete ekle`}
+                              className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-black shadow transition-all ${
+                                eklenenUrun === u.id
+                                  ? "bg-emerald-600 text-white"
+                                  : "bg-black text-white opacity-0 group-hover:opacity-100 hover:scale-110"
+                              }`}
+                            >
+                              {eklenenUrun === u.id ? "✓" : "+"}
+                            </button>
+                          )}
+                        </div>
                       ))}
                     </div>
                   ) : (
