@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { BosDurum } from "@/components/BosDurum";
 
 import Link from "next/link";
@@ -14,6 +15,7 @@ const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigit
 
 export default function FavorilerSayfasi() {
   const { favoriler, cikar } = favori();
+  const [kopyalandi, setKopyalandi] = useState(false);
   const { ekle } = sepet();
 
   const sepeteEkle = (f: { id: number; ad: string; fiyat: number }) => {
@@ -36,13 +38,30 @@ export default function FavorilerSayfasi() {
             <span className="text-[13px] font-medium text-black/30">{favoriler.length} ürün</span>
           </div>
           {favoriler.length > 0 && (
-            <button
-              type="button"
-              onClick={tumunuSepeteEkle}
-              className="rounded-full bg-[var(--marka)] px-5 py-2.5 text-[13px] font-bold text-white transition hover:opacity-90 active:scale-95"
-            >
-              Tümünü Sepete Ekle ({favoriler.length})
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button"
+                      onClick={async () => {
+                        const baglanti = `${window.location.origin}/favoriler/paylasilan?ids=${favoriler.map((f) => f.id).join(",")}`;
+                        try {
+                          await navigator.clipboard.writeText(baglanti);
+                          setKopyalandi(true);
+                          setTimeout(() => setKopyalandi(false), 2000);
+                        } catch {
+                          window.prompt("Bu bağlantıyı kopyalayıp paylaş:", baglanti);
+                        }
+                      }}
+                      className="rounded-full border border-black/15 px-5 py-2.5 text-[13px] font-bold text-black/70 transition hover:border-black hover:text-black"
+              >
+                {kopyalandi ? "✓ Kopyalandı" : "Listeyi Paylaş"}
+              </button>
+              <button
+                type="button"
+                onClick={tumunuSepeteEkle}
+                className="rounded-full bg-[var(--marka)] px-5 py-2.5 text-[13px] font-bold text-white transition hover:opacity-90 active:scale-95"
+              >
+                Tümünü Sepete Ekle ({favoriler.length})
+              </button>
+            </div>
           )}
         </div>
 

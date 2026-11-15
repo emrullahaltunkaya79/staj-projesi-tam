@@ -20,12 +20,14 @@ class Contact extends Model
         'tax_number',
         'address',
         'balance',
+        'sadakat_puani',
     ];
 
     protected function casts(): array
     {
         return [
             'balance' => 'decimal:2',
+            'sadakat_puani' => 'integer',
         ];
     }
 

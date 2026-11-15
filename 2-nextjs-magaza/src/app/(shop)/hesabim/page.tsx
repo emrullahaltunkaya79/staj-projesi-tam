@@ -27,6 +27,7 @@ export default function HesabimSayfasi() {
   const [sifreHata, setSifreHata] = useState<string | null>(null);
 
   const [adresler, setAdresler] = useState<Adres[]>([]);
+  const [sadakatPuan, setSadakatPuan] = useState<number | null>(null);
   const [yeniAdres, setYeniAdres] = useState({ baslik: "", ad_soyad: "", telefon: "", il: "", ilce: "", acik_adres: "" });
   const [adresFormAcik, setAdresFormAcik] = useState(false);
 
@@ -37,6 +38,10 @@ export default function HesabimSayfasi() {
       fetch("/api/hesap/adresler")
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => d && setAdresler(d.data ?? []))
+        .catch(() => {});
+      fetch("/api/hesap/durum")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && setSadakatPuan(Number(d.data?.sadakat_puani ?? 0)))
         .catch(() => {});
     }
   }, [girisYapmis, kullanici?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -150,6 +155,19 @@ export default function HesabimSayfasi() {
           </form>
 
           {/* Şifre */}
+          <div className={kart}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-black">🎁 Sadakat Puanım</h2>
+                <p className="mt-1 text-xs text-black/45">Her 10 ₺'lik ödemede 1 puan kazanılır · 1 puan = 1 ₺ · ödeme adımında harcanabilir</p>
+              </div>
+              <p className="text-3xl font-black tabular-nums text-[var(--marka)]">{sadakatPuan ?? 0}</p>
+            </div>
+            <p className="mt-2 text-[11px] text-black/35">
+              Puanlar fatura kesildiğinde yüklenir · {sadakatPuan ? sadakatPuan.toLocaleString("tr-TR") : "0"} ₺ değerinde · checkout adımında harcanabilir
+            </p>
+          </div>
+
           <form onSubmit={sifreKaydet} className={kart}>
             <h2 className="text-[14px] font-black text-black">Şifre değiştir</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">

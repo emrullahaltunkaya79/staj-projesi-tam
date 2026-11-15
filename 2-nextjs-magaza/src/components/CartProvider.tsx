@@ -20,6 +20,8 @@ type SepetBaglami = {
   kdv: number;
   genelToplam: number;
       ekle: (yeniOge: Omit<SepetOgesi, "adet">, adet?: number, musait?: number) => void;
+  /** Çok öğeli ekleme (Tekrar Satın Al) — tek bildirimle hepsi sepete girer */
+  topluEkle: (ogeler: Omit<SepetOgesi, "adet">[], adetler: number[]) => void;
   adetGuncelle: (id: number, adet: number, varyantId?: number) => void;
   cikar: (id: number, varyantId?: number) => void;
   temizle: () => void;
@@ -116,6 +118,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           }
           return [...mevcut, { ...yeniOge, adet: eklenecek }];
         });
+      },
+      topluEkle: (yeniOgeler: Omit<SepetOgesi, "adet">[], adetler: number[]) => {
+        setOgeler((mevcut) => {
+          const harita = new Map<string, SepetOgesi>();
+          const anahtar = (o: SepetOgesi) => `${o.id}-${o.varyantId ?? 0}`;
+          for (const o of mevcut) harita.set(anahtar(o), o);
+          for (let i = 0; i < yeniOgeler.length; i++) {
+            const oge = yeniOgeler[i];
+            const adet = adetler[i] ?? 1;
+            const anahtarOge = `${oge.id}-${oge.varyantId ?? 0}`;
+            const varOlan = harita.get(anahtarOge);
+            if (varOlan) harita.set(anahtarOge, { ...varOlan, adet: varOlan.adet + adet });
+            else harita.set(anahtarOge, { ...oge, adet });
+          }
+          return [...harita.values()];
+        });
+        const ad = yeniOgeler.length === 1 ? yeniOgeler[0].ad : `${yeniOgeler.length} ürün`;
+        setBildirim({ ad, adet: yeniOgeler.length === 1 ? (adetler[0] ?? 1) : yeniOgeler.length, anahtar: Date.now() });
       },
       adetGuncelle: (id, adet, varyantId) =>
         setOgeler((mevcut) =>

@@ -152,6 +152,15 @@ class KatalogGenisletmeSeeder extends Seeder
                 'stock_quantity' => $stok,
             ]);
 
+            // Demo video bağlantıları (ürün video sekmesi) — kararlı arşiv videoları
+            $demoVideo = [
+                'Bluetooth Hoparlör 20W Su Geçirmez' => 'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+                'Akustik Gitar 41″ Başlangıç Seti Kılıf+Pena' => 'https://www.youtube.com/watch?v=jjCZZHUfEvU',
+            ];
+            if (isset($demoVideo[$ad])) {
+                $urun->update(['video_url' => $demoVideo[$ad]]);
+            }
+
             $yol = $this->gorselUret($urun, $kategoriAd, $marka, $indirim > 0 ? '%' . $indirim . ' İNDİRİM' : 'YENİ');
             if ($yol) {
                 ProductImage::create([

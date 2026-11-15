@@ -21,6 +21,7 @@ class ProductRequest extends FormRequest
             'brand' => ['nullable', 'string', 'max:120'],
             'model' => ['nullable', 'string', 'max:120'],
             'alt_kategori' => ['nullable', 'string', 'max:120'],
+            'video_url' => ['nullable', 'string', 'max:500'],
             'unit' => ['required', 'string', 'max:20'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],

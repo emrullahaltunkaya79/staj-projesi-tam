@@ -53,6 +53,7 @@ class ApiController extends Controller
                 'brand' => $p->brand,
                 'model' => $p->model,
                 'alt_kategori' => $p->alt_kategori,
+                'video_url' => $p->video_url,
                 'specs' => $p->specs,
                 'category' => $p->category?->name,
                 'unit' => $p->unit,
@@ -101,6 +102,7 @@ class ApiController extends Controller
                 'name' => $product->name,
                 'brand' => $product->brand,
                 'model' => $product->model,
+                'video_url' => $product->video_url,
                 'specs' => $product->specs,
                 'category' => $product->category?->name,
                 'unit' => $product->unit,
@@ -215,6 +217,7 @@ class ApiController extends Controller
             'hediye_notu' => ['nullable', 'string', 'max:300'],
             // cspr: online kripto (QR) · kapida: kapıda ödeme (+hizmet bedeli mağazada işlenir) · havale: banka transferi
             'payment_method' => ['nullable', 'in:cspr,kapida,havale'],
+            'puan_kullan' => ['nullable', 'boolean'],
             'fatura_tipi' => ['nullable', 'in:bireysel,kurumsal'],
             'fatura_unvan' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:255'],
             'vergi_dairesi' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:100'],
@@ -303,6 +306,7 @@ class ApiController extends Controller
                 'created_at' => $o->created_at->toIso8601String(),
                 'tracking_no' => $o->tracking_no,
                 'tracking_url' => $o->trackingUrl(),
+                'items' => $o->items,
             ])->values(),
         ]);
     }
@@ -654,6 +658,7 @@ class ApiController extends Controller
                 'brand' => $p->brand,
                 'model' => $p->model,
                 'alt_kategori' => $p->alt_kategori,
+                'video_url' => $p->video_url,
                 'category' => $p->category?->name,
                 'sale_price' => (float) $p->sale_price,
                 'discount_percent' => $p->discount_percent !== null ? (int) $p->discount_percent : null,

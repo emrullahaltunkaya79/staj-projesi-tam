@@ -59,6 +59,13 @@
         </div>
 
         <div>
+            <label class="label" for="video_url">Ürün Videosu (YouTube)</label>
+            <input type="url" id="video_url" name="video_url" value="{{ old('video_url', $product->video_url) }}"
+                   class="input font-mono text-xs" placeholder="https://www.youtube.com/watch?v=...">
+            @error('video_url') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <label class="label" for="barcode">Barkod <span class="font-normal text-slate-400">(EAN/POS)</span></label>
             <input type="text" id="barcode" name="barcode" value="{{ old('barcode', $product->barcode) }}"
                    class="input" placeholder="8690000000000">

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/components/AuthProvider";
 import { AuthModal } from "@/components/AuthModal";
 import { SiparisSorgulaFormu } from "@/components/SiparisSorgulaFormu";
+import { sepet } from "@/components/CartProvider";
 
 type SiparisOzeti = {
   order_no: string;
@@ -13,12 +15,17 @@ type SiparisOzeti = {
   total: number;
   invoice_no?: string | null;
   created_at: string;
+  items?: { product_id: number; product_name: string; quantity: number; unit_price: number; variant_id?: number | null }[];
 };
+
+const satisIptalEdilebilir = ["pending", "paid"];
 
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
 export default function Siparislerim() {
   const { kullanici, girisYapmis, emailDogrula } = auth();
+  const router = useRouter();
+  const { topluEkle } = sepet();
   const [siparisler, setSiparisler] = useState<SiparisOzeti[] | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
@@ -180,7 +187,28 @@ export default function Siparislerim() {
                   <span className="text-base font-black tabular-nums">{fmt(s.total)} ₺</span>
                   <span className="text-black/25 transition group-hover/link:translate-x-1 group-hover/link:text-black">→</span>
                 </Link>
-                {["pending", "paid"].includes(s.status) && (
+                {(s.items?.length ?? 0) > 0 && (
+                  <button type="button"
+                          onClick={() => {
+                            topluEkle(
+                              (s.items ?? []).map(function (k) {
+                                return {
+                                  id: k.product_id,
+                                  ad: k.product_name,
+                                  fiyat: k.unit_price,
+                                  gorsel: `/api/img/${k.product_id}`,
+                                  varyantId: k.variant_id ?? undefined,
+                                };
+                              }),
+                              (s.items ?? []).map(function (k) { return k.quantity; }),
+                            );
+                            router.push("/sepet");
+                          }}
+                          className="shrink-0 rounded-full border border-black/15 px-3.5 py-1.5 text-[11px] font-bold text-black/70 transition hover:border-black hover:bg-black/5">
+                          Tekrar Satın Al
+                        </button>
+                )}
+                {satisIptalEdilebilir.includes(s.status) && (
                   <button type="button" onClick={() => iptalEt(s.order_no)} disabled={iptalEdilen === s.order_no}
                           className="shrink-0 rounded-full border border-red-200 px-3.5 py-1.5 text-[11px] font-bold text-red-600 transition hover:border-red-600 hover:bg-red-50 disabled:opacity-50">
                     {iptalEdilen === s.order_no ? "İptal ediliyor…" : "İptal Et"}

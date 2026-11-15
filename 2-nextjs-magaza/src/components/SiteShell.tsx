@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Globe, Moon, Sun, Menu } from "lucide-react";
+import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Globe, Moon, Sun, Menu, Bell } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { auth } from "./AuthProvider";
 import { favori } from "./FavoriProvider";
@@ -42,6 +42,9 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [aramaOdak, setAramaOdak] = useState(false);
   const [megaAcik, setMegaAcik] = useState<string | null>(null);
   const [tumKategorilerAcik, setTumKategorilerAcik] = useState(false);
+  const [bildirimAcik, setBildirimAcik] = useState(false);
+  const [bildirimler, setBildirimler] = useState<{ baslik: string; metin: string; link: string; zaman: string }[]>([]);
+  const [okunmamis, setOkunmamis] = useState(0);
   const [menuVerisi, setMenuVerisi] = useState<Record<string, { urun: number; markalar: { ad: string; sayi: number }[] }> | null>(null);
   const [oneriler, setOneriler] = useState<{
     urunler: { id: number; name: string; brand?: string | null; fiyat: number; image: string | null }[];
@@ -50,6 +53,22 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   } | null>(null);
   const [sonAramalar, setSonAramalar] = useState<string[]>([]);
   const [seciliOneri, setSeciliOneri] = useState(-1);
+
+  // Bildirim zili: oturum açıkken son sipariş durumlarını çeker, zil tıklanınca okunur işaretlenir
+  useEffect(() => {
+    if (!girisYapmis) { setBildirimler([]); setOkunmamis(0); return; }
+    fetch("/api/bildirimlerim")
+      .then((r) => r.json())
+      .then((d) => {
+        const liste = d.data?.bildirimler ?? [];
+        setBildirimler(liste);
+        const sonGoruldu = localStorage.getItem("hba-bildirim-goruldu") ?? "";
+        const yeni = liste.filter((b: { zaman: string }) => b.zaman > sonGoruldu).length;
+        setOkunmamis(yeni);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [girisYapmis, kullanici?.email]);
 
   const POPULER_ARAMALAR = ["Kulaklık", "Projeksiyon", "Akıllı Saat", "Drone", "Klavye", "Hoparlör"];
 
@@ -313,6 +332,42 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 <span className="text-xs font-bold tabular-nums">{favoriSayi}</span>
               )}
             </a>
+            {girisYapmis && (
+              <div className="relative">
+                <button type="button" aria-label="Bildirimler"
+                        onClick={() => {
+                          const acilacak = !bildirimAcik;
+                          setBildirimAcik(acilacak);
+                          if (acilacak) {
+                            localStorage.setItem("hba-bildirim-goruldu", new Date().toISOString());
+                            setOkunmamis(0);
+                          }
+                        }}
+                        className="relative flex items-center text-black/55 transition hover:text-[var(--marka)]">
+                  <Bell className="h-5 w-5" strokeWidth={1.8} />
+                  {okunmamis > 0 && (
+                    <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--marka)] px-1 text-[10px] font-bold text-white tabular-nums">{okunmamis}</span>
+                  )}
+                </button>
+                {bildirimAcik && (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-black/10 bg-white shadow-xl">
+                    <div className="border-b border-black/10 px-4 py-3 text-sm font-bold text-black">Bildirimler</div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {bildirimler.length === 0 && (
+                        <p className="px-4 py-6 text-center text-xs text-black/40">Yeni bildirim yok.</p>
+                      )}
+                      {bildirimler.map((b, i) => (
+                        <a key={i} href={b.link} onClick={() => setBildirimAcik(false)}
+                           className="block border-b border-black/5 px-4 py-3 transition hover:bg-black/5 last:border-0">
+                          <p className="text-[13px] font-semibold text-black">{b.baslik}</p>
+                          <p className="mt-0.5 text-[11px] text-black/45">{b.metin}</p>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <a href="/sepet" aria-label="Sepet" data-sepet-hedef className="relative flex items-center gap-1.5 rounded-full bg-[var(--marka)] px-3.5 py-2 text-white transition hover:opacity-90 active:scale-95">
               <ShoppingCart className="h-4 w-4" strokeWidth={2} />
               <span className="text-sm font-bold tabular-nums">{toplamAdet}</span>

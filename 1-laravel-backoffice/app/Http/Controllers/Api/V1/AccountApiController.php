@@ -115,10 +115,15 @@ class AccountApiController extends Controller
     {
         $kayit = DB::table('customer_states')->where('user_id', $request->user()->id)->first();
 
+        $puan = \App\Models\Contact::where('company_id', $request->user()->company_id)
+            ->where('email', $request->user()->email)
+            ->value('sadakat_puani');
+
         return response()->json([
             'data' => [
                 'favoriler' => $kayit ? json_decode($kayit->favoriler ?? '[]', true) : [],
                 'sepet' => $kayit ? json_decode($kayit->sepet ?? '[]', true) : [],
+                'sadakat_puani' => (int) ($puan ?? 0),
             ],
         ]);
     }

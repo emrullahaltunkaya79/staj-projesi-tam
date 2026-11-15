@@ -23,7 +23,8 @@ class Product extends Model
         'discount_percent',
         'stock_quantity',
         'reserved_quantity',
-    ];
+    
+        'video_url',];
 
     /** İndirim uygulanmış nihai satış fiyatı. */
     public function finalPrice(): float

@@ -6,6 +6,7 @@ import { KalpButonu } from "./KalpButonu";
 import { GorselGaleri } from "./GorselGaleri";
 import { StokAciliyet } from "./StokAciliyet";
 import { VaryasyonSecici, urunVaryasyonlari } from "./VaryasyonSecici";
+import { BedenRehberi } from "./BedenRehberi";
 import { SepeteEkleButonu } from "./SepeteEkleButonu";
 import { indirimliFiyat } from "@/lib/backoffice";
 import { GeriSayim } from "./GeriSayim";
@@ -31,6 +32,7 @@ export function UrunDetayOzellikleri({
     code: string | null;
     barcode: string | null;
     category: string | null;
+    video_url?: string | null;
     unit: string;
     sale_price: number;
     discount_percent?: number | null;
@@ -50,6 +52,7 @@ export function UrunDetayOzellikleri({
 }) {
   const [secimler, setSecimler] = useState<Record<string, string>>({});
   const [seciliVaryantId, setSeciliVaryantId] = useState<number | null>(null);
+  const [galeriSekmesi, setGaleriSekmesi] = useState<string>("foto");
   const [kombiRenk, setKombiRenk] = useState<string | null>(null);
   const [kombiBeden, setKombiBeden] = useState<string | null>(null);
   const indirim = urun.discount_percent ?? 0;
@@ -71,16 +74,39 @@ export function UrunDetayOzellikleri({
     <>
       {/* Görsel galerisi */}
       <div className="relative">
-        <GorselGaleri
-          urunAd={urun.name}
-          gorseller={Array.from({ length: Math.max(1, urun.image_count ?? 1) }, (_, i) => `/api/img/${urun.id}?v=${i}`)}
-        />
-        <div className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-2 shadow backdrop-blur">
-          <KalpButonu
-            urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
-            boyut="buyuk"
-          />
-        </div>
+        {urun.video_url && (
+          <div className="mb-3 flex gap-2">
+            {[["foto", "📷 Fotoğraflar"], ["video", "🎬 Video"]].map(function ([anahtar, etiket]) {
+              const aktif = galeriSekmesi === anahtar;
+              return (
+                <button key={anahtar} type="button" onClick={() => setGaleriSekmesi(anahtar)}
+                        className={`rounded-full border px-4 py-1.5 text-[12px] font-bold transition ${aktif ? "border-black bg-black text-white" : "border-black/15 text-black/60 hover:border-black/40"}`}>
+                  {etiket}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {galeriSekmesi === "video" && urun.video_url ? (
+          <div className="aspect-video w-full overflow-hidden rounded-2xl border border-black/10 bg-black">
+            <iframe src={urun.video_url.replace("watch?v=", "embed/")} title="Ürün videosu"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen className="h-full w-full" />
+          </div>
+        ) : (
+          <>
+            <GorselGaleri
+              urunAd={urun.name}
+              gorseller={Array.from({ length: Math.max(1, urun.image_count ?? 1) }, (_, i) => `/api/img/${urun.id}?v=${i}`)}
+            />
+            <div className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-2 shadow backdrop-blur">
+              <KalpButonu
+                urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
+                boyut="buyuk"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Bilgi kolonu */}
@@ -191,6 +217,9 @@ export function UrunDetayOzellikleri({
                         </button>
                       ))
                     : <p className="text-xs text-black/40">Önce renk seçin.</p>}
+                </div>
+                <div className="mt-2">
+                  <BedenRehberi kategoriAd={urun.category} />
                 </div>
               </div>
             </div>

@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
       hediyePaket: Boolean(govde.hediyePaket),
       hediyeNotu: govde.hediyeNotu ? String(govde.hediyeNotu).slice(0, 300) : null,
       odemeYontemi: yontem as "cspr" | "kapida" | "havale",
+      puanKullan: Boolean(govde.puanKullan),
       fatura: {
         tipi: govde.fatura?.tipi === "kurumsal" ? "kurumsal" : "bireysel",
         ...(govde.fatura?.tipi === "kurumsal"

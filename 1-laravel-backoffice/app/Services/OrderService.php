@@ -137,6 +137,16 @@ class OrderService
                 ];
             }
 
+            // Sadakat puanı harcama: 1 puan = 1 ₺ (KDV hariç), en fazla ara toplamın yarısı
+            $puanIndirimi = 0;
+            if (! empty($data['puan_kullan']) && (int) $contact->sadakat_puani > 0) {
+                $puanIndirimi = min((int) $contact->sadakat_puani, (int) floor($subtotal / 2));
+                if ($puanIndirimi > 0) {
+                    $contact->decrement('sadakat_puani', $puanIndirimi);
+                    $subtotal = round($subtotal - $puanIndirimi, 2);
+                }
+            }
+
             $taxRate = (float) ($data['tax_rate'] ?? 20);
             $taxAmount = round($subtotal * $taxRate / 100, 2);
             $total = round($subtotal + $taxAmount, 2);
@@ -159,6 +169,7 @@ class OrderService
                 'hediye_paket' => (bool) ($data['hediye_paket'] ?? false),
                 'hediye_notu' => $data['hediye_notu'] ?? null,
                 'payment_method' => in_array($data['payment_method'] ?? 'cspr', ['cspr', 'kapida', 'havale'], true) ? ($data['payment_method'] ?? 'cspr') : 'cspr',
+                'kullanilan_puan' => $puanIndirimi,
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'tax_rate' => $taxRate,
@@ -236,6 +247,9 @@ class OrderService
                     new \App\Mail\OrderConfirmationMail($order->fresh())
                 );
             }
+
+            // Sadakat puanı kazanımı: her 10 ₺'lik ödemede 1 puan
+            $order->contact->increment('sadakat_puani', (int) floor((float) $order->total / 10));
 
             return $order->fresh();
         });

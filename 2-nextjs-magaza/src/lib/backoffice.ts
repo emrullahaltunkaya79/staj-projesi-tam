@@ -209,6 +209,8 @@ export type SiparisVerisi = {
   hediyeNotu: string | null;
   /** cspr: online kripto (QR) · kapida: kapıda ödeme (+hizmet bedeli) · havale: banka transferi (%2 indirim) */
   odemeYontemi?: "cspr" | "kapida" | "havale";
+  /** Sadakat puanı harcama — 1 puan = 1 ₺, en fazla ara toplamın yarısı */
+  puanKullan?: boolean;
   fatura: { tipi: "bireysel" | "kurumsal"; unvan?: string; vergiDairesi?: string; vergiNo?: string; adres?: string };
 };
 
@@ -234,6 +236,7 @@ export async function siparisOlustur(veri: SiparisVerisi): Promise<{ orderNo: st
       hediye_paket: veri.hediyePaket,
       hediye_notu: veri.hediyeNotu,
       payment_method: veri.odemeYontemi ?? "cspr",
+      puan_kullan: veri.puanKullan ?? false,
       fatura_tipi: veri.fatura.tipi,
       ...(veri.fatura.tipi === "kurumsal"
         ? { fatura_unvan: veri.fatura.unvan, vergi_dairesi: veri.fatura.vergiDairesi, vergi_no: veri.fatura.vergiNo }

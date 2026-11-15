@@ -54,6 +54,9 @@ export default function OdemeSayfasi() {
 
   // Ödeme yöntemi
   const [odemeYontemi, setOdemeYontemi] = useState<"cspr" | "kapida" | "havale">("cspr");
+  const [taksitAcik, setTaksitAcik] = useState(false);
+  const [puanKullanilsin, setPuanKullanilsin] = useState(false);
+  const [sadakatPuanim, setSadakatPuanim] = useState(0);
 
   // Hesaba kayıtlı adresler (giriş yapmış müşteri)
   const [adresler, setAdresler] = useState<KayitliAdres[]>([]);
@@ -75,7 +78,10 @@ export default function OdemeSayfasi() {
   const toplamKargo = ucretsizKargo || !bolge ? 0 : bolge.fiyat;
   const indirimTutari = kupon ? kupon.discount : 0;
   const havaleIndirimi = odemeYontemi === "havale" ? Math.round((genelToplam - indirimTutari) * HAVALE_ORANI * 100) / 100 : 0;
-  const odenecekTutar = Math.max(0, genelToplam - indirimTutari - havaleIndirimi) + toplamKargo + (odemeYontemi === "kapida" ? KAPIDA_BEDEL : 0);
+  // Sadakat puanı: 1 puan = 1 ₺, en fazla ara toplamın yarısı (sunucu da aynı kuralı uygular)
+  const kullanilabilirPuan = Math.min(sadakatPuanim, Math.floor((genelToplam - indirimTutari) / 2));
+  const puanIndirimi = puanKullanilsin && kullanilabilirPuan > 0 ? kullanilabilirPuan : 0;
+  const odenecekTutar = Math.max(0, genelToplam - indirimTutari - havaleIndirimi - puanIndirimi) + toplamKargo + (odemeYontemi === "kapida" ? KAPIDA_BEDEL : 0);
 
   useEffect(() => {
     if (!kullanici) return;
@@ -85,6 +91,10 @@ export default function OdemeSayfasi() {
     fetch("/api/hesap/adresler")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setAdresler(d.data ?? []))
+      .catch(() => {});
+    fetch("/api/hesap/durum")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setSadakatPuanim(Number(d.data?.sadakat_puani ?? 0)))
       .catch(() => {});
   }, [kullanici?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -157,6 +167,7 @@ export default function OdemeSayfasi() {
           hediyePaket: hediye,
           hediyeNotu: hediye ? hediyeNotu.trim() : null,
           odemeYontemi,
+          puanKullan: puanIndirimi > 0,
           couponCode: kupon?.code ?? null,
           fatura: {
             tipi: faturaTipi,
@@ -386,6 +397,58 @@ export default function OdemeSayfasi() {
                   Kapıda ödeme hizmet bedeli sipariş tutarına eklenir.
                 </div>
               )}
+
+              <button type="button" onClick={() => setTaksitAcik(true)}
+                      className="mt-3 flex items-center gap-1.5 text-[12px] font-bold text-black/45 underline underline-offset-2 transition hover:text-black">
+                💳 Taksit seçenekleri ve ödeme bilgileri
+              </button>
+
+              {taksitAcik && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Taksit seçenekleri">
+                  <button type="button" aria-label="Kapat" onClick={() => setTaksitAcik(false)}
+                          className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-[2px]" />
+                  <div className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+                    <button type="button" onClick={() => setTaksitAcik(false)} aria-label="Kapat"
+                            className="absolute right-4 top-4 text-black/30 transition hover:text-black">✕</button>
+                    <p className="text-base font-black text-black">Taksit Seçenekleri</p>
+                    <p className="mt-1 text-xs text-black/45">Kredi kartına taksit · faizsiz demo hesap · bugünkü tutara göre</p>
+
+                    <table className="mt-4 w-full border-collapse text-left text-[13px]">
+                      <thead>
+                        <tr className="border-b border-black/15 text-[11px] font-bold uppercase tracking-wide text-black/50">
+                          <th className="py-2 pr-2">Taksit</th>
+                          <th className="py-2 pr-2">Aylık</th>
+                          <th className="py-2">Toplam</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[1, 3, 6, 9, 12].map(function (n) {
+                          const oran = n === 1 ? 1 : n === 3 ? 1.02 : n === 6 ? 1.04 : n === 9 ? 1.06 : 1.08;
+                          const toplam = Math.round(odenecekTutar * oran * 100) / 100;
+                          return (
+                            <tr key={n} className="border-b border-black/5 last:border-0">
+                              <td className="py-2 font-bold text-black">{n === 1 ? "Peşin" : n + " taksit"}</td>
+                              <td className="py-2 text-black/70">{n === 1 ? "—" : fmt(Math.round(toplam / n * 100) / 100) + " ₺ × " + n}</td>
+                              <td className="py-2 font-semibold text-black">{fmt(toplam)} ₺</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                    <p className="mt-2 text-[11px] text-black/40">* Temsili tablodur — kesin taksit seçenekleri bankanıza göre değişir. Online ödemede kart ile peşin fiyat geçerlidir.</p>
+
+                    <div className="mt-4 space-y-2 rounded-xl bg-[#f8f8f8] p-3 text-[12px] leading-relaxed text-black/60">
+                      <p><b>🏦 Havale/EFT:</b> HepsiBirarada Ticaret A.Ş. · TR33 0006 1005 1978 6457 8413 26 — açıklamaya sipariş numaranızı yazın.</p>
+                      <p><b>🚚 Kapıda Ödeme:</b> +25,00 ₺ hizmet bedeli ile kargoya teslimde tahsil edilir.</p>
+                    </div>
+
+                    <button type="button" onClick={() => setTaksitAcik(false)}
+                            className="mt-4 h-11 w-full rounded-full bg-black text-sm font-bold text-white transition hover:bg-black/80">
+                      Anladım
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
 
             {hata && <div className="border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{hata}</div>}
@@ -460,6 +523,12 @@ export default function OdemeSayfasi() {
                 <div className="flex justify-between text-emerald-600">
                   <span>Havale/EFT indirimi (%2)</span>
                   <span className="font-bold tabular-nums">−{fmt(havaleIndirimi)} ₺</span>
+                </div>
+              )}
+              {puanIndirimi > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Sadakat puanı ({fmt(puanIndirimi)} puan)</span>
+                  <span className="font-bold tabular-nums">−{fmt(puanIndirimi)} ₺</span>
                 </div>
               )}
               <div className="flex justify-between text-black/60">
