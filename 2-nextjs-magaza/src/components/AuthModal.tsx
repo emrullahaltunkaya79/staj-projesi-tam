@@ -173,6 +173,12 @@ export function AuthModal({ acik, kapat }: { acik: boolean; kapat: () => void })
               </label>
               <input required type="password" minLength={8} value={sifre} onChange={(e) => setSifre(e.target.value)}
                      placeholder="En az 8 karakter" className={girisAlani} />
+              {mod === "giris" && (
+                <button type="button" onClick={() => { setMod("sifirla"); setHata(null); setBilgi(null); setKod(""); }}
+                        className="mt-1.5 ml-auto block text-[11px] font-bold text-black/45 transition hover:text-black">
+                  Şifremi unuttum?
+                </button>
+              )}
             </div>
           )}
 
@@ -249,16 +255,10 @@ export function AuthModal({ acik, kapat }: { acik: boolean; kapat: () => void })
         </form>
 
         {mod === "giris" && (
-          <>
-            <button type="button" onClick={() => { setMod("sifirla"); setHata(null); setBilgi(null); setKod(""); }}
-                    className="mt-3 w-full text-left text-xs font-bold text-black/50 underline underline-offset-4 transition hover:text-black">
-              Şifremi unuttum
-            </button>
-            <button type="button" onClick={() => { setMod("kayit"); setHata(null); setBilgi(null); }}
-                    className="mt-3 w-full text-center text-xs font-bold text-black/50 underline underline-offset-4 transition hover:text-black">
-              Hesabınız yok mu? Üye olun
-            </button>
-          </>
+          <button type="button" onClick={() => { setMod("kayit"); setHata(null); setBilgi(null); }}
+                  className="mt-4 w-full text-center text-xs font-bold text-black/50 underline underline-offset-4 transition hover:text-black">
+            Hesabınız yok mu? Üye olun
+          </button>
         )}
 
         {(mod === "kayit" || mod === "sifirla" || mod === "sifirla-kod") && (
