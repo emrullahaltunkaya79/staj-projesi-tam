@@ -5,7 +5,11 @@ import Link from "next/link";
 import { ArrowUp, ShoppingCart } from "lucide-react";
 import { sepet } from "./CartProvider";
 
-/** Scroll-to-top butonu + mobilde alt kısımda sabit "Sepete Git" çubuğu. */
+/**
+ * Scroll-to-top butonu + mobilde alt kısımda sabit "Sepete Git" çubuğu.
+ * Düğme, LiveChat balonunun (bottom-5, h-14) hemen üstüne yerleşir — üstüne binirse
+ * tıklamalar sohbete gider ve yukarı çıkma çalışmaz.
+ */
 export function KaydirmaYardimcisi() {
   const { toplamAdet, genelToplam } = sepet();
   const [goster, setGoster] = useState(false);
@@ -24,7 +28,7 @@ export function KaydirmaYardimcisi() {
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Yukarı çık"
-          className="fixed bottom-20 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black shadow-xl transition hover:bg-black hover:text-white active:scale-95 sm:bottom-6"
+          className="fixed bottom-[88px] right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black shadow-xl transition hover:bg-black hover:text-white active:scale-95"
         >
           <ArrowUp className="h-5 w-5" />
         </button>
