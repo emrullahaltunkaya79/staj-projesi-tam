@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'verification_token',
+        'iki_adim',
     ];
 
     protected $hidden = [
@@ -33,6 +34,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'iki_adim' => 'boolean',
+            'iki_adim_son' => 'datetime',
         ];
     }
 
