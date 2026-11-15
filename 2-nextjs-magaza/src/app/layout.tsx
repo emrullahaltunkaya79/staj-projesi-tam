@@ -4,7 +4,6 @@ import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { FavoriProvider } from "@/components/FavoriProvider";
-import { DilProvider } from "@/components/DilProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col font-sans">
         <AuthProvider>
           <FavoriProvider>
-            <DilProvider>{children}</DilProvider>
+            {children}
           </FavoriProvider>
         </AuthProvider>
         {/* Service worker statik parçaları önbellekten sunar; geliştirmede hash'siz parçalar

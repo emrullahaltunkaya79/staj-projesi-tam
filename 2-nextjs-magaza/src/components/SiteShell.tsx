@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Globe, Moon, Sun, Menu, Bell, Ticket } from "lucide-react";
+import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Moon, Sun, Menu, Bell, Ticket } from "lucide-react";
 import { sepet } from "./CartProvider";
 import { auth } from "./AuthProvider";
 import { favori } from "./FavoriProvider";
 import { DarkModeToggle, karanlikModKullan } from "./DarkModeToggle";
-import { dil } from "./DilProvider";
 import { LiveChat } from "./LiveChat";
 import { CerezAyarlariDugmesi, CerezOnayi } from "./CerezOnayi";
 import { cerezKategorisiAktif } from "@/lib/cerez";
@@ -35,7 +34,6 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const [q, setQ] = useState("");
   const { kullanici, girisYapmis, cikis } = auth();
   const { sayi: favoriSayi } = favori();
-  const { dil: aktifDil, dilDegistir, cevir } = dil();
   const { dark: karanlik, degistir: karanlikDegistir } = karanlikModKullan();
   const [authModalAcik, setAuthModalAcik] = useState(false);
   const [menuAcik, setMenuAcik] = useState(false);
@@ -163,15 +161,15 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       {bannerAcik && (
         <div className="relative bg-[#334155] px-3 py-1 text-center">
           <p className="text-[11px] font-medium text-white/85 sm:text-xs">
-            {cevir("banner_ilk")} <strong className="font-black text-white">{cevir("banner_indirim")}</strong> — {cevir("banner_kupon")}{" "}
+            İlk siparişine <strong className="font-black text-white">%15 indirim</strong> — Kupon:{" "}
             <code className="rounded bg-white/15 px-1.5 py-px font-mono text-[10px] font-bold text-white">ILKSIPARIS</code>
             <span className="mx-2 text-white/25">·</span>
-            {cevir("banner_kargo")}
+            2.000 ₺ üzeri ÜCRETSİZ kargo!
             <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 align-middle text-[10px] font-bold text-white">
               ⏳ <GeriSayim />
             </span>
           </p>
-          <button type="button" onClick={() => setBannerAcik(false)} aria-label={cevir("ac_kapa")}
+          <button type="button" onClick={() => setBannerAcik(false)} aria-label="Kapat"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-white/50 transition hover:text-white">✕</button>
         </div>
       )}
@@ -182,7 +180,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--marka)] text-[17px] font-black text-white">hb</span>
             <span>
               <span className="block text-[24px] font-black tracking-[-0.03em] text-black sm:text-[30px]">HepsiBirarada<span className="text-[var(--marka)]">.</span></span>
-              <span className="block text-[10.5px] font-medium tracking-wide text-black/45">{cevir("logo_slogan")}</span>
+              <span className="block text-[10.5px] font-medium tracking-wide text-black/45">Teknoloji & Ofis — her şey tek yerde</span>
             </span>
           </a>
 
@@ -191,8 +189,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             <form onSubmit={(e) => ara(e)} className="flex h-10 w-full items-center overflow-hidden rounded-lg border border-black/15 bg-[#f8f8f8]">
               <input value={q} onChange={(e) => { setQ(e.target.value); setSeciliOneri(-1); }} onFocus={() => setAramaOdak(true)}
                      onKeyDown={onAramaKlavye}
-                     placeholder={cevir("urun_ara")}
-                     aria-label={cevir("ara_aria")}
+                     placeholder="Ürün, marka veya kategori ara…"
+                     aria-label="Ürün, marka veya kategori ara"
                      className="h-full flex-1 bg-transparent px-4 text-sm text-black placeholder-black/35 focus:outline-none" />
               <button type="submit" aria-label="Ara" className="flex h-full w-11 items-center justify-center text-white transition bg-[var(--marka)] hover:opacity-90">
                 <Search className="h-4 w-4" />
@@ -229,7 +227,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                     {oneriler.urunler.length > 0 && (
                       <>
                         <p className="mb-1.5 flex items-baseline justify-between text-[10px] font-bold uppercase tracking-widest text-black/40">
-                          {cevir("urunler_baslik")}
+                          Ürünler
                           <span className="font-medium normal-case tracking-normal text-black/30">↑ ↓ ile seç · Enter</span>
                         </p>
                         <div className="space-y-0.5">
@@ -260,7 +258,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                     )}
                     {oneriler.markalar.length > 0 && (
                       <div className="mt-2 border-t border-black/10 pt-2">
-                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">{cevir("markalar_baslik")}</p>
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Markalar</p>
                         <div className="flex flex-wrap gap-1.5">
                           {oneriler.markalar.map((m) => (
                             <button
@@ -280,7 +278,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                   <>
                     {sonAramalar.length > 0 && (
                       <>
-                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">{cevir("son_aramalar")}</p>
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40">Son Aramalar</p>
                         <div className="mb-2 flex flex-wrap gap-1.5 border-b border-black/10 pb-2">
                           {sonAramalar.map((terim) => (
                             <button
@@ -295,7 +293,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                         </div>
                       </>
                     )}
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">{cevir("populer_aramalar")}</p>
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-black/40">Popüler Aramalar</p>
                     <div className="flex flex-wrap gap-1.5">
                       {POPULER_ARAMALAR.map((terim) => (
                         <button
@@ -315,16 +313,6 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="order-2 flex flex-wrap items-center justify-end gap-2 sm:order-3 sm:gap-4">
-            {/* Dil değiştirici */}
-            <button
-              type="button"
-              onClick={() => dilDegistir(aktifDil === "tr" ? "en" : "tr")}
-              title={cevir(aktifDil === "tr" ? "en_gec" : "tr_gec")}
-              className="header-chip flex items-center gap-1 rounded-full border border-black/15 bg-white px-3 py-1.5 text-[11px] font-black text-black/60 transition hover:border-black/40"
-            >
-              <Globe className="h-3 w-3" />
-              {aktifDil === "tr" ? "EN" : "TR"}
-            </button>
             <a href="/favoriler" aria-label="Favoriler"
                className="relative flex items-center gap-1.5 text-black/55 transition hover:text-[var(--marka)]">
               <Heart className="h-5 w-5" strokeWidth={1.8} />
@@ -351,10 +339,10 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 </button>
                 {bildirimAcik && (
                   <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-black/10 bg-white shadow-xl">
-                    <div className="border-b border-black/10 px-4 py-3 text-sm font-bold text-black">{cevir("bildirimler")}</div>
+                    <div className="border-b border-black/10 px-4 py-3 text-sm font-bold text-black">Bildirimler</div>
                     <div className="max-h-80 overflow-y-auto">
                       {bildirimler.length === 0 && (
-                        <p className="px-4 py-6 text-center text-xs text-black/40">{cevir("yeni_bildirim_yok")}</p>
+                        <p className="px-4 py-6 text-center text-xs text-black/40">Yeni bildirim yok.</p>
                       )}
                       {bildirimler.map((b, i) => (
                         <a key={i} href={b.link} onClick={() => setBildirimAcik(false)}
@@ -399,7 +387,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                     >
                       <span className="flex items-center gap-3">
                         {karanlik ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        {cevir("karanlik_mod")}
+                        Karanlık Mod
                       </span>
                       <span className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${karanlik ? "bg-[var(--marka)]" : "bg-black/10"}`}>
                         <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-gray-100 shadow transition-all ${karanlik ? "left-[18px]" : "left-0.5"}`} />
@@ -407,19 +395,19 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                     </button>
                     <a href="/siparislerim" onClick={() => setMenuAcik(false)}
                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
-                      <ShoppingCart className="h-4 w-4" /> {cevir("siparislerim")}
+                      <ShoppingCart className="h-4 w-4" /> Siparişlerim
                     </a>
                     <a href="/kuponlarim" onClick={() => setMenuAcik(false)}
                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
-                      <Ticket className="h-4 w-4" /> {cevir("kuponlarim")}
+                      <Ticket className="h-4 w-4" /> Kuponlarım
                     </a>
                     <a href="/hesabim" onClick={() => setMenuAcik(false)}
                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-black/70 transition hover:bg-black/5">
-                      <User className="h-4 w-4" /> {cevir("hesabim")}
+                      <User className="h-4 w-4" /> Hesabım
                     </a>
                     <button type="button" onClick={() => { cikis(); setMenuAcik(false); }}
                             className="flex w-full items-center gap-3 border-t border-black/10 px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50">
-                      <LogOut className="h-4 w-4" /> {cevir("cikis_yap")}
+                      <LogOut className="h-4 w-4" /> Çıkış Yap
                     </button>
                   </div>
                 )}
@@ -428,7 +416,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <button type="button" onClick={() => setAuthModalAcik(true)}
                       className="header-chip flex items-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2 text-[13px] font-bold text-black/70 transition hover:border-black/40 hover:text-black">
                 <User className="h-3.5 w-3.5" />
-                {cevir("giris_yap")}
+                Giriş Yap
               </button>
             )}
           </div>
@@ -444,16 +432,16 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]">
           <button type="button" onClick={() => setTumKategorilerAcik(v => !v)}
                   className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black uppercase tracking-wide text-black transition hover:bg-black/5 ${tumKategorilerAcik ? "bg-black/5" : ""}`}>
-            <Menu className="h-3.5 w-3.5 text-[var(--marka)]" /> {cevir("tum_kategoriler")}
+            <Menu className="h-3.5 w-3.5 text-[var(--marka)]" /> Tüm Kategoriler
           </button>
           <span className="mx-1.5 h-4 w-px shrink-0 bg-black/10" aria-hidden />
-          <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-black transition hover:bg-black/5">{cevir("tum_urunler")}</a>
-          <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-orange-600 transition hover:bg-orange-50">{cevir("flas_indirimler")}</a>
-          <a href="/outlet" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">{cevir("outlet")}</a>
-          <a href="/cok-satanlar" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">{cevir("cok_satanlar")}</a>
-          <a href="/son-firsat" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">{cevir("son_firsat")}</a>
-          <a href="/son-kalan" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">{cevir("son_kalan")}</a>
-          <a href="/sezon" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">{cevir("sezon")}</a>
+          <a href="/" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-black transition hover:bg-black/5">Tüm Ürünler</a>
+          <a href="/flas-indirimler" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black text-orange-600 transition hover:bg-orange-50">⚡ Flaş İndirimler</a>
+          <a href="/outlet" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Outlet</a>
+          <a href="/cok-satanlar" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">★ Çok Satanlar</a>
+          <a href="/son-firsat" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Son Fırsat</a>
+          <a href="/son-kalan" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Son Kalan</a>
+          <a href="/sezon" className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-bold text-black/60 transition hover:bg-black/5 hover:text-black">Sezon</a>
           <span className="mx-2 h-4 w-px shrink-0 bg-black/10" aria-hidden />
           {KATEGORI_LINKLERI.map((k) => (
             <a key={k} href={`/kategori/${encodeURIComponent(k)}`}
@@ -482,7 +470,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               </div>
               <a href="/" onClick={() => setTumKategorilerAcik(false)}
                  className="mt-3 flex items-center justify-center gap-1 rounded-lg bg-black/[.04] py-2 text-[12px] font-bold text-black/60 transition hover:bg-black/10 hover:text-black">
-                {cevir("tum_urunleri_gor")}
+                Tüm Ürünleri Gör
               </a>
             </div>
           </div>
@@ -495,10 +483,10 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-baseline gap-3">
                   <h3 className="text-[15px] font-black uppercase tracking-wide text-black">{megaAcik}</h3>
-                  <span className="text-[12px] font-medium text-black/35">{menuVerisi[megaAcik].urun} {cevir("urun_sayisi")} · {menuVerisi[megaAcik].markalar.length} {cevir("marka_sayisi")}</span>
+                  <span className="text-[12px] font-medium text-black/35">{menuVerisi[megaAcik].urun} ürün · {menuVerisi[megaAcik].markalar.length} marka</span>
                 </div>
                 <a href={`/kategori/${encodeURIComponent(megaAcik)}`} className="text-[12px] font-bold text-[var(--marka)] hover:underline">
-                  {cevir("kategoriyi_gor")}
+                  Kategoriyi gör →
                 </a>
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -531,47 +519,47 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-wrap gap-8 text-xs text-white/65">
             <div className="flex-1 min-w-[160px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">{cevir("footer_magaza")}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Mağaza</div>
               <div className="flex flex-col gap-2">
-                <a href="/" className="hover:text-white transition">{cevir("tum_urunler")}</a>
-                <a href="/flas-indirimler" className="font-bold text-[#ffb14d] transition hover:text-[#ffc47a]">{cevir("flas_indirimler")}</a>
-                <a href="/outlet" className="font-bold text-[#ffb14d] transition hover:text-[#ffc47a]">{cevir("outlet")}</a>
-                <a href="/cok-satanlar" className="hover:text-white transition">{cevir("en_cok_satanlar")}</a>
-                <a href="/son-kalan" className="hover:text-white transition">{cevir("son_kalan_olculer")}</a>
-                <a href="/son-firsat" className="hover:text-white transition">{cevir("son_firsat")}</a>
-                <a href="/sezon" className="hover:text-white transition">{cevir("sezon_urunleri")}</a>
-                <a href="/sepet" className="hover:text-white transition">{cevir("sepetim")}</a>
-                <a href="/siparislerim" className="hover:text-white transition">{cevir("siparislerim")}</a>
-                <a href="/kuponlarim" className="hover:text-white transition">{cevir("kuponlarim")}</a>
+                <a href="/" className="hover:text-white transition">Tüm Ürünler</a>
+                <a href="/flas-indirimler" className="font-bold text-[#ffb14d] transition hover:text-[#ffc47a]">⚡ Flaş İndirimler</a>
+                <a href="/outlet" className="font-bold text-[#ffb14d] transition hover:text-[#ffc47a]">🏭 Outlet</a>
+                <a href="/cok-satanlar" className="hover:text-white transition">★ En Çok Satanlar</a>
+                <a href="/son-kalan" className="hover:text-white transition">📏 Son Kalan Ölçüler</a>
+                <a href="/son-firsat" className="hover:text-white transition">⏳ Son Fırsat</a>
+                <a href="/sezon" className="hover:text-white transition">🗓️ Sezon Ürünleri</a>
+                <a href="/sepet" className="hover:text-white transition">Sepetim</a>
+                <a href="/siparislerim" className="hover:text-white transition">Siparişlerim</a>
+                <a href="/kuponlarim" className="hover:text-white transition">Kuponlarım</a>
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">{cevir("footer_kurumsal")}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Kurumsal</div>
               <div className="flex flex-col gap-2">
-                <a href="/hakkinda" className="hover:text-white transition">{cevir("hakkinda")}</a>
-                <a href="/iletisim" className="hover:text-white transition">{cevir("iletisim")}</a>
-                <a href="/sss" className="hover:text-white transition">{cevir("sss")}</a>
-                <a href="/iade-degisim" className="hover:text-white transition">{cevir("iade_degisim")}</a>
-                <a href="/iade-degisim#kargo" className="hover:text-white transition">{cevir("kargo_teslimat")}</a>
+                <a href="/hakkinda" className="hover:text-white transition">Hakkında</a>
+                <a href="/iletisim" className="hover:text-white transition">İletişim</a>
+                <a href="/sss" className="hover:text-white transition">Sıkça Sorulan Sorular</a>
+                <a href="/iade-degisim" className="hover:text-white transition">İade ve Değişim</a>
+                <a href="/iade-degisim#kargo" className="hover:text-white transition">Kargo ve Teslimat</a>
               </div>
             </div>
             <div className="flex-[2] min-w-[220px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">{cevir("footer_haberdar")}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Kampanyalardan Haberdar Ol</div>
               <div className="mb-5 max-w-[280px]"><BultenFormu /></div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">{cevir("footer_bilgi")}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Bilgi</div>
               <div className="flex flex-col gap-2">
-                <span>{cevir("cspr_odeme")}</span>
-                <span>{cevir("guvenli_api")}</span>
-                <a href="/iade-degisim" className="hover:text-white transition">{cevir("iade_14_gun")}</a>
+                <span>⛓️ CSPR ile kripto ödeme</span>
+                <span>🔒 Token ile korunan güvenli API</span>
+                <a href="/iade-degisim" className="hover:text-white transition">↩️ 14 gün içinde ücretsiz iade — İade ve kargo koşulları</a>
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">{cevir("footer_yasal")}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3">Yasal</div>
               <div className="flex flex-col gap-2">
-                <a href="/sozlesme/mesafeli-satis" className="hover:text-white transition">{cevir("mesafeli_satis")}</a>
-                <a href="/sozlesme/uyelik" className="hover:text-white transition">{cevir("uyelik_sozlesmesi")}</a>
-                <a href="/gizlilik" className="hover:text-white transition">{cevir("kvkk_metni")}</a>
-                <a href="/cerez-politikasi" className="hover:text-white transition">{cevir("cerez_politikasi")}</a>
+                <a href="/sozlesme/mesafeli-satis" className="hover:text-white transition">Mesafeli Satış Sözleşmesi</a>
+                <a href="/sozlesme/uyelik" className="hover:text-white transition">Üyelik Sözleşmesi</a>
+                <a href="/gizlilik" className="hover:text-white transition">KVKK Aydınlatma Metni</a>
+                <a href="/cerez-politikasi" className="hover:text-white transition">Çerez Politikası</a>
                 <CerezAyarlariDugmesi sinif="text-left hover:text-white transition" />
               </div>
             </div>
@@ -600,7 +588,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
                 </span>
               ))}
             </div>
-            <span>{cevir("stok_siparis")} <strong className="font-semibold text-white/70">Ön Muhasebe API</strong> {cevir("gercek_zamanli")}</span>
+            <span>Stok & sipariş: <strong className="font-semibold text-white/70">Ön Muhasebe API</strong> ile gerçek zamanlı.</span>
           </div>
         </div>
       </footer>
