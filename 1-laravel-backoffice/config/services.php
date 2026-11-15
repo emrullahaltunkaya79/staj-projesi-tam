@@ -42,6 +42,15 @@ return [
     ],
 
     // Casper Network (CSPR) kripto ödeme
+    'iyzico' => [
+        // Kartla online ödeme (3D Secure). İki anahtar da doldurulunca gerçek iyzico
+        // akışına geçer; boşken tam akışlı 3DS simülasyonu (MockGateway) kullanılır.
+        'key' => env('IYZICO_API_KEY'),
+        'secret' => env('IYZICO_SECRET'),
+        'base' => env('IYZICO_BASE_URL', 'https://sandbox-api.iyzipay.com'),
+        'enabled' => (bool) env('IYZICO_API_KEY') && (bool) env('IYZICO_SECRET'),
+    ],
+
     'casper' => [
         'network' => env('CASPER_NETWORK', 'testnet'),
         'receiving_address' => env('CSPR_RECEIVING_ADDRESS'),

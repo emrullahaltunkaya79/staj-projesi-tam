@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             // cspr: online kripto (QR) · kapida: kapıda ödeme (+hizmet bedeli) · havale: banka transferi (%2 indirim)
-            $table->enum('payment_method', ['cspr', 'kapida', 'havale'])->default('cspr')->after('status');
+            $table->enum('payment_method', ['cspr', 'kapida', 'havale', 'kart'])->default('cspr')->after('status');
         });
 
         // Eski CSPR ödemeli kayıtlar zaten 'cspr' kabul edilir; tarihsel bekleyenler de cspr kalır.

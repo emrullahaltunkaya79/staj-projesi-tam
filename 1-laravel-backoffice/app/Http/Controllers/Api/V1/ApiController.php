@@ -221,7 +221,7 @@ class ApiController extends Controller
             'hediye_paket' => ['nullable', 'boolean'],
             'hediye_notu' => ['nullable', 'string', 'max:300'],
             // cspr: online kripto (QR) · kapida: kapıda ödeme (+hizmet bedeli mağazada işlenir) · havale: banka transferi
-            'payment_method' => ['nullable', 'in:cspr,kapida,havale'],
+            'payment_method' => ['nullable', 'in:cspr,kapida,havale,kart'],
             'puan_kullan' => ['nullable', 'boolean'],
             'fatura_tipi' => ['nullable', 'in:bireysel,kurumsal'],
             'fatura_unvan' => ['required_if:fatura_tipi,kurumsal', 'nullable', 'string', 'max:255'],
@@ -815,6 +815,32 @@ class ApiController extends Controller
             ->map(fn ($k) => ['fiyat' => (float) $k->price, 'tarih' => $k->created_at]);
 
         return response()->json(['data' => $kayitlar]);
+    }
+
+    /**
+     * Kartla online ödeme (3D Secure) başlatma — PSP form adresi + token döner.
+     * POST /api/v1/orders/{orderNo}/odeme-baslat
+     */
+    public function odemeBaslat(Request $request, string $orderNo): JsonResponse
+    {
+        $siparis = \App\Models\Order::where('company_id', $request->user()->company_id)
+            ->where('order_no', $orderNo)
+            ->firstOrFail();
+
+        abort_if($siparis->status !== 'pending', 422, 'Yalnızca bekleyen siparişler için ödeme başlatılabilir.');
+        abort_if($siparis->payment_method !== 'kart', 422, 'Sipariş kart ödemesine ait değil.');
+
+        $gateway = \App\Services\Odeme\OdemeGatewayFactory::olustur();
+        $baslangic = $gateway->baslat($siparis);
+        $siparis->update(['odeme_token' => $baslangic['token']]);
+
+        return response()->json([
+            'data' => [
+                'odeme_url' => $baslangic['odeme_url'],
+                'token' => $baslangic['token'],
+                'saglayici' => $gateway->ad(),
+            ],
+        ]);
     }
 
     /**

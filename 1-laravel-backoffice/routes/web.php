@@ -30,6 +30,7 @@ use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\KartOdemeController;
 use Illuminate\Support\Facades\Route;
 
 // Google ile giriş (mağaza müşterileri) — oturum gerekmez
@@ -60,6 +61,11 @@ Route::get('/e-posta/dogrula/{id}/{hash}', [ProfileController::class, 'verifyEma
 
 // Fatura doğrulama (QR kod — herkese açık, oturum gerekmez)
 Route::get('/fatura/dogrula/{code}', [InvoiceVerifyController::class, 'show'])->name('fatura.dogrula');
+
+// Kartla online ödeme (3D Secure): PSP formu / sandbox simülasyonu + gerçek PSP geri dönüşü
+Route::get('/odeme/3ds/{token}', [KartOdemeController::class, 'form'])->name('odeme.3ds.form');
+Route::post('/odeme/3ds/{token}', [KartOdemeController::class, 'formGonder'])->name('odeme.3ds.gonder');
+Route::match(['get', 'post'], '/odeme/3ds-geri-donus/{orderNo}', [KartOdemeController::class, 'geriDonus'])->name('odeme.3ds.geri-donus');
 
 // Panel - oturum açmış kullanıcılar
 Route::middleware('auth')->group(function () {

@@ -20,6 +20,7 @@ class Order extends Model
         'cspr' => 'Online (CSPR)',
         'kapida' => 'Kapıda Ödeme',
         'havale' => 'Havale / EFT',
+        'kart' => 'Kart (3D Secure)',
     ];
 
     protected $fillable = [
@@ -33,6 +34,7 @@ class Order extends Model
         'customer_phone',
         'shipping_address',
         'payment_method',
+        'odeme_token',
         'kullanilan_puan',
         'fatura_tipi',
         'fatura_unvan',

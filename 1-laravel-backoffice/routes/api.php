@@ -74,6 +74,7 @@ Route::middleware(['auth:sanctum', 'musteri.engelle', 'throttle:300,1'])
         Route::get('/products/{id}/satis', [ApiController::class, 'satisIstatistik'])->whereNumber('id')->name('api.products.satis');
         Route::get('/referans/{kod}', [ApiController::class, 'referansKontrol'])->where('kod', '[A-Za-z0-9]+')->name('api.referans.kontrol');
         Route::get('/plus-durum', [ApiController::class, 'plusDurum'])->name('api.plus.durum');
+        Route::post('/orders/{orderNo}/odeme-baslat', [ApiController::class, 'odemeBaslat'])->name('api.orders.odeme-baslat');
         Route::get('/campaigns', [ApiController::class, 'kampanyalar'])->name('api.campaigns.index');
         Route::get('/yorumlar', [ProductApiController::class, 'yorumModerasyon'])->name('api.yorumlar');
         Route::patch('/yorumlar/{id}/onay', [ProductApiController::class, 'yorumOnay'])->whereNumber('id')->name('api.yorumlar.onay');

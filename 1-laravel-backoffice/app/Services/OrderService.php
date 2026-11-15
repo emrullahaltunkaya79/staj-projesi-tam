@@ -170,7 +170,7 @@ class OrderService
                 'fatura_adresi' => $data['fatura_adresi'] ?? null,
                 'hediye_paket' => (bool) ($data['hediye_paket'] ?? false),
                 'hediye_notu' => $data['hediye_notu'] ?? null,
-                'payment_method' => in_array($data['payment_method'] ?? 'cspr', ['cspr', 'kapida', 'havale'], true) ? ($data['payment_method'] ?? 'cspr') : 'cspr',
+                'payment_method' => in_array($data['payment_method'] ?? 'cspr', ['cspr', 'kapida', 'havale', 'kart'], true) ? ($data['payment_method'] ?? 'cspr') : 'cspr',
                 'kullanilan_puan' => $puanIndirimi,
                 'status' => 'pending',
                 'subtotal' => $subtotal,
