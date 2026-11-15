@@ -145,6 +145,88 @@ class AuthApiController extends Controller
             ]);
         }
 
+        // İki adımlı doğrulama açıkken şifre tek başına token vermez — e-posta kodu gerekir
+        if ($user->iki_adim) {
+            $kod = (string) random_int(100000, 999999);
+            $user->forceFill([
+                'iki_adim_kodu' => Hash::make($kod),
+                'iki_adim_son' => now(),
+            ])->save();
+
+            \Mail::raw(
+                "Merhaba {$user->name},\n\nGiriş doğrulama kodunuz: {$kod}\n\nBu kod 10 dakika geçerlidir.\n\nHepsiBirarada",
+                function ($m) use ($user) {
+                    $m->to($user->email)->subject('Giriş doğrulama kodunuz');
+                }
+            );
+
+            return response()->json([
+                'iki_adim_gerekli' => true,
+                'email' => $user->email,
+                'message' => 'Doğrulama kodu e-posta adresinize gönderildi. 10 dakika geçerlidir.',
+            ]);
+        }
+
+        $token = $user->createToken('eticaret-musteri', ['ecommerce'])->plainTextToken;
+
+        return response()->json([
+            'message' => 'Giriş başarılı.',
+            'data' => [
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'contact_id' => $contact->id,
+                    'email_verified' => $user->email_verified_at !== null,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * İki adımlı doğrulama tamamlama: şifre doğrulanmış kullanıcının e-postasına
+     * giden 6 haneli kodu kontrol eder ve token verir.
+     * POST /api/v1/auth/iki-adim-dogrula { email, kod }
+     */
+    public function ikiAdimDogrula(Request $request): JsonResponse
+    {
+        $veri = $request->validate([
+            'email' => ['required', 'email'],
+            'kod' => ['required', 'digits:6'],
+        ], [
+            'kod.digits' => 'Kod 6 haneli olmalıdır.',
+        ]);
+
+        $user = User::where('email', $veri['email'])->first();
+
+        if (! $user
+            || ! $user->iki_adim
+            || ! $user->iki_adim_kodu
+            || ! $user->iki_adim_son
+            || $user->iki_adim_son->diffInMinutes(now()) > 10
+            || ! Hash::check($veri['kod'], $user->iki_adim_kodu)) {
+            throw ValidationException::withMessages([
+                'kod' => 'Kod geçersiz veya süresi dolmuş.',
+            ]);
+        }
+
+        $user->forceFill(['iki_adim_kodu' => null, 'iki_adim_son' => null])->save();
+
+        $contact = Contact::where('company_id', $user->company_id)
+            ->where('email', $user->email)
+            ->first();
+
+        if (! $contact) {
+            $contact = Contact::create([
+                'company_id' => $user->company_id,
+                'type' => 'musteri',
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+        }
+
         $token = $user->createToken('eticaret-musteri', ['ecommerce'])->plainTextToken;
 
         return response()->json([

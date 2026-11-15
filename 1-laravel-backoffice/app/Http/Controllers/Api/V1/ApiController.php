@@ -103,6 +103,7 @@ class ApiController extends Controller
                 'brand' => $product->brand,
                 'model' => $product->model,
                 'video_url' => $product->video_url,
+                'pre_order' => (bool) $product->pre_order,
                 'specs' => $product->specs,
                 'category' => $product->category?->name,
                 'unit' => $product->unit,
@@ -810,6 +811,95 @@ class ApiController extends Controller
             ->map(fn ($k) => ['fiyat' => (float) $k->price, 'tarih' => $k->created_at]);
 
         return response()->json(['data' => $kayitlar]);
+    }
+
+    /**
+     * Ürünün son 30 günlük gerçek satış adedi — "Bu ay X adet satıldı" sosyal kanıtı.
+     * Sipariş kalemleri JSON saklandığından PHP tarafında toplanır (sqlite/mysql uyumlu).
+     * GET /api/v1/products/{id}/satis
+     */
+    public function satisIstatistik(Request $request, int $id): JsonResponse
+    {
+        $urun = Product::where('company_id', $request->user()->company_id)->find($id);
+        abort_if(! $urun, 404);
+
+        $adet = \App\Models\Order::where('company_id', $request->user()->company_id)
+            ->whereIn('status', ['paid', 'preparing', 'shipped', 'delivered', 'return_requested', 'returned'])
+            ->where('created_at', '>=', now()->subDays(30))
+            ->orderByDesc('id')
+            ->limit(500)
+            ->get(['items'])
+            ->sum(function ($siparis) use ($id) {
+                $kalemler = is_array($siparis->items) ? $siparis->items : (json_decode((string) $siparis->items, true) ?: []);
+
+                return (int) collect($kalemler)->where('product_id', $id)->sum('quantity');
+            });
+
+        return response()->json(['data' => ['urun_id' => $id, 'aylik_adet' => $adet]]);
+    }
+
+    /**
+     * Referans kodu doğrulama — mağaza checkout'unda indirime uygulamadan önce çağrılır.
+     * GET /api/v1/referans/{kod}?eposta=... — e-posta davet edenle aynıysa 'kendi_kodu' true döner.
+     */
+    public function referansKontrol(Request $request, string $kod): JsonResponse
+    {
+        $davetEden = Contact::where('company_id', $request->user()->company_id)
+            ->where('referans_kodu', strtoupper($kod))
+            ->first();
+
+        if (! $davetEden) {
+            return response()->json(['data' => ['gecerli' => false, 'mesaj' => 'Referans kodu bulunamadı.']]);
+        }
+
+        $kendiKodu = $request->filled('eposta')
+            && strtolower(trim($request->query('eposta'))) === strtolower((string) $davetEden->email);
+
+        return response()->json([
+            'data' => [
+                'gecerli' => true,
+                'davet_eden' => mb_substr($davetEden->name, 0, 30),
+                'kendi_kodu' => $kendiKodu,
+            ],
+        ]);
+    }
+
+    /**
+     * Plus üyelik durumu — mağaza checkout'u ücretsiz kargo kararı için sorgular.
+     * GET /api/v1/plus-durum?email=...
+     */
+    public function plusDurum(Request $request): JsonResponse
+    {
+        $cari = Contact::where('company_id', $request->user()->company_id)
+            ->where('email', strtolower(trim((string) $request->query('email'))))
+            ->first();
+
+        return response()->json(['data' => [
+            'aktif' => $cari && $cari->plus_bitis && $cari->plus_bitis->isFuture(),
+        ]]);
+    }
+
+    /**
+     * Aktif paket kampanyaları — mağaza ürün sayfası rozetleri ve fiyat motoru için.
+     * GET /api/v1/campaigns
+     */
+    public function kampanyalar(Request $request): JsonResponse
+    {
+        $kampanyalar = \App\Models\Campaign::where('company_id', $request->user()->company_id)
+            ->where('aktif', true)
+            ->with('urun:id,name')
+            ->get(['id', 'ad', 'tur', 'urun_id', 'al_adet', 'ode_adet', 'esik']);
+
+        return response()->json(['data' => $kampanyalar->map(fn ($k) => [
+            'id' => $k->id,
+            'ad' => $k->ad,
+            'tur' => $k->tur,
+            'urun_id' => $k->urun_id,
+            'urun_adi' => $k->urun?->name,
+            'al_adet' => $k->al_adet,
+            'ode_adet' => $k->ode_adet,
+            'esik' => (float) $k->esik,
+        ])]);
     }
 
     /**

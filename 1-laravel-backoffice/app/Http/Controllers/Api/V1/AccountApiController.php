@@ -21,6 +21,7 @@ class AccountApiController extends Controller
         $veri = $request->validate([
             'name' => ['required', 'string', 'min:3', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'dogum_tarihi' => ['nullable', 'date', 'before:today'],
         ], ['name.required' => 'Ad soyad zorunludur.']);
 
         $user = $request->user();
@@ -28,7 +29,11 @@ class AccountApiController extends Controller
 
         Contact::where('company_id', $user->company_id)
             ->where('email', $user->email)
-            ->update(['name' => $veri['name'], 'phone' => $veri['phone'] ?? null]);
+            ->update([
+                'name' => $veri['name'],
+                'phone' => $veri['phone'] ?? null,
+                'dogum_tarihi' => $veri['dogum_tarihi'] ?? null,
+            ]);
 
         return response()->json([
             'message' => 'Profiliniz güncellendi.',
@@ -189,20 +194,42 @@ class AccountApiController extends Controller
         return response()->json(['message' => 'Hesabınız silindi. Kişisel verileriniz anonimleştirildi. Sizi ağırlamaktan dolayı teşekkür ederiz.']);
     }
 
-    /** GET /api/v1/hesap/durum — hesaba kayıtlı favoriler ve sepet */
+    /** PUT /api/v1/hesap/iki-adim { aktif } — iki adımlı doğrulamayı aç/kapat */
+    public function ikiAdimAyarla(Request $request): JsonResponse
+    {
+        $veri = $request->validate([
+            'aktif' => ['required', 'boolean'],
+        ]);
+
+        $request->user()->update(['iki_adim' => (bool) $veri['aktif']]);
+
+        return response()->json([
+            'message' => $veri['aktif']
+                ? 'İki adımlı doğrulama açıldı — sonraki girişte e-postanıza kod gönderilecek.'
+                : 'İki adımlı doğrulama kapatıldı.',
+            'data' => ['iki_adim' => (bool) $veri['aktif']],
+        ]);
+    }
+
+    /** GET /api/v1/hesap/durum — hesaba kayıtlı favoriler, sepet, sadakat puanı, referans kodu ve Plus durumu */
     public function durum(Request $request): JsonResponse
     {
         $kayit = DB::table('customer_states')->where('user_id', $request->user()->id)->first();
 
-        $puan = \App\Models\Contact::where('company_id', $request->user()->company_id)
+        $cari = Contact::where('company_id', $request->user()->company_id)
             ->where('email', $request->user()->email)
-            ->value('sadakat_puani');
+            ->first();
 
         return response()->json([
             'data' => [
                 'favoriler' => $kayit ? json_decode($kayit->favoriler ?? '[]', true) : [],
                 'sepet' => $kayit ? json_decode($kayit->sepet ?? '[]', true) : [],
-                'sadakat_puani' => (int) ($puan ?? 0),
+                'referans_kodu' => $this->referansKodu($request->user(), $cari),
+                'plus_aktif' => $cari && $cari->plus_bitis && $cari->plus_bitis->isFuture(),
+                'dogum_tarihi' => $cari?->dogum_tarihi?->toDateString(),
+                'sadakat_puani' => (int) ($cari?->sadakat_puani ?? 0),
+                'iki_adim' => (bool) $request->user()->iki_adim,
+                'plus_urun_id' => \App\Models\Product::where('code', 'PLUS-1YIL')->value('id'),
             ],
         ]);
     }
@@ -223,5 +250,25 @@ class AccountApiController extends Controller
         );
 
         return response()->json(['message' => 'Kaydedildi.']);
+    }
+
+    /** Müşterinin referans kodu — ilk çağrıda üretilir, sonraki çağrılarda aynı döner. */
+    private function referansKodu($user, ?Contact $cari): ?string
+    {
+        if (! $cari) {
+            return null;
+        }
+
+        if ($cari->referans_kodu) {
+            return $cari->referans_kodu;
+        }
+
+        do {
+            $kod = 'HB' . strtoupper(bin2hex(random_bytes(3)));
+        } while (Contact::where('referans_kodu', $kod)->exists());
+
+        $cari->update(['referans_kodu' => $kod]);
+
+        return $kod;
     }
 }

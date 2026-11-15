@@ -248,8 +248,30 @@ class OrderService
                 );
             }
 
-            // Sadakat puanı kazanımı: her 10 ₺'lik ödemede 1 puan
-            $order->contact->increment('sadakat_puani', (int) floor((float) $order->total / 10));
+            // Sadakat puanı kazanımı: her 10 ₺'lik ödemede 1 puan (Plus üyede 2 puan)
+            $plusAktif = $order->contact->plus_bitis && $order->contact->plus_bitis->isFuture();
+            $puanCarpani = $plusAktif ? 2 : 1;
+            $order->contact->increment('sadakat_puani', (int) floor((float) $order->total / 10) * $puanCarpani);
+
+            // Plus üyelik: sepetinde PLUS-1YIL ürünü olan müşterinin üyeliği 1 yıl uzatılır
+            $plusUrunId = \App\Models\Product::where('code', 'PLUS-1YIL')->value('id');
+            if ($plusUrunId && collect($order->items)->contains('product_id', $plusUrunId)) {
+                $mevcut = $order->contact->plus_bitis;
+                $taban = ($mevcut && $mevcut->isFuture()) ? $mevcut : now();
+                $order->contact->update(['plus_bitis' => $taban->copy()->addYear()]);
+            }
+
+            // Referans bonusu: alıcının ilk ödemeli siparişinde davet edene 500 puan (bir kez)
+            if (! $order->contact->referans_kazandi
+                && preg_match('/Referans:\s*([A-Za-z0-9]+)/i', (string) $order->notes, $m)) {
+                $davetEden = \App\Models\Contact::where('company_id', $companyId)
+                    ->where('referans_kodu', strtoupper($m[1]))
+                    ->first();
+                if ($davetEden && $davetEden->id !== $order->contact->id) {
+                    $davetEden->increment('sadakat_puani', 500);
+                    $order->contact->update(['referans_kazandi' => true]);
+                }
+            }
 
             return $order->fresh();
         });
@@ -477,7 +499,11 @@ class OrderService
                 }
             }
 
-            $order->update(['status' => 'returned']);
+            // İade kargo kodu — onay anında üretilir, müşteri paketi kodla kargoya verir
+            $iadeTalebi = $order->iade_talebi ?? [];
+            $iadeTalebi['kargo_kodu'] = $iadeTalebi['kargo_kodu'] ?? ('IADE-' . strtoupper(bin2hex(random_bytes(3))));
+
+            $order->update(['status' => 'returned', 'iade_talebi' => $iadeTalebi]);
 
             // Mağazaya bildir: müşteri sipariş sayfası iade durumunu anında görsün
             $this->webhookService->orderReturned(

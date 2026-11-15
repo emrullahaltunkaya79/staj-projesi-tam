@@ -66,6 +66,15 @@
         </div>
 
         <div>
+            <label class="label" for="pre_order">Ön Sipariş</label>
+            <label class="flex items-center gap-2 text-sm text-slate-600">
+                <input type="hidden" name="pre_order" value="0" />
+                <input type="checkbox" id="pre_order" name="pre_order" value="1" @checked(old('pre_order', $product?->pre_order)) class="h-4 w-4 rounded border-slate-300" />
+                Tükendiğinde ön siparişe aç
+            </label>
+        </div>
+
+        <div>
             <label class="label" for="barcode">Barkod <span class="font-normal text-slate-400">(EAN/POS)</span></label>
             <input type="text" id="barcode" name="barcode" value="{{ old('barcode', $product->barcode) }}"
                    class="input" placeholder="8690000000000">

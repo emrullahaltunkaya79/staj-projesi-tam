@@ -21,6 +21,10 @@ class Contact extends Model
         'address',
         'balance',
         'sadakat_puani',
+        'dogum_tarihi',
+        'referans_kodu',
+        'referans_kazandi',
+        'plus_bitis',
     ];
 
     protected function casts(): array
@@ -28,6 +32,9 @@ class Contact extends Model
         return [
             'balance' => 'decimal:2',
             'sadakat_puani' => 'integer',
+            'dogum_tarihi' => 'date',
+            'referans_kazandi' => 'boolean',
+            'plus_bitis' => 'datetime',
         ];
     }
 

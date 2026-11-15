@@ -28,6 +28,7 @@ Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/google/exchange', [AuthApiController::class, 'googleExchange'])->name('api.auth.google-exchange');
     Route::get('/auth/google/durum', [AuthApiController::class, 'googleDurum'])->name('api.auth.google-durum');
     Route::post('/auth/google/demo-login', [AuthApiController::class, 'googleDemoLogin'])->name('api.auth.google-demo');
+    Route::post('/auth/iki-adim-dogrula', [AuthApiController::class, 'ikiAdimDogrula'])->name('api.auth.iki-adim-dogrula');
 });
 
 // Müşteri hesabı — müşterinin kendi token'ıyla
@@ -40,6 +41,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])
         Route::post('/reviews/{review}/faydali', [ProductApiController::class, 'faydaliToggle'])->whereNumber('review')->name('api.reviews.faydali');
 
         Route::put('/hesap/profil', [AccountApiController::class, 'profil'])->name('api.hesap.profil');
+        Route::put('/hesap/iki-adim', [AccountApiController::class, 'ikiAdimAyarla'])->name('api.hesap.iki-adim');
         Route::put('/hesap/sifre', [AccountApiController::class, 'sifre'])->name('api.hesap.sifre');
         Route::get('/hesap/adresler', [AccountApiController::class, 'adresler'])->name('api.hesap.adresler');
         Route::post('/hesap/adresler', [AccountApiController::class, 'adresEkle'])->name('api.hesap.adres-ekle');
@@ -67,6 +69,10 @@ Route::middleware(['auth:sanctum', 'musteri.engelle', 'throttle:300,1'])
         Route::post('/products/{id}/images', [ProductApiController::class, 'uploadImage'])->whereNumber('id')->name('api.products.images');
         Route::get('/products/{id}/reviews', [ProductApiController::class, 'reviews'])->whereNumber('id')->name('api.products.reviews');
         Route::get('/products/{id}/fiyat-gecmisi', [ApiController::class, 'fiyatGecmisi'])->whereNumber('id')->name('api.products.fiyat-gecmisi');
+        Route::get('/products/{id}/satis', [ApiController::class, 'satisIstatistik'])->whereNumber('id')->name('api.products.satis');
+        Route::get('/referans/{kod}', [ApiController::class, 'referansKontrol'])->where('kod', '[A-Za-z0-9]+')->name('api.referans.kontrol');
+        Route::get('/plus-durum', [ApiController::class, 'plusDurum'])->name('api.plus.durum');
+        Route::get('/campaigns', [ApiController::class, 'kampanyalar'])->name('api.campaigns.index');
         Route::get('/yorumlar', [ProductApiController::class, 'yorumModerasyon'])->name('api.yorumlar');
         Route::patch('/yorumlar/{id}/onay', [ProductApiController::class, 'yorumOnay'])->whereNumber('id')->name('api.yorumlar.onay');
         Route::delete('/yorumlar/{id}', [ProductApiController::class, 'yorumSil'])->whereNumber('id')->name('api.yorumlar.sil');

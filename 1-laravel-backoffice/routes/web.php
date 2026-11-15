@@ -29,6 +29,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\CampaignController;
 use Illuminate\Support\Facades\Route;
 
 // Google ile giriş (mağaza müşterileri) — oturum gerekmez
@@ -104,6 +105,12 @@ Route::middleware('auth')->group(function () {
     // Stok hareket geçmişi ve raporlar
     Route::get('/stok-hareketleri', [StockMovementController::class, 'index'])->name('movements.index');
     Route::get('/raporlar', [ReportController::class, 'index'])->name('raporlar.index');
+
+    // Paket kampanyaları (mağaza sepet motoruna beslenir)
+    Route::get('/kampanyalar', [CampaignController::class, 'index'])->name('kampanyalar.index');
+    Route::post('/kampanyalar', [CampaignController::class, 'store'])->name('kampanyalar.store');
+    Route::post('/kampanyalar/{campaign}/toggle', [CampaignController::class, 'toggle'])->name('kampanyalar.toggle');
+    Route::delete('/kampanyalar/{campaign}', [CampaignController::class, 'destroy'])->name('kampanyalar.destroy');
     Route::get('/raporlar/excel', [ReportController::class, 'export'])->name('raporlar.excel');
 
     // Global arama (cariler, ürünler, faturalar)

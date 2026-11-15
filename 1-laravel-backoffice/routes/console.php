@@ -32,3 +32,9 @@ Schedule::command('stok:bildirim-gonder')->everyFifteenMinutes();
 
 // Fiyat alarmı e-postaları: fiyatı takip fiyatının altına inen ürünler (her 15 dakikada)
 Schedule::command('fiyat:alarm-gonder')->everyFifteenMinutes();
+
+// Terk edilmiş sepet hatırlatmaları: 2 saatten eski, günde bir (saatlik kontrol)
+Schedule::command('gonder:sepet-hatirlatma')->hourly();
+
+// Doğum günü kuponları: günü gelen müşteriye %15 kupon
+Schedule::command('gonder:dogum-gunu-kuponlari')->dailyAt('09:30');
