@@ -20,7 +20,8 @@ use Illuminate\Support\Facades\Route;
 // Auth (token gerektirmez — throttle'lı)
 Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/register', [AuthApiController::class, 'register'])->name('api.auth.register');
-    Route::post('/auth/login', [AuthApiController::class, 'login'])->name('api.auth.login');
+    Route::post('/auth/login', [AuthApiController::class, 'login'])
+        ->middleware('throttle:iki-adim-gonder')->name('api.auth.login');
     Route::post('/auth/forgot-password', [AuthApiController::class, 'forgotPassword'])->name('api.auth.forgot');
     Route::post('/auth/reset-password', [AuthApiController::class, 'resetPassword'])->name('api.auth.reset');
     Route::post('/auth/verify-email', [AuthApiController::class, 'verifyEmail'])->name('api.auth.verify');
@@ -28,7 +29,8 @@ Route::prefix('v1')->middleware('throttle:20,1')->group(function () {
     Route::post('/auth/google/exchange', [AuthApiController::class, 'googleExchange'])->name('api.auth.google-exchange');
     Route::get('/auth/google/durum', [AuthApiController::class, 'googleDurum'])->name('api.auth.google-durum');
     Route::post('/auth/google/demo-login', [AuthApiController::class, 'googleDemoLogin'])->name('api.auth.google-demo');
-    Route::post('/auth/iki-adim-dogrula', [AuthApiController::class, 'ikiAdimDogrula'])->name('api.auth.iki-adim-dogrula');
+    Route::post('/auth/iki-adim-dogrula', [AuthApiController::class, 'ikiAdimDogrula'])
+        ->middleware('throttle:iki-adim')->name('api.auth.iki-adim-dogrula');
 });
 
 // Müşteri hesabı — müşterinin kendi token'ıyla

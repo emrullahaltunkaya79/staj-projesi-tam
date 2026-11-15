@@ -23,6 +23,7 @@ class ProductRequest extends FormRequest
             'alt_kategori' => ['nullable', 'string', 'max:120'],
             'video_url' => ['nullable', 'string', 'max:500'],
             'pre_order' => ['nullable', 'boolean'],
+            'katalog_gizli' => ['nullable', 'boolean'],
             'unit' => ['required', 'string', 'max:20'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],

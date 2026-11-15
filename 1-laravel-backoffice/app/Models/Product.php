@@ -25,7 +25,8 @@ class Product extends Model
         'reserved_quantity',
     
         'video_url',
-        'pre_order',];
+        'pre_order',
+        'katalog_gizli',];
 
     /** İndirim uygulanmış nihai satış fiyatı. */
     public function finalPrice(): float
@@ -45,6 +46,8 @@ class Product extends Model
             'specs' => 'array',
             'stock_quantity' => 'integer',
             'reserved_quantity' => 'integer',
+            'pre_order' => 'boolean',
+            'katalog_gizli' => 'boolean',
         ];
     }
 

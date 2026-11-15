@@ -43,6 +43,9 @@ class ApiController extends Controller
         $products = Product::with('category', 'variants')
             ->orderBy('name')
             ->when($request->query('category_id'), fn ($q, $id) => $q->where('category_id', $id))
+            // katalog=evet: vitrin listeleri gizli ürünleri (üyelik paketi vb.) içermez;
+            // checkout sepet çözümlemesi parametresiz tüm listeyi alır
+            ->when($request->query('katalog') === 'evet', fn ($q) => $q->where('katalog_gizli', false))
             ->with('images')
             ->get()
             ->map(fn ($p) => [
@@ -918,6 +921,9 @@ class ApiController extends Controller
 
         $query = Product::query();
 
+        // Katalogda gizli ürünler (üyelik paketi vb.) aramada çıkmaz
+        $query->where('katalog_gizli', false);
+
         $sqlite = \DB::connection()->getDriverName() === 'sqlite'; // test DB'si FULLTEXT desteklemez
 
         if ($terim !== '') {
@@ -1009,6 +1015,7 @@ class ApiController extends Controller
                 'rating_avg' => $puanlar[$p->id]->oran ?? null,
                 'review_count' => (int) ($puanlar[$p->id]->adet ?? 0),
                 'is_bestseller' => false,
+                'pre_order' => (bool) $p->pre_order,
                 'image_url' => $p->images->isNotEmpty() ? 'ok' : null,
                 'varyant_adlari' => $p->variants->pluck('name')->values(),
                 'varyantlar' => $this->varyantOzeti($p),

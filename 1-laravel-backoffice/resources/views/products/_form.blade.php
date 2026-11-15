@@ -75,6 +75,15 @@
         </div>
 
         <div>
+            <label class="label" for="katalog_gizli">Katalogda Gizli</label>
+            <label class="flex items-center gap-2 text-sm text-slate-600">
+                <input type="hidden" name="katalog_gizli" value="0" />
+                <input type="checkbox" id="katalog_gizli" name="katalog_gizli" value="1" @checked(old('katalog_gizli', $product?->katalog_gizli)) class="h-4 w-4 rounded border-slate-300" />
+                Mağaza vitrininde listelenmez (üyelik paketi vb.)
+            </label>
+        </div>
+
+        <div>
             <label class="label" for="barcode">Barkod <span class="font-normal text-slate-400">(EAN/POS)</span></label>
             <input type="text" id="barcode" name="barcode" value="{{ old('barcode', $product->barcode) }}"
                    class="input" placeholder="8690000000000">

@@ -24,6 +24,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // 2FA kod doğrulama: e-posta başına sert hız limiti (brute force karşı)
+        RateLimiter::for('iki-adim', function (Request $request) {
+            return Limit::perMinute(5)
+                ->by('iki-adim|' . strtolower((string) $request->input('email', $request->ip())));
+        });
+
+        // 2FA kod gönderimi (login): e-posta başına dakikada 1 — kod spam'ini önler
+        RateLimiter::for('iki-adim-gonder', function (Request $request) {
+            return Limit::perMinute(1)
+                ->by('iki-adim-gonder|' . strtolower((string) $request->input('email', $request->ip())));
+        });
+
         // Şifre sıfırlama e-postasını Türkçeleştir
         ResetPassword::toMailUsing(function ($notifiable, $token) {
             $url = url(route('password.reset', ['token' => $token, 'email' => $notifiable->email], false));
