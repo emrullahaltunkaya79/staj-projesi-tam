@@ -279,7 +279,8 @@ class InvoiceService
                 }
 
                 // --- KRİTİK STOK KONTROLÜ (yalnızca satışta) ---
-                if ($type === 'satis' && $product->stock_quantity < $item['quantity']) {
+                // Ön siparişe açık ürün stok girişi bekleyen sipariştir — negatif stoğa izin verilir
+                if ($type === 'satis' && ! $product->pre_order && $product->stock_quantity < $item['quantity']) {
                     throw ValidationException::withMessages([
                         'items' => sprintf(
                             'Yetersiz stok! "%s" için istenen: %s %s, mevcut stok: %s %s.',

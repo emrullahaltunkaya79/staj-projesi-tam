@@ -63,6 +63,24 @@
                     <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Adres</div>
                     <div class="mt-1 text-sm text-slate-700">{{ $contact->address ?: '—' }}</div>
                 </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Sadakat Puanı</div>
+                    <div class="mt-1 text-sm font-bold text-slate-700">{{ $contact->sadakat_puani }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Plus Üyelik</div>
+                    <div class="mt-1 text-sm {{ $contact->plus_bitis && $contact->plus_bitis->isFuture() ? 'font-bold text-emerald-600' : 'text-slate-700' }}">
+                        {{ $contact->plus_bitis && $contact->plus_bitis->isFuture() ? 'Aktif — ' . $contact->plus_bitis->format('d.m.Y') . "'ye kadar" : '—' }}
+                    </div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Doğum Günü</div>
+                    <div class="mt-1 text-sm text-slate-700">{{ $contact->dogum_tarihi?->format('d.m.Y') ?: '—' }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Referans Kodu</div>
+                    <div class="mt-1 font-mono text-sm font-bold text-slate-700">{{ $contact->referans_kodu ?: '—' }}</div>
+                </div>
             </div>
         </div>
 

@@ -224,6 +224,11 @@
                         @endforeach
                     </ul>
                     <div class="mt-1.5 font-semibold">İade tutarı: {{ number_format((float) $order->iade_tutari, 2, ',', '.') }} ₺</div>
+                    @if (! empty($order->iade_talebi['kargo_kodu']))
+                        <div class="mt-1.5 rounded-lg border border-slate-300 bg-white/70 px-2.5 py-1.5 font-mono text-sm font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100">
+                            📦 İade kargo kodu: {{ $order->iade_talebi['kargo_kodu'] }}
+                        </div>
+                    @endif
                     @if ($order->iade_talebi['reddedildi'] ?? false)
                         <div class="mt-1.5 font-semibold text-red-700 dark:text-red-300">Talep reddedildi{{ ! empty($order->iade_talebi['red_notu']) ? ': '.$order->iade_talebi['red_notu'] : '' }}</div>
                     @elseif ($order->status === 'return_requested')

@@ -54,6 +54,7 @@ class ApiController extends Controller
                 'model' => $p->model,
                 'alt_kategori' => $p->alt_kategori,
                 'video_url' => $p->video_url,
+                'pre_order' => (bool) $p->pre_order,
                 'specs' => $p->specs,
                 'category' => $p->category?->name,
                 'unit' => $p->unit,

@@ -107,7 +107,9 @@ class OrderService
                 }
 
                 // MÜSAİT stok kontrolü: fiziksel − rezerve
-                if ($qty > $product->availableQuantity()) {
+                // Ön siparişe açık üründe kontrol atlanır: stok girişi beklenen sipariştir
+                // (rezerv yine yazılır; fatura stoğu negatife düşürür — backorder)
+                if (! $product->pre_order && $qty > $product->availableQuantity()) {
                     throw ValidationException::withMessages([
                         'items' => sprintf(
                             '"%s" için yetersiz müsait stok! İstenen: %s, müsait: %s (fiziksel: %d, rezerve: %d).',
