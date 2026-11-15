@@ -109,6 +109,8 @@ export type IadeTalebi = {
   kismi: boolean;
   kalemler: { sira: number; product_name: string; quantity: number; unit_price: number }[];
   tarih: string;
+  /** İade onayında üretilen kargo kodu — paket bu kodla kargoya verilir */
+  kargo_kodu?: string;
   /** Satıcı talebi reddettiyse true + red notu — sipariş teslim durumuna döner */
   reddedildi?: boolean;
   red_notu?: string | null;

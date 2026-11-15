@@ -6,6 +6,7 @@ const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const IZINLI = new Set([
   "login", "register", "me", "logout",
   "forgot-password", "reset-password", "verify-email", "resend-verification",
+  "iki-adim-dogrula",
 ]);
 
 /**
@@ -33,7 +34,7 @@ async function ilet(request: NextRequest, action: string, method: string) {
     const sonuc = await yanit.json().catch(() => ({}));
     const cevap = NextResponse.json(sonuc, { status: yanit.status });
 
-    if (yanit.ok && (action === "login" || action === "register") && sonuc?.data?.token) {
+    if (yanit.ok && (action === "login" || action === "register" || action === "iki-adim-dogrula") && sonuc?.data?.token) {
       cevap.cookies.set(OTURUM_CEREZI, sonuc.data.token, cerezAyarlari);
     } else if (yanit.ok && action === "me" && token) {
       // Çerezden önce açılmış oturumlar ilk kontrolde çereze taşınır

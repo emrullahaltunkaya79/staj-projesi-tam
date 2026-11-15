@@ -75,17 +75,51 @@ export default function OdemeSayfasi() {
   const [kuponYukleniyor, setKuponYukleniyor] = useState(false);
   const [kupon, setKupon] = useState<{ code: string; name: string; discount: number; type: string; type_label: string } | null>(null);
   const [kuponMesaj, setKuponMesaj] = useState<string | null>(null);
+  // Paket kampanyası önizlemesi — sunucu aynı kuralı sipariş anında uygular
+  const [kampanya, setKampanya] = useState<{ ad: string; tur: string; al_adet: number; ode_adet: number; esik: number; urun_id: number | null } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/kampanyalar")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const liste: { ad: string; tur: string; al_adet: number; ode_adet: number; esik: number; urun_id: number | null }[] = d?.data ?? [];
+        setKampanya(liste[0] ?? null);
+      })
+      .catch(() => {});
+  }, []);
+
+  const kampanyaIndirimi = (() => {
+    if (!kampanya) return 0;
+    let toplam = 0;
+    if (kampanya.tur === "x_al_y_ode") {
+      const al = Math.max(2, kampanya.al_adet || 3);
+      const ode = Math.max(1, Math.min(al - 1, kampanya.ode_adet || al - 1));
+      for (const o of ogeler) {
+        if (kampanya.urun_id && o.id !== kampanya.urun_id) continue;
+        const ucretsiz = Math.floor(o.adet / al) * (al - ode);
+        toplam += ucretsiz * o.fiyat;
+      }
+    } else if (kampanya.tur === "esik_yarim" && kampanya.urun_id) {
+      if (genelToplam >= kampanya.esik) {
+        for (const o of ogeler) {
+          if (o.id !== kampanya.urun_id) continue;
+          toplam += o.fiyat * o.adet * 0.5;
+        }
+      }
+    }
+    return Math.round(toplam * 100) / 100;
+  })();
 
   // Kargo bölgesi teslimat adresinden belirlenir — ayrı seçilemez, adresle çelişemez
   const bolge = useMemo(() => KARGO_BOLGELERI.find((b) => b.id === kargoBolgesi(il, ilce)) ?? null, [il, ilce]);
   const ucretsizKargo = plusAktif || genelToplam >= UCRETSIZ_KARGO_LIMITI || kupon?.type === "free_shipping";
   const toplamKargo = ucretsizKargo || !bolge ? 0 : bolge.fiyat;
   const indirimTutari = kupon ? kupon.discount : 0;
-  const havaleIndirimi = odemeYontemi === "havale" ? Math.round((genelToplam - indirimTutari - referansIndirimi) * HAVALE_ORANI * 100) / 100 : 0;
+  const havaleIndirimi = odemeYontemi === "havale" ? Math.round((genelToplam - indirimTutari - referansIndirimi - kampanyaIndirimi) * HAVALE_ORANI * 100) / 100 : 0;
   // Sadakat puanı: 1 puan = 1 ₺, en fazla ara toplamın yarısı (sunucu da aynı kuralı uygular)
   const kullanilabilirPuan = Math.min(sadakatPuanim, Math.floor((genelToplam - indirimTutari) / 2));
   const puanIndirimi = puanKullanilsin && kullanilabilirPuan > 0 ? kullanilabilirPuan : 0;
-  const odenecekTutar = Math.max(0, genelToplam - indirimTutari - referansIndirimi - havaleIndirimi - puanIndirimi) + toplamKargo + (odemeYontemi === "kapida" ? KAPIDA_BEDEL : 0);
+  const odenecekTutar = Math.max(0, genelToplam - indirimTutari - referansIndirimi - kampanyaIndirimi - havaleIndirimi - puanIndirimi) + toplamKargo + (odemeYontemi === "kapida" ? KAPIDA_BEDEL : 0);
 
   useEffect(() => {
     if (!kullanici) return;
@@ -564,6 +598,18 @@ export default function OdemeSayfasi() {
             </div>
             <div className="mt-5 space-y-3 border-t border-black/15 pt-5 text-sm">
               <div className="flex justify-between text-black/60"><span>Ürünler (KDV dahil)</span><span className="font-semibold text-black tabular-nums">{fmt(genelToplam)} ₺</span></div>
+              {kampanyaIndirimi > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>🎁 {kampanya?.ad}</span>
+                  <span className="font-bold tabular-nums">−{fmt(kampanyaIndirimi)} ₺</span>
+                </div>
+              )}
+              {referansIndirimi > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Arkadaşını getir ({referansKodu})</span>
+                  <span className="font-bold tabular-nums">−{fmt(referansIndirimi)} ₺</span>
+                </div>
+              )}
               {kupon && kupon.discount > 0 && (
                 <div className="flex justify-between text-emerald-600">
                   <span>İndirim ({kupon.code})</span>

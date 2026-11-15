@@ -171,6 +171,16 @@ export default async function SiparisSayfasi({
             {s.status === "return_requested" && (
               <p className="mt-1 text-xs font-medium text-amber-600/80">Talebiniz satıcı tarafından inceleniyor — onaylandığında ürün bedeli 3-5 iş günü içinde iade edilir.</p>
             )}
+            {s.status === "returned" && s.iade_talebi?.kargo_kodu && (
+              <div className="mt-3 border-t border-black/15 pt-3">
+                <p className="text-[13px] font-black text-black">
+                  📦 İade kargo kodun: <span className="ml-1 rounded-lg border border-black/20 bg-white px-2 py-1 font-mono text-base tracking-wider">{s.iade_talebi.kargo_kodu}</span>
+                </p>
+                <p className="mt-1.5 text-xs font-medium text-black/60">
+                  Paketi bu kodla anlaşmalı kargo şubesine teslim edin — kargo ücreti sizden alınmaz.
+                </p>
+              </div>
+            )}
             {s.iade_talebi && (
               <div className="mt-3 border-t border-current/15 pt-3 text-xs font-medium opacity-90">
                 <p>Neden: {s.iade_talebi.neden_etiketi}{s.iade_talebi.aciklama ? ` — “${s.iade_talebi.aciklama}”` : ""}</p>
