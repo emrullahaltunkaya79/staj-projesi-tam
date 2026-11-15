@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ShoppingCart, User, LogOut, ChevronDown, ChevronRight, Heart, Moon, Sun, Menu, Bell, Ticket, MessageCircle } from "lucide-react";
@@ -94,6 +94,36 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       .then((r) => r.json())
       .then((d) => setMenuVerisi(d.data ?? {}))
       .catch(() => {});
+  };
+
+  // Kategori şeridi otomatik gezinme: kademeli sağa kayar, sona gelince başa döner.
+  // Üzerine gelinince durur; kullanıcı elle kaydırırsa kısa süre bekleyip devam eder.
+  const kategorilerRef = useRef<HTMLDivElement>(null);
+  const [gezinmeDurdu, setGezinmeDuraklat] = useState(false);
+  const devamSuresi = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (gezinmeDurdu) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const z = setInterval(() => {
+      const serit = kategorilerRef.current;
+      if (!serit) return;
+      const sonaKalan = serit.scrollWidth - serit.clientWidth - serit.scrollLeft;
+      if (sonaKalan <= 8) {
+        serit.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        serit.scrollBy({ left: 170, behavior: "smooth" });
+      }
+    }, 2400);
+
+    return () => clearInterval(z);
+  }, [gezinmeDurdu]);
+
+  const gezinmeyiGeciciDuraklat = () => {
+    setGezinmeDuraklat(true);
+    if (devamSuresi.current) clearTimeout(devamSuresi.current);
+    devamSuresi.current = setTimeout(() => setGezinmeDuraklat(false), 5000);
   };
 
   const megaAc = (ad: string) => {
@@ -431,7 +461,14 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         onMouseLeave={() => setMegaAcik(null)}
         className="relative border-b border-black/10 bg-white px-5 sm:px-10"
       >
-        <div className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]">
+        <div
+          ref={kategorilerRef}
+          onMouseEnter={() => setGezinmeDuraklat(true)}
+          onMouseLeave={() => setGezinmeDuraklat(false)}
+          onWheel={() => gezinmeyiGeciciDuraklat()}
+          onTouchStart={() => gezinmeyiGeciciDuraklat()}
+          className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]"
+        >
           <button type="button" onClick={() => setTumKategorilerAcik(v => !v)}
                   className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black uppercase tracking-wide text-black transition hover:bg-black/5 ${tumKategorilerAcik ? "bg-black/5" : ""}`}>
             <Menu className="h-3.5 w-3.5 text-[var(--marka)]" /> Tüm Kategoriler
