@@ -6,7 +6,8 @@
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 
 export const OTURUM_CEREZI = "hba_oturum";
-export const OTURUM_SURESI = 60 * 60 * 24 * 30;
+// Yalnızca bu modülde — oturum çerezi 30 gün
+const OTURUM_SURESI = 60 * 60 * 24 * 30;
 
 export type OturumKullanicisi = {
   id: number;

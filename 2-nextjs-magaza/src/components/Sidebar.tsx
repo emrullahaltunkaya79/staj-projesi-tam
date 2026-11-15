@@ -24,7 +24,7 @@ export type Filtreler = {
 
 export const bosFiltreler: Filtreler = { marka: null, model: null, altKategori: null, minFiyat: "", maxFiyat: "", sadeceStok: false, kdvDahil: false, renkler: [], boyutlar: [], bedenler: [] };
 
-export function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
+function filtrele(urunler: Urun[], f: Filtreler): Urun[] {
   let sonuc = urunler;
   if (f.marka) sonuc = sonuc.filter((u) => u.brand === f.marka);
   if (f.model) sonuc = sonuc.filter((u) => u.model === f.model);
