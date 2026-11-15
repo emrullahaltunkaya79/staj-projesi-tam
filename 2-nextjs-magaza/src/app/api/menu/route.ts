@@ -12,9 +12,9 @@ const KDV_ORANI = 1.2;
  */
 export async function GET() {
   try {
-    const yanit = await fetch(`${BASE}/products`, {
+    const yanit = await fetch(`${BASE}/products?katalog=evet`, {
       headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json" },
-      next: { revalidate: 120 },
+      cache: "no-store",
     });
 
     if (!yanit.ok) return NextResponse.json({ data: [] });
@@ -65,7 +65,7 @@ export async function GET() {
 
     return NextResponse.json(
       { data },
-      { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" } },
+      { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=300" } },
     );
   } catch {
     return NextResponse.json({ data: [] });
