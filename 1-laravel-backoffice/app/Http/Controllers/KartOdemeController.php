@@ -6,7 +6,6 @@ use App\Models\Order;
 use App\Services\Odeme\OdemeGatewayFactory;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Kartla online ödeme (3D Secure) akışı:
