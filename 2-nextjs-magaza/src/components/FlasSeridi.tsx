@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Star, Zap } from "lucide-react";
+import { Star, Zap } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { indirimliFiyat } from "@/lib/backoffice";
 import { kdvDahil } from "@/lib/fiyat";
@@ -17,15 +16,40 @@ import { KartaEkleButonu } from "./KartaEkleButonu";
  */
 const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
 
-/** Flaş İndirimler — düzenli fırsat şeridi: eşit kartlar, ok navigasyonu, stok çubuğu. */
-export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const kaydir = (miktar: number) => ref.current?.scrollBy({ left: miktar, behavior: "smooth" });
+/**
+ * Sonsuz kayan şerit matematiği:
+ * - Kartlar kopya sayısı kadar tekrarlanır ve iz `translateX(0 → -50%)` ile akar.
+ * - -%50 noktası tam "yarım kopya" genişliğine denk gelir; yarım kopya çift sayıda
+ *   kopyadan oluştuğu için döngü pürüzsüz sarar (kopya sayısı her zaman çifttir).
+ * - Kartlar arası boşluk track'te değil HER KARTIN `mr-3`'ünde taşınır; aksi halde
+ *   döngü noktasında yarım boşluk kayması oluşur.
+ * - Kopya sayısı: ürün sayısı 7+ ise 2, az ise 4 (yarım kopya her ekrana yetecek
+ *   kadar geniş olsun ki şerit boşluk bırakmasın).
+ */
+const KART_GENISLIGI = 216; // 204px kart + 12px mr
 
+export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: string }) {
   if (urunler.length === 0) return null;
+
+  const kopyaSayisi = urunler.length >= 7 ? 2 : 4;
+  // 25–30 sn hedefi: yarım turun (ekrandan geçen içerik miktarının) süresi
+  const sure = Math.round(Math.min(30, Math.max(26, urunler.length * 4)));
+  const kopyalar = Array.from({ length: kopyaSayisi }, (_, i) => i);
 
   return (
     <section className="px-5 pb-8 pt-6 sm:px-10">
+      <style>{`
+        @keyframes flas-akis {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        .flas-iz { animation: flas-akis ${sure}s linear infinite; }
+        .flas-alan:hover .flas-iz { animation-play-state: paused; }
+        @media (prefers-reduced-motion: reduce) {
+          .flas-iz { animation: none; }
+        }
+      `}</style>
+
       <div className="mx-auto max-w-7xl">
         {/* Başlık satırı */}
         <div className="mb-4 flex items-center justify-between gap-3 border-b border-orange-300 pb-3">
@@ -46,94 +70,84 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
             <Link href="/flas-indirimler" className="hidden items-center gap-1 text-[12px] font-bold text-black/40 transition hover:text-black sm:flex">
               Tümünü Gör
             </Link>
-            <div className="hidden items-center gap-1 sm:flex">
-              <button
-                type="button"
-                onClick={() => kaydir(-480)}
-                aria-label="Önceki ürünler"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-black/15 text-black/50 transition hover:border-black hover:text-black"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => kaydir(480)}
-                aria-label="Sonraki ürünler"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-black/15 text-black/50 transition hover:border-black hover:text-black"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* Eşit yükseklikli fırsat kartları */}
+        {/* Sonsuz akan şerit: kenarlarda yumuşak maske, hover'da durur,
+            reduced-motion tercihinde normal yatay kaydırmaya döner */}
         <div
-          ref={ref}
-          className="flex snap-x gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flas-alan group/serit relative overflow-hidden motion-reduce:overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
+                     [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]
+                     [-webkit-mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
         >
-          {urunler.map((u) => {
-            const indirim = u.discount_percent ?? 0;
-            const fiyat = indirim > 0 ? indirimliFiyat(u) : u.sale_price;
-            const kalanOran = Math.max(8, Math.min(100, Math.round((u.available_quantity / Math.max(u.stock_quantity, 1)) * 100)));
-            return (
-              <div key={u.id} className="w-[204px] shrink-0 snap-start overflow-hidden rounded-xl border border-black/10 bg-white transition hover:shadow-lg">
-                <Link href={`/urun/${u.id}`} className="block">
-                  <div className="relative aspect-square bg-[#f4f4f4]">
-                    {u.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={imgUrl(u.id, u.image_url)} alt={u.name} loading="lazy" className="h-full w-full object-contain p-4" />
-                    ) : (
-                      <span className="flex h-full items-center justify-center text-5xl font-black text-black/10">{u.name.charAt(0)}</span>
-                    )}
-                    {indirim > 0 && (
-                      <span className="absolute left-2.5 top-2.5 rounded-md bg-white/95 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-orange-600 shadow-sm">
-                        %{indirim} indirim
-                      </span>
-                    )}
-                    {!u.in_stock && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-xs font-bold uppercase tracking-widest text-black">
-                        Tükendi
-                      </span>
-                    )}
-                  </div>
-                  <div className="px-3 pb-2.5 pt-2.5">
-                    {u.brand && <p className="mb-0.5 truncate text-[10px] font-black uppercase tracking-widest text-black/45">{u.brand}</p>}
-                    <h3 className="line-clamp-2 h-[34px] text-[12.5px] font-semibold leading-snug text-black">{u.name}</h3>
-                    <div className="mt-1 flex h-4 items-center gap-1">
-                      {u.rating_avg != null ? (
-                        <>
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          <span className="text-[11px] font-bold text-amber-500">{u.rating_avg}</span>
-                          <span className="text-[10.5px] font-medium text-black/35">({u.review_count ?? 0})</span>
-                        </>
-                      ) : (
-                        <span className="text-[10.5px] text-transparent">—</span>
-                      )}
-                    </div>
-                    <div className="mt-1 flex items-baseline gap-1.5">
-                      <span className="text-[15px] font-black tabular-nums text-black">{fmt(kdvDahil(fiyat))} ₺</span>
-                      {indirim > 0 && <span className="text-[11px] tabular-nums text-black/35 line-through">{fmt(kdvDahil(u.sale_price))} ₺</span>}
-                    </div>
-                  </div>
-                </Link>
-                <div className="px-3 pb-3">
-                  {u.in_stock && (
-                    <>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/10">
-                        <div className="h-full rounded-full bg-orange-400" style={{ width: `${kalanOran}%` }} />
+          <div className="flas-iz flex w-max items-stretch">
+            {kopyalar.map((kopya) => (
+              <div key={kopya} aria-hidden={kopya > 0} className="flex items-stretch">
+                {urunler.map((u) => {
+                  const indirim = u.discount_percent ?? 0;
+                  const fiyat = indirim > 0 ? indirimliFiyat(u) : u.sale_price;
+                  const kalanOran = Math.max(8, Math.min(100, Math.round((u.available_quantity / Math.max(u.stock_quantity, 1)) * 100)));
+                  return (
+                    <div key={`${kopya}-${u.id}`} className="mr-3 w-[204px] shrink-0 overflow-hidden rounded-xl border border-black/10 bg-white transition hover:shadow-lg">
+                      <Link href={`/urun/${u.id}`} tabIndex={kopya > 0 ? -1 : undefined} className="block">
+                        <div className="relative aspect-square bg-[#f4f4f4]">
+                          {u.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={imgUrl(u.id, u.image_url)} alt={kopya > 0 ? "" : u.name} loading="lazy" className="h-full w-full object-contain p-4" />
+                          ) : (
+                            <span className="flex h-full items-center justify-center text-5xl font-black text-black/10">{u.name.charAt(0)}</span>
+                          )}
+                          {indirim > 0 && (
+                            <span className="absolute left-2.5 top-2.5 rounded-md bg-white/95 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-orange-600 shadow-sm">
+                              %{indirim} indirim
+                            </span>
+                          )}
+                          {!u.in_stock && (
+                            <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-xs font-bold uppercase tracking-widest text-black">
+                              Tükendi
+                            </span>
+                          )}
+                        </div>
+                        <div className="px-3 pb-2.5 pt-2.5">
+                          {u.brand && <p className="mb-0.5 truncate text-[10px] font-black uppercase tracking-widest text-black/45">{u.brand}</p>}
+                          <h3 className="line-clamp-2 h-[34px] text-[12.5px] font-semibold leading-snug text-black">{u.name}</h3>
+                          <div className="mt-1 flex h-4 items-center gap-1">
+                            {u.rating_avg != null ? (
+                              <>
+                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                <span className="text-[11px] font-bold text-amber-500">{u.rating_avg}</span>
+                                <span className="text-[10.5px] font-medium text-black/35">({u.review_count ?? 0})</span>
+                              </>
+                            ) : (
+                              <span className="text-[10.5px] text-transparent">—</span>
+                            )}
+                          </div>
+                          <div className="mt-1 flex items-baseline gap-1.5">
+                            <span className="text-[15px] font-black tabular-nums text-black">{fmt(kdvDahil(fiyat))} ₺</span>
+                            {indirim > 0 && <span className="text-[11px] tabular-nums text-black/35 line-through">{fmt(kdvDahil(u.sale_price))} ₺</span>}
+                          </div>
+                        </div>
+                      </Link>
+                      <div className="px-3 pb-3">
+                        {u.in_stock && (
+                          <>
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/10">
+                              <div className="h-full rounded-full bg-orange-400" style={{ width: `${kalanOran}%` }} />
+                            </div>
+                            <p className="mb-1.5 mt-1 text-[10px] font-bold text-orange-600">Son {u.available_quantity} adet!</p>
+                          </>
+                        )}
+                        <KartaEkleButonu
+                          urun={{ id: u.id, ad: u.name, fiyat, gorsel: imgUrl(u.id, u.image_url) }}
+                          musait={u.in_stock ? u.available_quantity : 0}
+                        />
                       </div>
-                      <p className="mb-1.5 mt-1 text-[10px] font-bold text-orange-600">Son {u.available_quantity} adet!</p>
-                    </>
-                  )}
-                  <KartaEkleButonu
-                    urun={{ id: u.id, ad: u.name, fiyat, gorsel: imgUrl(u.id, u.image_url) }}
-                    musait={u.in_stock ? u.available_quantity : 0}
-                  />
-                </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
     </section>
