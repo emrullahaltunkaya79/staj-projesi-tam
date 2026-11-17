@@ -208,11 +208,11 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
 
       <header className="sticky top-0 z-40 border-b border-black/10 bg-white px-5 pb-3 pt-4 shadow-sm sm:px-10">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-3">
-          <a href="/" className="flex items-center gap-2.5 leading-none">
+          <a href="/" className="flex items-center gap-3 leading-tight">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--marka)] text-[17px] font-black text-white">hb</span>
             <span>
-              <span className="block text-[24px] font-black tracking-[-0.03em] text-black sm:text-[30px]">HepsiBirarada<span className="text-[var(--marka)]">.</span></span>
-              <span className="block text-[10.5px] font-medium tracking-wide text-black/45">Teknoloji & Ofis — her şey tek yerde</span>
+              <span className="block text-[24px] font-black leading-tight tracking-[-0.03em] text-black sm:text-[30px]">HepsiBirarada<span className="text-[var(--marka)]">.</span></span>
+              <span className="mt-0.5 block text-xs font-medium tracking-wide text-slate-400">Teknoloji & Ofis — her şey tek yerde</span>
             </span>
           </a>
 
@@ -467,7 +467,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
           onMouseLeave={() => setGezinmeDuraklat(false)}
           onWheel={() => gezinmeyiGeciciDuraklat()}
           onTouchStart={() => gezinmeyiGeciciDuraklat()}
-          className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto py-1.5 [scrollbar-width:thin]"
+          className="marquee-alan mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto px-6 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
         >
           <button type="button" onClick={() => setTumKategorilerAcik(v => !v)}
                   className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-black uppercase tracking-wide text-black transition hover:bg-black/5 ${tumKategorilerAcik ? "bg-black/5" : ""}`}>

@@ -22,7 +22,7 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
   if (urunler.length === 0) return null;
 
   return (
-    <section className="px-5 pb-8 pt-6 sm:px-10">
+    <section className="px-5 pb-8 pt-10 sm:px-10">
       <div className="mx-auto max-w-7xl">
         {/* Başlık satırı */}
         <div className="mb-4 flex items-center justify-between gap-3 border-b border-orange-300 pb-3">
@@ -60,7 +60,7 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
                   <div className="relative aspect-square bg-[#f4f4f4]">
                     {u.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={imgUrl(u.id, u.image_url)} alt={kopya > 0 ? "" : u.name} loading="lazy" className="h-full w-full object-contain p-4" />
+                      <img src={imgUrl(u.id, u.image_url, u.gorsel_surum)} alt={kopya > 0 ? "" : u.name} loading="lazy" className="h-full w-full object-contain p-4" />
                     ) : (
                       <span className="flex h-full items-center justify-center text-5xl font-black text-black/10">{u.name.charAt(0)}</span>
                     )}
@@ -89,13 +89,13 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
                         <span className="text-[10.5px] text-transparent">—</span>
                       )}
                     </div>
-                    <div className="mt-1 flex items-baseline gap-1.5">
+                    <div className="mt-1.5 flex items-baseline gap-1.5">
                       <span className="text-[15px] font-black tabular-nums text-black">{fmt(kdvDahil(fiyat))} ₺</span>
                       {indirim > 0 && <span className="text-[11px] tabular-nums text-black/35 line-through">{fmt(kdvDahil(u.sale_price))} ₺</span>}
                     </div>
                   </div>
                 </Link>
-                <div className="px-3 pb-3">
+                <div className="mt-2 border-t border-black/5 px-3 pb-4 pt-2.5">
                   {u.in_stock && (
                     <>
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/10">
@@ -105,7 +105,7 @@ export function FlasSeridi({ urunler, aciklama }: { urunler: Urun[]; aciklama?: 
                     </>
                   )}
                   <KartaEkleButonu
-                    urun={{ id: u.id, ad: u.name, fiyat, gorsel: imgUrl(u.id, u.image_url) }}
+                    urun={{ id: u.id, ad: u.name, fiyat, gorsel: imgUrl(u.id, u.image_url, u.gorsel_surum) }}
                     musait={u.in_stock ? u.available_quantity : 0}
                   />
                 </div>
