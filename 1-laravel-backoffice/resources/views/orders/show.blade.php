@@ -50,21 +50,25 @@
     @endif
 
     @if (in_array($order->status, ['paid', 'preparing']) || ($order->status === 'pending' && $order->payment_method === 'kapida'))
-        <form method="POST" action="{{ route('siparisler.kargo', $order) }}" class="flex flex-col items-end gap-2 sm:flex-row sm:items-end">
+        <form method="POST" action="{{ route('siparisler.kargo', $order) }}"
+              class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
             @csrf
-            <div>
-                <label class="label !mb-1 text-xs">Kargo Firması</label>
-                <select name="carrier" required class="input !h-10 w-36">
-                    @foreach (['Yurtiçi Kargo', 'Aras Kargo', 'MNG Kargo', 'PTT Kargo', 'Sürat Kargo', 'Diğer'] as $firm)
-                        <option value="{{ $firm }}">{{ $firm }}</option>
-                    @endforeach
-                </select>
+            <p class="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Kargola</p>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div class="flex-1">
+                    <label class="label !mb-1 text-xs">Kargo Firması</label>
+                    <select name="carrier" required class="input !h-10 w-full">
+                        @foreach (['Yurtiçi Kargo', 'Aras Kargo', 'MNG Kargo', 'PTT Kargo', 'Sürat Kargo', 'Diğer'] as $firm)
+                            <option value="{{ $firm }}">{{ $firm }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="label !mb-1 text-xs">Takip No</label>
+                    <input type="text" name="tracking_no" required class="input !h-10 w-full" placeholder="Takip No">
+                </div>
+                <button type="submit" class="btn-secondary !h-10 w-full sm:!w-auto">Kargola</button>
             </div>
-            <div>
-                <label class="label !mb-1 text-xs">Takip No</label>
-                <input type="text" name="tracking_no" required class="input !h-10 w-36" placeholder="Takip No">
-            </div>
-            <button type="submit" class="btn-secondary !h-10">Kargola</button>
         </form>
     @endif
 @endsection
