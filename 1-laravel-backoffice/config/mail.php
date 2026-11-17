@@ -113,4 +113,13 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kritik Stok Bildirim Alıcısı
+    |--------------------------------------------------------------------------
+    | Stok kritik eşitin altına düştüğünde uyarı e-postasının gideceği adres.
+    */
+
+    'kritik_stok_alici' => env('KRITIK_STOK_MAIL_ALICI', 'emrullahaltunkaya79@gmail.com'),
+
 ];

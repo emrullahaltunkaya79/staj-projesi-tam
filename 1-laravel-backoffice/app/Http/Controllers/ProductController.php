@@ -8,6 +8,7 @@ use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -29,7 +30,8 @@ class ProductController extends Controller
         }
 
         if ($request->get('low_stock')) {
-            $query->where('stock_quantity', '<', 5);
+            // Ürün bazlı kritik eşik: stoğu kendi eşiğinin altında/eşit olanlar
+            $query->whereColumn('stock_quantity', '<=', 'min_stock_level');
         }
 
         return view('products.index', [
@@ -60,20 +62,58 @@ class ProductController extends Controller
             'images.*.max' => 'Görsel en fazla 4 MB olabilir.',
         ]);
 
-        $first = $product->images()->count() === 0; // ilk görsel otomatik ana görsel
+        $yuklenen = 0;
+        $yazilanYollar = [];
 
-        foreach ($request->file('images') as $i => $file) {
-            $yol = $file->store('product-images');
-            $this->optimizeImage(Storage::disk('local')->path($yol));
+        try {
+            DB::transaction(function () use ($request, $product, &$yuklenen, &$yazilanYollar) {
+                $first = $product->images()->count() === 0; // ilk görsel otomatik ana görsel
+                $taban = $product->images()->count();
 
-            $product->images()->create([
-                'path' => $yol,
-                'is_primary' => $first && $i === 0,
-                'sort' => $product->images()->count() + $i,
-            ]);
+                foreach ($request->file('images') as $i => $file) {
+                    $yol = $file->store('product-images');
+                    $mutlak = Storage::disk('local')->path($yol);
+                    $this->optimizeImage($mutlak);
+
+                    if (! is_file($mutlak)) {
+                        throw new \RuntimeException('Görsel dosyası diske yazılamadı. Depolama alanını ve yazma izinlerini kontrol edin.');
+                    }
+
+                    $product->images()->create([
+                        'path' => $yol,
+                        'is_primary' => $first && $i === 0,
+                        'sort' => $taban + $i,
+                    ]);
+
+                    $yazilanYollar[] = $yol;
+                    $yuklenen++;
+                }
+            });
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            // Yarı kalmış dosyaları temizle — bozuk görsel kaydı kalmasın
+            foreach ($yazilanYollar as $yol) {
+                Storage::delete($yol);
+            }
+
+            report($e);
+
+            return back()->with('error', 'Görsel yüklenirken bir sorun oluştu: '.$e->getMessage().' Kayıt tamamlanamadı, lütfen tekrar deneyin.');
         }
 
-        return back()->with('success', count($request->file('images')).' görsel yüklendi.');
+        // Mağazaya bildir: görsel değişimi katalog + görsel önbelleklerini tazeler
+        $product->refresh();
+        app(\App\Services\WebhookService::class)->productUpsert(
+            $product->id,
+            $product->name,
+            $product->code,
+            (float) $product->sale_price,
+            (int) $product->stock_quantity,
+            $product->category?->name,
+        );
+
+        return back()->with('success', $yuklenen.' görsel yüklendi ve mağazaya yansıtıldı.');
     }
 
     /**
@@ -84,7 +124,12 @@ class ProductController extends Controller
         $image = \App\Models\ProductImage::where('product_id', $product->id)->where('id', $image->id)->firstOrFail();
 
         $anaSilindi = $image->is_primary;
-        Storage::delete($image->path);
+        try {
+            Storage::delete($image->path);
+        } catch (\Throwable $e) {
+            // Dosya diskte yoksa bile kaydı silmeye devam et — ölü dosya kaydı kalmasın
+            report($e);
+        }
         $image->delete();
 
         // Ana görsel silindiyse sıradaki görsel ana görsel olur — mağaza görselsiz kalmasın
@@ -94,7 +139,18 @@ class ProductController extends Controller
                 ->first()?->update(['is_primary' => true]);
         }
 
-        return back()->with('success', 'Görsel silindi.');
+        // Mağazaya bildir: görsel listesi değişti
+        $product->refresh();
+        app(\App\Services\WebhookService::class)->productUpsert(
+            $product->id,
+            $product->name,
+            $product->code,
+            (float) $product->sale_price,
+            (int) $product->stock_quantity,
+            $product->category?->name,
+        );
+
+        return back()->with('success', 'Görsel silindi ve mağazaya yansıtıldı.');
     }
 
     /**
@@ -107,7 +163,18 @@ class ProductController extends Controller
         \App\Models\ProductImage::where('product_id', $product->id)->update(['is_primary' => false]);
         $image->update(['is_primary' => true]);
 
-        return back()->with('success', 'Ana görsel güncellendi.');
+        // Mağazaya bildir: ana görsel değişti (mağaza ilk görseli ana olarak gösterir)
+        $product->refresh();
+        app(\App\Services\WebhookService::class)->productUpsert(
+            $product->id,
+            $product->name,
+            $product->code,
+            (float) $product->sale_price,
+            (int) $product->stock_quantity,
+            $product->category?->name,
+        );
+
+        return back()->with('success', 'Ana görsel güncellendi ve mağazaya yansıtıldı.');
     }
 
     /**

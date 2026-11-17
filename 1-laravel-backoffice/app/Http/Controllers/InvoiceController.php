@@ -54,10 +54,17 @@ class InvoiceController extends Controller
 
     public function createPurchase()
     {
+        // Kritik stok "Tedarikçiye Sipariş Oluştur" taslağı: dashboard'dan gelen
+        // tedarikci/urun/adet parametreleriyle form önceden doldurulur
         return view('invoices.create_purchase', [
             'contacts' => Contact::where('type', 'tedarikci')->orderBy('name')->get(),
             'warehouses' => \App\Models\Warehouse::where('is_active', true)->orderBy('name')->get(),
             'products' => $this->productsForForm(),
+            'onTasarla' => [
+                'tedarikci' => (int) request()->query('tedarikci'),
+                'urun' => (int) request()->query('urun'),
+                'adet' => max(1, (int) request()->query('adet', 1)),
+            ],
         ]);
     }
 

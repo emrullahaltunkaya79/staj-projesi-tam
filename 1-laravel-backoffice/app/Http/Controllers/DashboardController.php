@@ -156,10 +156,10 @@ class DashboardController extends Controller
         // ============================================================
         $sonSiparisler = Order::orderByDesc('id')->limit(8)->get();
 
-        $kritikStok = Product::where('stock_quantity', '<=', 5)
+        $kritikStok = Product::whereColumn('stock_quantity', '<=', 'min_stock_level')
             ->orderBy('stock_quantity')
             ->limit(7)
-            ->get(['id', 'name', 'stock_quantity', 'sale_price']);
+            ->get(['id', 'name', 'stock_quantity', 'min_stock_level', 'sale_price', 'supplier_id']);
 
         // Kasa durumu (korunmuştur — önceki panelden)
         $kasa = fn (string $tip) => (float) Payment::where('direction', 'tahsilat')->where('payment_type', $tip)->sum('amount')

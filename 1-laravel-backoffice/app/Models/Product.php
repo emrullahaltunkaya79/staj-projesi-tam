@@ -25,6 +25,8 @@ class Product extends Model
         'kargo_maliyeti',
         'discount_percent',
         'stock_quantity',
+        'min_stock_level',
+        'supplier_id',
         'reserved_quantity',
 
         'video_url',
@@ -41,6 +43,26 @@ class Product extends Model
             : (float) $this->sale_price;
     }
 
+    /** Ürünü tedarik eden tedarikçi carisi. */
+    public function supplier()
+    {
+        return $this->belongsTo(Contact::class, 'supplier_id');
+    }
+
+    /** Stok kritik eşitin altında mı? (eşitlik dahil) */
+    public function kritikStokta(): bool
+    {
+        return $this->stock_quantity <= $this->min_stock_level;
+    }
+
+    /** Satınalma önerisi: eşiğin 2 katına toparlama hedefi (en az eşiğin yarısı kadar). */
+    public function onerilenSiparisAdedi(): int
+    {
+        $hedef = max((int) $this->min_stock_level * 2, 1);
+
+        return max(0, $hedef - (int) $this->stock_quantity);
+    }
+
     protected function casts(): array
     {
         return [
@@ -48,6 +70,8 @@ class Product extends Model
             'sale_price' => 'decimal:2',
             'pazaryeri_komisyon_orani' => 'decimal:2',
             'kargo_maliyeti' => 'decimal:2',
+            'min_stock_level' => 'integer',
+            'low_stock_notified_at' => 'datetime',
             'specs' => 'array',
             'stock_quantity' => 'integer',
             'reserved_quantity' => 'integer',
@@ -112,6 +136,9 @@ class Product extends Model
                         'Manuel stok düzeltmesi'
                     );
                 }
+
+                // Kritik stok denetimi: panel düzenlemelerinde anlık tetiklenir
+                app(\App\Services\KritikStokServisi::class)->denetle($product->fresh());
             }
         });
     }

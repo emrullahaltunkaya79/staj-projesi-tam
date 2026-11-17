@@ -281,14 +281,27 @@
                 </div>
                 <ul class="space-y-1.5">
                     @forelse ($kritikStok as $product)
-                        <li>
-                            <a href="{{ route('urunler.edit', $product) }}"
-                               class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs transition hover:border-amber-300 hover:bg-amber-50 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-amber-700 dark:hover:bg-amber-950/30">
-                                <span class="truncate font-semibold text-slate-700 dark:text-slate-200">{{ Str::limit($product->name, 26) }}</span>
-                                <span class="shrink-0 rounded px-1.5 py-0.5 font-bold tabular-nums {{ $product->stock_quantity == 0 ? 'bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' }}">
-                                    {{ $product->stock_quantity }} adet
+                        <li class="rounded-lg border border-red-100 bg-red-50/60 px-3 py-2 dark:border-red-900/40 dark:bg-red-950/20">
+                            <div class="flex items-center justify-between gap-2">
+                                <a href="{{ route('urunler.edit', $product) }}" class="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 hover:text-indigo-600 dark:text-slate-200">
+                                    {{ Str::limit($product->name, 26) }}
+                                </a>
+                                <span class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-300">
+                                    {{ $product->stock_quantity }} / min {{ $product->min_stock_level }}
                                 </span>
-                            </a>
+                            </div>
+                            <div class="mt-1.5 flex items-center justify-between gap-2">
+                                <span class="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-950/50 dark:text-red-300">⚠ Kritik</span>
+                                @php $adet = $product->onerilenSiparisAdedi(); @endphp
+                                <a href="{{ route('alislar.create', array_filter([
+                                        'tedarikci' => $product->supplier_id,
+                                        'urun' => $product->id,
+                                        'adet' => $adet > 0 ? $adet : null,
+                                    ])) }}"
+                                   class="inline-flex items-center gap-1 rounded-full bg-black px-2.5 py-1 text-[10px] font-bold text-white transition hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80">
+                                    🛒 Tedarikçiye Sipariş Oluştur{{ $adet > 0 ? " ({$adet} adet)" : '' }}
+                                </a>
+                            </div>
                         </li>
                     @empty
                         <li class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">Kritik seviyede ürün yok 👍</li>

@@ -59,6 +59,8 @@ class ProductRequest extends FormRequest
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],
             'stock_quantity' => ['required', 'integer', 'min:0'],
+            'min_stock_level' => ['nullable', 'integer', 'min:0'],
+            'supplier_id' => ['nullable', 'integer', 'exists:contacts,id'],
             // Pazar yeri simülatörü girdileri (advisory — sipariş entegrasyonlarında varsayılan)
             'pazaryeri' => ['nullable', 'string', 'in:web,ozel,trendyol,hepsiburada,amazon'],
             'pazaryeri_komisyon_orani' => ['nullable', 'numeric', 'min:0', 'max:100'],

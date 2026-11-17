@@ -433,6 +433,10 @@ class InvoiceService
             if ($type === 'satis') {
                 foreach ($lines as $line) {
                     $this->stokBildir($line['product']->id);
+                    // Kritik stok denetimi: eşik altına düşen ürüne tek seferlik uyarı
+                    if ($urun = \App\Models\Product::find($line['product']->id)) {
+                        app(\App\Services\KritikStokServisi::class)->denetle($urun);
+                    }
                 }
             }
 

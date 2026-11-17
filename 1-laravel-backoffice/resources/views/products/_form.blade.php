@@ -131,6 +131,25 @@
         </div>
 
         <div>
+            <label class="label" for="min_stock_level">Kritik Stok Eşiği</label>
+            <input type="number" id="min_stock_level" name="min_stock_level" min="0" step="1"
+                   value="{{ old('min_stock_level', $product->min_stock_level ?? 5) }}" class="input">
+            <p class="mt-1 text-xs text-slate-400">Stok bu seviyenin altına düşerse uyarı e-postası gönderilir.</p>
+            @error('min_stock_level') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="label" for="supplier_id">Tedarikçi</label>
+            <select id="supplier_id" name="supplier_id" class="input">
+                <option value="">— Tedarikçi seçin —</option>
+                @foreach (\App\Models\Contact::where('type', 'tedarikci')->orderBy('name')->get() as $tedarikci)
+                    <option value="{{ $tedarikci->id }}" @selected(old('supplier_id', $product->supplier_id) == $tedarikci->id)>{{ $tedarikci->name }}</option>
+                @endforeach
+            </select>
+            @error('supplier_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <label class="label" for="purchase_price">Alış Fiyatı (₺) <span class="text-red-500">*</span></label>
             <input type="number" id="purchase_price" name="purchase_price" min="0" step="0.01"
                    value="{{ old('purchase_price', $product->purchase_price) }}" required class="input">

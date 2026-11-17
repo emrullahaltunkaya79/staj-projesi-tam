@@ -131,5 +131,39 @@
 
     @push('scripts')
         <script src="{{ asset('js/invoice-form.js') }}"></script>
+        @once
+            <script>
+                // Kritik stok sipariş taslağı: dashboarddan gelen tedarikci/urun/adet
+                // parametreleriyle tedarikçi + ilk kalem önceden doldurulur
+                document.addEventListener('DOMContentLoaded', () => {
+                    const tas = @json($onTasarla);
+                    if (!tas || !tas.urun) return;
+
+                    if (tas.tedarikci) {
+                        const contact = document.getElementById('contact_id');
+                        if ([...contact.options].some(o => o.value === String(tas.tedarikci))) {
+                            contact.value = String(tas.tedarikci);
+                            contact.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }
+
+                    const bekle = (ms) => new Promise(r => setTimeout(r, ms));
+                    (async () => {
+                        document.getElementById('add-row').click();
+                        await bekle(80);
+                        const satir = document.querySelector('#invoice-items tr:last-child');
+                        if (!satir) return;
+                        const sec = satir.querySelector('.product-select');
+                        if (![...sec.options].some(o => o.value === String(tas.urun))) return;
+                        sec.value = String(tas.urun);
+                        sec.dispatchEvent(new Event('change', { bubbles: true }));
+                        await bekle(80);
+                        const adet = satir.querySelector('.quantity');
+                        adet.value = tas.adet;
+                        adet.dispatchEvent(new Event('input', { bubbles: true }));
+                    })();
+                });
+            </script>
+        @endonce
     @endpush
 @endsection
