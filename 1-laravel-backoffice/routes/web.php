@@ -91,7 +91,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/urunler/stok-sayim/import', [ImportController::class, 'importStockCount'])->name('urunler.stok-sayim.import');
 
     Route::resource('cariler', ContactController::class)->parameters(['cariler' => 'contact']);
-    Route::resource('urunler', ProductController::class)->parameters(['urunler' => 'product']);
+    // Ürün oluşturma/silme YÖNETİCİ; düzenleme personel için stok ile sınırlı (ProductRequest)
+    Route::resource('urunler', ProductController::class)
+        ->except(['create', 'store', 'destroy'])
+        ->parameters(['urunler' => 'product']);
+    Route::middleware('admin')->group(function () {
+        Route::get('/urunler/create', [ProductController::class, 'create'])->name('urunler.create');
+        Route::post('/urunler', [ProductController::class, 'store'])->name('urunler.store');
+        Route::delete('/urunler/{product}', [ProductController::class, 'destroy'])->name('urunler.destroy');
+    });
     Route::post('/urunler/{product}/gorseller', [ProductController::class, 'uploadImage'])->name('urunler.gorsel.upload');
     Route::delete('/urunler/{product}/gorseller/{image}', [ProductController::class, 'destroyImage'])->name('urunler.gorsel.destroy');
     Route::post('/urunler/{product}/gorseller/{image}/ana-gorsel', [ProductController::class, 'setPrimaryImage'])->name('urunler.gorsel.ana');
@@ -102,18 +110,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/faturalar/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])
         ->middleware('auth')
         ->name('faturalar.pdf');
-    Route::get('/faturalar/{invoice}/iade', [InvoiceController::class, 'refundForm'])->name('faturalar.iade.form');
-    Route::post('/faturalar/{invoice}/iade', [InvoiceController::class, 'refund'])->name('faturalar.iade');
+    Route::get('/faturalar/{invoice}/iade', [InvoiceController::class, 'refundForm'])->name('faturalar.iade.form')->middleware('admin');
+    Route::post('/faturalar/{invoice}/iade', [InvoiceController::class, 'refund'])->name('faturalar.iade')->middleware('admin');
     Route::post('/faturalar/{invoice}/e-posta', [InvoiceController::class, 'email'])
         ->name('faturalar.email');
 
-    // Alış faturaları (tedarikçiden satın alma)
-    Route::get('/alis-faturalari/create', [InvoiceController::class, 'createPurchase'])->name('alislar.create');
-    Route::post('/alis-faturalari', [InvoiceController::class, 'storePurchase'])->name('alislar.store');
+    // Alış faturaları (tedarikçiden satın alma — maliyet modülü: yönetici)
+    Route::get('/alis-faturalari/create', [InvoiceController::class, 'createPurchase'])->name('alislar.create')->middleware('admin');
+    Route::post('/alis-faturalari', [InvoiceController::class, 'storePurchase'])->name('alislar.store')->middleware('admin');
 
     // Stok hareket geçmişi ve raporlar
     Route::get('/stok-hareketleri', [StockMovementController::class, 'index'])->name('movements.index');
-    Route::get('/raporlar', [ReportController::class, 'index'])->name('raporlar.index');
+    Route::get('/raporlar', [ReportController::class, 'index'])->name('raporlar.index')->middleware('admin');
 
     // Paket kampanyaları (mağaza sepet motoruna beslenir)
     Route::get('/mesajlar', [ContactMessageController::class, 'index'])->name('mesajlar.index');
@@ -124,7 +132,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/kampanyalar', [CampaignController::class, 'store'])->name('kampanyalar.store');
     Route::post('/kampanyalar/{campaign}/toggle', [CampaignController::class, 'toggle'])->name('kampanyalar.toggle');
     Route::delete('/kampanyalar/{campaign}', [CampaignController::class, 'destroy'])->name('kampanyalar.destroy');
-    Route::get('/raporlar/excel', [ReportController::class, 'export'])->name('raporlar.excel');
+    Route::get('/raporlar/excel', [ReportController::class, 'export'])->name('raporlar.excel')->middleware('admin');
 
     // Global arama (cariler, ürünler, faturalar)
     Route::get('/ara', SearchController::class)->name('ara');
@@ -132,29 +140,29 @@ Route::middleware('auth')->group(function () {
     // Ödeme takvimi (vadeler + tekrarlayan kesimler)
     Route::get('/takvim', [CalendarController::class, 'index'])->name('takvim.index');
 
-    // E-ticaret siparişleri (panel)
+    // E-ticaret siparişleri (panel) — ödeme/iptal/iade kararı YÖNETİCİ; kargo/hazırlık/teslim personel
     Route::get('/siparisler', [OrderController::class, 'index'])->name('siparisler.index');
     Route::get('/siparisler/{order}', [OrderController::class, 'show'])->name('siparisler.show');
     Route::get('/siparisler/{order}/etiket', [OrderController::class, 'label'])->name('siparisler.etiket');
-    Route::post('/siparisler/{order}/odendi', [OrderController::class, 'markPaid'])->name('siparisler.odendi');
-    Route::post('/siparisler/{order}/iptal', [OrderController::class, 'cancelOrder'])->name('siparisler.iptal');
+    Route::post('/siparisler/{order}/odendi', [OrderController::class, 'markPaid'])->name('siparisler.odendi')->middleware('admin');
+    Route::post('/siparisler/{order}/iptal', [OrderController::class, 'cancelOrder'])->name('siparisler.iptal')->middleware('admin');
     Route::post('/siparisler/{order}/kargo', [OrderController::class, 'updateShipping'])->name('siparisler.kargo');
     Route::post('/siparisler/{order}/hazirla', [OrderController::class, 'markPreparing'])->name('siparisler.hazirla');
     Route::post('/siparisler/{order}/teslim', [OrderController::class, 'markDelivered'])->name('siparisler.teslim');
-    Route::post('/siparisler/{order}/iade-onay', [OrderController::class, 'approveReturn'])->name('siparisler.iade.onay');
-    Route::post('/siparisler/{order}/iade-reddet', [OrderController::class, 'rejectReturn'])->name('siparisler.iade.reddet');
+    Route::post('/siparisler/{order}/iade-onay', [OrderController::class, 'approveReturn'])->name('siparisler.iade.onay')->middleware('admin');
+    Route::post('/siparisler/{order}/iade-reddet', [OrderController::class, 'rejectReturn'])->name('siparisler.iade.reddet')->middleware('admin');
 
-    // CSPR kripto ödeme
-    Route::post('/siparisler/{order}/cspr-odeme', [CasperPaymentController::class, 'start'])->name('siparisler.cspr.start');
+    // CSPR kripto ödeme (yönetici)
+    Route::post('/siparisler/{order}/cspr-odeme', [CasperPaymentController::class, 'start'])->name('siparisler.cspr.start')->middleware('admin');
     Route::get('/siparisler/{order}/cspr-odeme/{payment}', [CasperPaymentController::class, 'show'])->name('siparisler.cspr.show');
     Route::post('/siparisler/{order}/cspr-odeme/{payment}/kontrol', [CasperPaymentController::class, 'check'])->name('siparisler.cspr.check');
-    Route::post('/siparisler/{order}/cspr-odeme/{payment}/onay', [CasperPaymentController::class, 'forceConfirm'])->name('siparisler.cspr.confirm');
+    Route::post('/siparisler/{order}/cspr-odeme/{payment}/onay', [CasperPaymentController::class, 'forceConfirm'])->name('siparisler.cspr.confirm')->middleware('admin');
 
-    // Özel fiyat listesi (cari bazlı)
+    // Özel fiyat listesi (cari bazlı) — görüntüleme herkese, yönetim yalnız yönetici
     Route::get('/ara/fiyatlar', [SearchController::class, 'prices'])->name('ara.fiyatlar');
     Route::get('/fiyatlar', [ContactPriceController::class, 'index'])->name('fiyatlar.index');
-    Route::post('/fiyatlar', [ContactPriceController::class, 'store'])->name('fiyatlar.store');
-    Route::delete('/fiyatlar/{price}', [ContactPriceController::class, 'destroy'])->name('fiyatlar.destroy');
+    Route::post('/fiyatlar', [ContactPriceController::class, 'store'])->name('fiyatlar.store')->middleware('admin');
+    Route::delete('/fiyatlar/{price}', [ContactPriceController::class, 'destroy'])->name('fiyatlar.destroy')->middleware('admin');
 
     // Depolar
     Route::get('/depolar', [WarehouseController::class, 'index'])->name('depolar.index');
@@ -171,9 +179,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/kategoriler', [CategoryController::class, 'store'])->name('kategoriler.store');
     Route::delete('/kategoriler/{category}', [CategoryController::class, 'destroy'])->name('kategoriler.destroy');
 
-    // Kasa ↔ Banka virmanları
-    Route::get('/virmanlar', [CashTransferController::class, 'index'])->name('virmanlar.index');
-    Route::post('/virmanlar', [CashTransferController::class, 'store'])->name('virmanlar.store');
+    // Kasa ↔ Banka virmanları (finansal: yönetici)
+    Route::middleware('admin')->group(function () {
+        Route::get('/virmanlar', [CashTransferController::class, 'index'])->name('virmanlar.index');
+        Route::post('/virmanlar', [CashTransferController::class, 'store'])->name('virmanlar.store');
+    });
 
     // Şirket ayarları (yönetici)
     Route::get('/ayarlar', [CompanySettingController::class, 'edit'])->name('ayarlar.edit');
@@ -206,9 +216,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/webhooklar/{delivery}/tekrar-gonder', [\App\Http\Controllers\WebhookDeliveryController::class, 'retry'])->name('webhooklar.retry');
 
     // Giderler (kasa çıkışları)
-    Route::resource('giderler', ExpenseController::class)
-        ->only(['index', 'create', 'store', 'destroy'])
-        ->parameters(['giderler' => 'expense']);
+    Route::middleware('admin')->group(function () {
+        Route::resource('giderler', ExpenseController::class)
+            ->only(['index', 'create', 'store', 'destroy'])
+            ->parameters(['giderler' => 'expense']);
+    });
 
     // Teklif modülü
     Route::resource('teklifler', QuoteController::class)
@@ -230,14 +242,16 @@ Route::middleware('auth')->group(function () {
         ->parameters(['kullanicilar' => 'user']);
     Route::post('/kullanicilar/{user}/rol', [UserController::class, 'changeRole'])->name('kullanicilar.rol');
 
-    // Tahsilat (ödeme alma) modülü
-    Route::get('/tahsilatlar', [PaymentController::class, 'index'])->name('payments.index');
-    Route::get('/tahsilatlar/create', [PaymentController::class, 'create'])->name('payments.create');
-    Route::post('/tahsilatlar', [PaymentController::class, 'store'])->name('payments.store');
+    // Tahsilat (ödeme alma) modülü — finansal: yönetici
+    Route::middleware('admin')->group(function () {
+        Route::get('/tahsilatlar', [PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/tahsilatlar/create', [PaymentController::class, 'create'])->name('payments.create');
+        Route::post('/tahsilatlar', [PaymentController::class, 'store'])->name('payments.store');
 
-    // Tedarikçiye ödeme
-    Route::get('/tedarikci-odemeleri/create', [PaymentController::class, 'createSupplier'])->name('payments.create_supplier');
-    Route::post('/tedarikci-odemeleri', [PaymentController::class, 'storeSupplier'])->name('payments.store_supplier');
+        // Tedarikçiye ödeme
+        Route::get('/tedarikci-odemeleri/create', [PaymentController::class, 'createSupplier'])->name('payments.create_supplier');
+        Route::post('/tedarikci-odemeleri', [PaymentController::class, 'storeSupplier'])->name('payments.store_supplier');
+    });
 });
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
