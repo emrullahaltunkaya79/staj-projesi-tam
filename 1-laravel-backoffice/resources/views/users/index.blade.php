@@ -70,7 +70,10 @@
                         <td>{{ $user->created_at->format('d.m.Y') }}</td>
                         <td>
                             @if ($user->id !== auth()->id())
-                                <div class="flex justify-end">
+                                <div class="flex items-center justify-end gap-3">
+                                    <button type="button" data-modal-url="{{ route('kullanicilar.edit', $user) }}"
+                                            data-modal-title="Kullanıcıyı Düzenle"
+                                            class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Düzenle</button>
                                     <form method="POST" action="{{ route('kullanicilar.destroy', $user) }}"
                                           onsubmit="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')

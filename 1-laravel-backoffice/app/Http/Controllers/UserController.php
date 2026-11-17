@@ -52,6 +52,69 @@ class UserController extends Controller
     }
 
     /**
+     * Panel: yöneticinin başka bir kullanıcıyı düzenlemesi (ad/e-posta/şifre).
+     * Rol değişimi bilinçli olarak AYRI uçtadır (kendi rolünü koruma + son yönetici kuralları).
+     */
+    public function edit(Request $request, User $user)
+    {
+        abort_unless($request->user()->can('manage', User::class), 403);
+        abort_unless($user->company_id === $request->user()->company_id, 404);
+
+        return view('users.edit', ['user' => $user]);
+    }
+
+    public function update(Request $request, User $user)
+    {
+        abort_unless($request->user()->can('manage', User::class), 403);
+        abort_unless($user->company_id === $request->user()->company_id, 404);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required', 'string', 'email', 'max:255',
+                \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'password' => ['nullable', 'string', 'min:8'],
+        ], [
+            'name.required' => 'Ad Soyad zorunludur.',
+            'email.required' => 'E-posta zorunludur.',
+            'email.unique' => 'Bu e-posta adresi zaten kayıtlı.',
+            'password.min' => 'Şifre en az 8 karakter olmalıdır.',
+        ]);
+
+        $epostaDegisti = $validated['email'] !== $user->email;
+
+        $guncelle = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ];
+
+        // E-posta değişirse doğrulama sıfırlanır (güvenlik) — yeni doğrulama maili tetiklenir
+        if ($epostaDegisti) {
+            $guncelle['email_verified_at'] = null;
+        }
+
+        // Şifre alanı boş bırakılırsa şifre değişmez
+        if (! empty($validated['password'])) {
+            $guncelle['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($guncelle);
+
+        if ($epostaDegisti) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => "{$user->name} kullanıcısı güncellendi."]);
+        }
+
+        return redirect()->route('kullanicilar.index')
+            ->with('success', "{$user->name} kullanıcısı güncellendi."
+                .($epostaDegisti ? ' Yeni e-posta için doğrulama bağlantısı gönderildi.' : ''));
+    }
+
+    /**
      * Kullanıcının rolünü değiştirir — yalnızca yönetici erişebilir.
      * Kurallar: kendi rolün değiştirilemez, son yönetici düşürülemez.
      */

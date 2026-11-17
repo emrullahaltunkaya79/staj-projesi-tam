@@ -226,7 +226,7 @@ Route::middleware('auth')->group(function () {
 
     // Kullanıcı yönetimi — erişim UserPolicy ile kontrol edilir (controller içinde)
     Route::resource('kullanicilar', UserController::class)
-        ->only(['index', 'create', 'store', 'destroy'])
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
         ->parameters(['kullanicilar' => 'user']);
     Route::post('/kullanicilar/{user}/rol', [UserController::class, 'changeRole'])->name('kullanicilar.rol');
 
