@@ -71,6 +71,7 @@ Route::match(['get', 'post'], '/odeme/3ds-geri-donus/{orderNo}', [KartOdemeContr
 // Panel - oturum açmış kullanıcılar
 Route::middleware('auth')->group(function () {
     Route::get('/panel', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/panel/ozet', [DashboardController::class, 'ozet'])->name('dashboard.ozet');
 
     // Excel dışa aktarma (resource parametre rotalarıyla çakışmaması için önce tanımlanır)
     Route::get('/cariler/export', [ContactController::class, 'export'])->name('cariler.export');

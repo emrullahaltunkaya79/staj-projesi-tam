@@ -49,10 +49,11 @@ class DueDateTrackingTest extends TestCase
 
         $this->createOverdueInvoice($user);
 
+        // Yeni ERP dashboard: vadesi geçen alacaklar KPI kartında gösterilir
         $this->get('/panel')
             ->assertOk()
-            ->assertSee('faturanın vadesi geçti')
-            ->assertSee('300,00');
+            ->assertSee('Vadesi Geçen')
+            ->assertSee('300 ₺');
     }
 
     /** @test */

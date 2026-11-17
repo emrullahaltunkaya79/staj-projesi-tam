@@ -34,6 +34,9 @@ class Order extends Model
         'customer_phone',
         'shipping_address',
         'payment_method',
+        'kanal',
+        'kargo_maliyeti',
+        'pazaryeri_komisyonu',
         'odeme_token',
         'kullanilan_puan',
         'fatura_tipi',
@@ -158,6 +161,33 @@ class Order extends Model
             'returned' => 'badge-purple',
             'cancelled' => 'badge-red',
             default => 'badge-slate',
+        };
+    }
+
+    /**
+     * Satış kanalı etiketi (web sitesi / pazar yerleri / API entegrasyonu).
+     */
+    public const KANALLAR = ['web', 'trendyol', 'hepsiburada', 'n11', 'api'];
+
+    public function kanalEtiketi(): string
+    {
+        return match ($this->kanal) {
+            'trendyol' => 'Trendyol',
+            'hepsiburada' => 'Hepsiburada',
+            'n11' => 'N11',
+            'api' => 'API Entegrasyonu',
+            default => 'Web Sitesi',
+        };
+    }
+
+    public function kanalRozetClass(): string
+    {
+        return match ($this->kanal) {
+            'trendyol' => 'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300',
+            'hepsiburada' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+            'n11' => 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300',
+            'api' => 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+            default => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300',
         };
     }
 

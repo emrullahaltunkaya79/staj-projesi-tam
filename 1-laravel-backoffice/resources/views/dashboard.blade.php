@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Dashboard')
+@section('title', 'Yönetim Paneli')
 
 @section('actions')
     <button type="button" class="btn-primary" data-modal-url="{{ route('faturalar.create') }}" data-modal-title="Yeni Satış Faturası" data-modal-wide="1">
@@ -13,211 +13,389 @@
 @section('content')
     @php
         $fmt = fn ($value) => number_format((float) $value, 2, ',', '.').' ₺';
-        $fmtShort = function ($value) {
+        $fmtKisa = function ($value) {
             $value = (float) $value;
-            if (abs($value) >= 1_000_000) return rtrim(rtrim(number_format($value / 1_000_000, 1, ',', '.'), '0'), ',').' M ₺';
-            if (abs($value) >= 1_000) return rtrim(rtrim(number_format($value / 1_000, 1, ',', '.'), '0'), ',').' B ₺';
-            return number_format($value, 0, ',', '.').' ₺';
+            $isaret = $value < 0 ? '-' : '';
+            $value = abs($value);
+            if ($value >= 1_000_000) return $isaret.rtrim(rtrim(number_format($value / 1_000_000, 1, ',', '.'), '0'), ',').' M ₺';
+            if ($value >= 1_000) return $isaret.rtrim(rtrim(number_format($value / 1_000, 1, ',', '.'), '0'), ',').' B ₺';
+            return $isaret.number_format($value, 0, ',', '.').' ₺';
         };
     @endphp
 
-    {{-- Hızlı Erişim: en çok kullanılan sayfalar --}}
-    <nav aria-label="Hızlı erişim" class="mb-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
-        @php
-            $quickLinks = [
-                ['Cariler', 'cariler.index', 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 11-3-3'],
-                ['Ürünler', 'urunler.index', 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'],
-                ['Siparişler', 'siparisler.index', 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
-                ['Faturalar', 'faturalar.index', 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
-                ['Raporlar', 'raporlar.index', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
-                ['Etkinlikler', 'etkinlik.index', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012 2h2a2 2 0 012 2m-6 9l2 2 4-4'],
-            ];
-        @endphp
-        @foreach ($quickLinks as [$label, $rota, $path])
-            <a href="{{ route($rota) }}" aria-label="{{ $label }} sayfasına git"
-               class="group flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-3 text-center transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md focus-visible:outline-indigo-600">
-                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/>
-                    </svg>
-                </span>
-                <span class="text-[11px] font-bold text-slate-600 group-hover:text-slate-900">{{ $label }}</span>
-            </a>
-        @endforeach
-    </nav>
+    {{-- ═══════════ 1) KPI KARTLARI ═══════════ --}}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5" role="list" aria-label="Kritik göstergeler">
 
-    {{-- Vadesi geçen fatura uyarısı --}}
-    @if ($overdue['count'] > 0)
-        <a href="{{ route('faturalar.index') }}"
-           class="mb-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm font-semibold text-red-800 transition hover:bg-red-100">
-            <svg class="h-5 w-5 shrink-0 text-red-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-            {{ $overdue['count'] }} faturanın vadesi geçti — tahsil edilemeyen toplam {{ $fmt($overdue['amount']) }}
-            <span class="ml-auto text-xs font-normal text-red-500">Faturalara git →</span>
+        {{-- 1.1 Toplam Ciro: fiziksel + e-ticaret kırılımlı --}}
+        <div class="card p-5 sm:col-span-2 xl:col-span-2">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Bu Ay Ciro</div>
+                    <div class="mt-1 text-[32px] leading-tight font-bold tabular-nums text-slate-800 dark:text-slate-100">{{ $fmtKisa($ciro['aylik']) }}</div>
+                    <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-slate-400"></span>
+                            <span class="text-slate-500 dark:text-slate-400">Fiziksel/B2B</span>
+                            <strong class="tabular-nums text-slate-700 dark:text-slate-200">{{ $fmtKisa($ciro['fiziksel']) }}</strong>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-violet-500"></span>
+                            <span class="text-slate-500 dark:text-slate-400">E-Ticaret</span>
+                            <strong class="tabular-nums text-violet-600 dark:text-violet-400">{{ $fmtKisa($ciro['eticaret']) }}</strong>
+                        </span>
+                    </div>
+                    @if ($ciro['degisim'] !== null)
+                        <div class="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold {{ $ciro['degisim'] >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300' }}">
+                            {{ $ciro['degisim'] >= 0 ? '▲' : '▼' }} geçen aya göre %{{ abs($ciro['degisim']) }}
+                        </div>
+                    @endif
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13l2.5 2.5L9 12l3 3 4.5-5.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- 1.2 E-Ticaret Siparişleri: bekleyen (canlı) + onaylı --}}
+        <div class="card p-5">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">E-Ticaret Siparişleri</div>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span class="relative inline-flex">
+                            <span data-ozet="bekleyen" class="text-[32px] leading-tight font-bold tabular-nums {{ $siparis['bekleyen'] > 0 ? 'text-amber-600' : 'text-slate-800 dark:text-slate-100' }}">{{ $siparis['bekleyen'] }}</span>
+                            @if ($siparis['bekleyen'] > 0)
+                                <span class="absolute -right-3 top-1 flex h-2.5 w-2.5">
+                                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60"></span>
+                                    <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                                </span>
+                            @endif
+                        </span>
+                        <span class="text-xs font-semibold text-slate-400">bekliyor · {{ $fmtKisa($siparis['bekleyen_tutar']) }}</span>
+                    </div>
+                    <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Onaylı (kargolanacak): <strong data-ozet="onayli" class="text-indigo-600 dark:text-indigo-400">{{ $siparis['onayli'] }}</strong>
+                        @if ($siparis['onayli'] > 0) · {{ $fmtKisa($siparis['onayli_tutar']) }} @endif
+                    </div>
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- 1.3 Kargo & Sevk --}}
+        <div class="card p-5">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kargo & Sevk</div>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span data-ozet="sevk_bugun" class="text-[32px] leading-tight font-bold tabular-nums text-slate-800 dark:text-slate-100">{{ $kargo['bugun'] }}</span>
+                        <span class="text-xs font-semibold text-slate-400">bugün sevk</span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                        <span>Bu hafta: <strong data-ozet="sevk_hafta" class="text-slate-700 dark:text-slate-200">{{ $kargo['hafta'] }}</strong></span>
+                        <span>Yolda: <strong data-ozet="yolda" class="text-indigo-600 dark:text-indigo-400">{{ $kargo['yolda'] }}</strong></span>
+                    </div>
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H10a1 1 0 00-1 1v10M9 21h6M3 5h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm10 3h4"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- 1.4 Net Kâr --}}
+        <div class="card p-5">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Net Kâr <span class="font-medium normal-case text-slate-400">(tahmini)</span></div>
+                    <div class="mt-1 text-[32px] leading-tight font-bold tabular-nums {{ $netKar['aylik'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">{{ $fmtKisa($netKar['aylik']) }}</div>
+                    @if ($netKar['marj'] !== null)
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Marj: <strong class="{{ $netKar['marj'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">%{{ $netKar['marj'] }}</strong></div>
+                    @endif
+                    <div class="mt-2 text-[11px] leading-relaxed text-slate-400">
+                        Maliyet −{{ $fmtKisa($netKar['maliyet']) }} · Kargo −{{ $fmtKisa($netKar['kargo']) }} · Komisyon −{{ $fmtKisa($netKar['komisyon']) }} @if ($netKar['iade'] > 0) · İade −{{ $fmtKisa($netKar['iade']) }} @endif
+                    </div>
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- 1.5 Vadesi Geçen Alacak / Borç --}}
+        <a href="{{ route('faturalar.index') }}" class="card p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Vadesi Geçen</div>
+                    <div class="mt-1 text-[32px] leading-tight font-bold tabular-nums {{ $alacak['count'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100' }}">{{ $fmtKisa($alacak['amount']) }}</div>
+                    <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Alacak: <strong class="text-red-500">{{ $alacak['count'] }} fatura</strong>
+                        · Borç: <strong class="text-amber-600 dark:text-amber-400">{{ $fmtKisa($borclar) }}</strong>
+                    </div>
+                    <div class="mt-2 text-[11px] text-slate-400">Kasa: Nakit {{ $fmtKisa($kasa['nakit']) }} · Banka {{ $fmtKisa($kasa['banka']) }}</div>
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-950/50 dark:text-red-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
         </a>
-    @endif
+    </div>
 
-    {{-- 1) İstatistik kartları --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" role="list" aria-label="Özet istatistikler">
-        {{-- Toplam Cari Sayısı --}}
-        <div class="card p-5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Toplam Cari</div>
-                    <div class="mt-1 text-3xl font-bold tabular-nums text-slate-800">{{ $stats['contact_count'] }}</div>
-                    <div class="mt-1 text-xs text-slate-400">{{ $stats['customer_count'] }} müşteri · {{ $stats['supplier_count'] }} tedarikçi</div>
-                </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 11-3-3"/>
-                    </svg>
-                </div>
+    {{-- ═══════════ 2) GRAFİKLER ═══════════ --}}
+    <div class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        {{-- Satış trendi: fiziksel vs e-ticaret (30 gün) --}}
+        <div class="card xl:col-span-2">
+            <div class="card-header flex items-center justify-between">
+                <span class="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                    <svg class="h-4.5 w-4.5 text-indigo-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    Satış Trendi — Son 30 Gün
+                </span>
+                <span class="flex items-center gap-4 text-[11px] font-semibold text-slate-400">
+                    <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-slate-400"></span>Fiziksel/B2B</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-violet-500"></span>E-Ticaret</span>
+                </span>
+            </div>
+            <div class="relative h-72 p-4">
+                <canvas id="grafikTrend" aria-label="Son 30 günlük satış trendi grafiği" role="img"></canvas>
             </div>
         </div>
 
-        {{-- Stok / Ürün --}}
-        <div class="card p-5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Stok & Ürün</div>
-                    <div class="mt-1 text-3xl font-bold tabular-nums text-slate-800">{{ $stats['product_count'] }}</div>
-                    <div class="mt-1 text-xs text-slate-400">Değer: {{ $fmtShort($stats['stock_value']) }} · Rezerve: {{ $stats['reserved_quantity'] }} adet</div>
-                </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                </div>
+        {{-- Kargo / gönderi durumu dağılımı --}}
+        <div class="card">
+            <div class="card-header text-sm font-bold text-slate-700 dark:text-slate-200">Gönderi Durum Dağılımı</div>
+            <div class="relative mx-auto h-72 p-4">
+                <canvas id="grafikDurum" aria-label="Gönderi durum dağılımı grafiği" role="img"></canvas>
             </div>
         </div>
 
-        {{-- Kasa durumu --}}
-        <div class="card p-5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Kasa Durumu</div>
-                    <div class="mt-1 text-3xl font-bold tabular-nums {{ $stats['cash_nakit'] + $stats['cash_banka'] >= 0 ? 'text-slate-800' : 'text-red-600' }}">{{ $fmtShort($stats['cash_nakit'] + $stats['cash_banka']) }}</div>
-                    <div class="mt-1 text-xs text-slate-400">Nakit {{ $fmtShort($stats['cash_nakit']) }} · Banka {{ $fmtShort($stats['cash_banka']) }}</div>
-                </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                </div>
+        {{-- En çok satan ürünler --}}
+        <div class="card xl:col-span-3">
+            <div class="card-header flex items-center justify-between">
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200">En Çok Satan Ürünler — Bu Ay (adet)</span>
+                <a href="{{ route('urunler.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Ürünlere git →</a>
             </div>
-        </div>
-
-        {{-- Bu ay ciro --}}
-        <div class="card p-5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Bu Ay Ciro</div>
-                    <div class="mt-1 text-3xl font-bold tabular-nums text-slate-800">{{ $fmtShort($stats['month_sales']) }}</div>
-                    <div class="mt-1 text-xs text-slate-400">Toplam {{ $fmtShort($stats['total_sales']) }} · {{ $stats['invoice_count'] }} fatura</div>
-                </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
+            <div class="relative h-64 p-4">
+                <canvas id="grafikUrun" aria-label="En çok satan ürünler grafiği" role="img"></canvas>
             </div>
         </div>
     </div>
 
-    {{-- 2) E-ticaret sipariş akışı + Bu ay nakit akışı --}}
-    <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {{-- E-ticaret: sipariş özeti + son siparişler --}}
+    {{-- ═══════════ 3) OPERASYONEL AKIŞ ═══════════ --}}
+    <div class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        {{-- Son e-ticaret siparişleri --}}
         <div class="card xl:col-span-2">
             <div class="card-header flex items-center justify-between">
-                <span class="flex items-center gap-2">
-                    <svg class="h-5 w-5 text-violet-500" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>
-                    E-Ticaret Siparişleri
+                <span class="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                    <svg class="h-4.5 w-4.5 text-violet-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    Son E-Ticaret Siparişleri
                 </span>
-                <a href="{{ route('siparisler.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Siparişlere git →</a>
+                <a href="{{ route('siparisler.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Tümü →</a>
             </div>
-
-            <div class="grid grid-cols-3 divide-x divide-slate-100 dark:divide-slate-700">
-                <div class="p-4 text-center">
-                    <div class="text-2xl font-bold {{ $stats['orders_pending'] > 0 ? 'text-amber-600' : 'text-slate-400' }}">{{ $stats['orders_pending'] }}</div>
-                    <div class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ödeme Bekliyor</div>
-                    @if ($stats['orders_pending'] > 0)
-                        <div class="mt-0.5 text-xs text-slate-400">{{ $fmtShort($stats['orders_pending_amount']) }}</div>
-                    @endif
-                </div>
-                <div class="p-4 text-center">
-                    <div class="text-2xl font-bold {{ $stats['orders_awaiting_shipment'] > 0 ? 'text-indigo-600' : 'text-slate-400' }}">{{ $stats['orders_awaiting_shipment'] }}</div>
-                    <div class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Kargolanacak</div>
-                </div>
-                <div class="p-4 text-center">
-                    <div class="text-2xl font-bold {{ $stats['orders_shipped'] > 0 ? 'text-emerald-600' : 'text-slate-400' }}">{{ $stats['orders_shipped'] }}</div>
-                    <div class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Yolda</div>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto border-t border-slate-100 dark:border-slate-700">
+            <div class="overflow-x-auto">
                 <table class="table-base">
                     <thead>
                     <tr>
                         <th>Sipariş</th>
                         <th>Müşteri</th>
-                        <th>Tarih</th>
+                        <th>Kanal</th>
+                        <th>Kargo</th>
                         <th>Durum</th>
                         <th class="!text-right">Tutar</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @forelse ($recentOrders as $order)
-                        <tr class="hover:bg-slate-50">
+                    @forelse ($sonSiparisler as $order)
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40">
                             <td>
                                 <a href="{{ route('siparisler.show', $order) }}" class="font-semibold text-indigo-600 hover:text-indigo-700">{{ $order->order_no }}</a>
+                                <div class="text-[10px] text-slate-400">{{ $order->created_at->format('d.m H:i') }}</div>
                             </td>
-                            <td>{{ $order->customer_name ?: ($order->contact?->name ?? '—') }}</td>
-                            <td>{{ $order->created_at->format('d.m.Y H:i') }}</td>
+                            <td class="max-w-40 truncate">{{ $order->customer_name ?: ($order->contact?->name ?? '—') }}</td>
+                            <td><span class="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold {{ $order->kanalRozetClass() }}">{{ $order->kanalEtiketi() }}</span></td>
+                            <td class="text-xs text-slate-500 dark:text-slate-400">{{ $order->carrier ?: ($order->status === 'pending' ? '—' : 'Bekliyor') }}</td>
                             <td><span class="{{ $order->statusBadgeClass() }}">{{ $order->statusLabel() }}</span></td>
                             <td class="text-right font-semibold tabular-nums">{{ $fmt($order->total) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="py-6 text-center text-slate-400">Henüz e-ticaret siparişi yok. API üzerinden sipariş oluşturulabilir.</td></tr>
+                        <tr><td colspan="6" class="py-6 text-center text-slate-400">Henüz e-ticaret siparişi yok.</td></tr>
                     @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        {{-- Bu ay nakit özeti: tek satır şerit --}}
-        <div class="card mt-6 flex flex-wrap items-center gap-4 p-4">
-            <span class="text-xs font-bold uppercase tracking-wide text-slate-400">Bu Ay</span>
-            <span class="text-sm text-slate-600">Tahsilat <strong class="text-emerald-600">{{ $fmt($stats['month_collection']) }}</strong></span>
-            <span class="text-sm text-slate-600">Gider <strong class="text-red-600">{{ $fmt($stats['month_expense']) }}</strong></span>
-            <span class="text-sm text-slate-600">Net <strong class="text-slate-800">{{ ($stats['month_net'] >= 0 ? '+' : '') . $fmt($stats['month_net']) }}</strong></span>
-            <span class="ml-auto flex items-center gap-2">
-                <a href="{{ route('payments.create') }}" data-modal-url="{{ route('payments.create') }}" data-modal-title="Yeni Tahsilat" class="btn-secondary !py-1.5 !px-3 text-xs">+ Tahsilat</a>
-                <a href="{{ route('giderler.create') }}" data-modal-url="{{ route('giderler.create') }}" data-modal-title="Gider Kaydı" class="btn-secondary !py-1.5 !px-3 text-xs">+ Gider</a>
-            </span>
-        </div>
+        {{-- Hızlı işlem menüsü + kritik stok --}}
+        <div class="space-y-4">
+            <div class="card p-4">
+                <div class="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">Hızlı İşlem</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" data-modal-url="{{ route('faturalar.create') }}" data-modal-title="Yeni Satış Faturası" data-modal-wide="1"
+                            class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-3.5 text-center transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-indigo-600">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                            <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Yeni Fatura Kes</span>
+                    </button>
+                    <a href="{{ route('siparisler.index') }}"
+                       class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-3.5 text-center transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-sky-600">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300">
+                            <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H10a1 1 0 00-1 1v10M9 21h6M3 5h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/></svg>
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Kargo / Sevk</span>
+                    </a>
+                    <a href="{{ route('urunler.index') }}"
+                       class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-3.5 text-center transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-600">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
+                            <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Stok Güncelle</span>
+                    </a>
+                    <button type="button" data-modal-url="{{ route('payments.create') }}" data-modal-title="Yeni Tahsilat"
+                            class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-3.5 text-center transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-amber-600">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300">
+                            <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Manuel Tahsilat</span>
+                    </button>
+                </div>
+            </div>
 
+            <div class="card p-4">
+                <div class="mb-3 flex items-center justify-between">
+                    <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        Kritik Stok
+                    </span>
+                    <a href="{{ route('urunler.index') }}" class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700">Ürünler →</a>
+                </div>
+                <ul class="space-y-1.5">
+                    @forelse ($kritikStok as $product)
+                        <li>
+                            <a href="{{ route('urunler.edit', $product) }}"
+                               class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs transition hover:border-amber-300 hover:bg-amber-50 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-amber-700 dark:hover:bg-amber-950/30">
+                                <span class="truncate font-semibold text-slate-700 dark:text-slate-200">{{ Str::limit($product->name, 26) }}</span>
+                                <span class="shrink-0 rounded px-1.5 py-0.5 font-bold tabular-nums {{ $product->stock_quantity == 0 ? 'bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' }}">
+                                    {{ $product->stock_quantity }} adet
+                                </span>
+                            </a>
+                        </li>
+                    @empty
+                        <li class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">Kritik seviyede ürün yok 👍</li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
     </div>
 
-    {{-- 3) Son Hareketler + Kritik Stok --}}
-    <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {{-- Kritik stok: ince şerit --}}
-        <div class="card mt-6 flex flex-wrap items-center gap-3 p-4">
-            <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-700">
-                ⚠ Kritik Stok
-            </span>
-            @forelse ($lowStockProducts as $product)
-                <a href="{{ route('urunler.edit', $product) }}"
-                   class="flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
-                    {{ Str::limit($product->name, 22) }}
-                    <span class="rounded px-1 font-bold {{ $product->stock_quantity == 0 ? 'bg-red-100 text-red-600' : 'bg-amber-100' }}">{{ $product->stock_quantity }}</span>
-                </a>
-            @empty
-                <span class="text-xs text-slate-400">Kritik seviyede ürün yok 👍</span>
-            @endforelse
-            <a href="{{ route('urunler.index') }}" class="ml-auto text-xs font-semibold text-indigo-600 hover:text-indigo-700">Ürünler →</a>
-        </div>
-    </div>
+    {{-- ═══════════ Chart.js ═══════════ --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+    <script>
+        // ---- Canlı sayaçlar: 30 sn'de bir sipariş/kargo sayaçlarını tazeler ----
+        document.addEventListener('DOMContentLoaded', function () {
+            const sayacGetir = () => fetch('/panel/ozet', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => { if (!r.ok) throw 0; return r.json(); })
+                .then(d => {
+                    const v = d.data;
+                    document.querySelectorAll('[data-ozet]').forEach(el => {
+                        const deger = v[el.dataset.ozet];
+                        if (deger !== undefined) el.textContent = deger;
+                    });
+                })
+                .catch(() => {});
+            sayacGetir();
+            setInterval(sayacGetir, 30000);
+        });
+
+        (function () {
+            let trendGrafik, durumGrafik, urunGrafik;
+
+            const temaKoyuMu = () => document.documentElement.classList.contains('dark');
+            const renkler = () => temaKoyuMu()
+                ? { kalem: '#cbd5e1', izgara: 'rgba(148,163,184,.15)', koyuMetin: '#f1f5f9' }
+                : { kalem: '#475569', izgara: 'rgba(100,116,139,.15)', koyuMetin: '#0f172a' };
+
+            const fmtKisa = (v) => {
+                v = Math.abs(v);
+                if (v >= 1_000_000) return (v / 1_000_000).toFixed(1).replace('.', ',') + 'M';
+                if (v >= 1_000) return (v / 1_000).toFixed(1).replace('.', ',') + 'B';
+                return String(Math.round(v));
+            };
+
+            function grafikleriCiz() {
+                if (typeof Chart === 'undefined') { setTimeout(grafikleriCiz, 150); return; }
+                const r = renkler();
+                const yaygin = { responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: r.kalem, boxWidth: 12, font: { size: 11 } } } } };
+
+                [trendGrafik, durumGrafik, urunGrafik].forEach(g => g && g.destroy());
+
+                trendGrafik = new Chart(document.getElementById('grafikTrend'), {
+                    type: 'line',
+                    data: {
+                        labels: @json($grafik['trendEtiket']),
+                        datasets: [
+                            { label: 'Fiziksel/B2B', data: @json($grafik['trendFiziksel']), borderColor: '#94a3b8', backgroundColor: 'rgba(148,163,184,.08)', fill: true, tension: 0.35, pointRadius: 2, borderWidth: 2 },
+                            { label: 'E-Ticaret', data: @json($grafik['trendEticaret']), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.10)', fill: true, tension: 0.35, pointRadius: 2, borderWidth: 2 },
+                        ],
+                    },
+                    options: { ...yaygin,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: { ticks: { color: r.kalem, maxTicksLimit: 10, font: { size: 10 } }, grid: { display: false } },
+                            y: { ticks: { color: r.kalem, callback: fmtKisa, font: { size: 10 } }, grid: { color: r.izgara } },
+                        },
+                        plugins: { legend: { labels: { color: r.kalem, boxWidth: 12, font: { size: 11 } } },
+                            tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + new Intl.NumberFormat('tr-TR').format(c.parsed.y) + ' ₺' } } },
+                    },
+                });
+
+                const durum = @json($grafik['durumDagilim']);
+                durumGrafik = new Chart(document.getElementById('grafikDurum'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Hazırlanıyor', 'Kargoya Verildi', 'Teslim Edildi', 'İade / Sorunlu'],
+                        datasets: [{ data: [durum.hazirlaniyor, durum.kargoda, durum.teslim, durum.sorunlu],
+                            backgroundColor: ['#6366f1', '#38bdf8', '#10b981', '#f59e0b'], borderWidth: 2,
+                            borderColor: temaKoyuMu() ? '#1e293b' : '#ffffff' }],
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+                        plugins: { legend: { position: 'bottom', labels: { color: r.kalem, boxWidth: 12, font: { size: 11 } } } } },
+                });
+
+                const urunler = @json($grafik['enCokSatan']);
+                urunGrafik = new Chart(document.getElementById('grafikUrun'), {
+                    type: 'bar',
+                    data: {
+                        labels: urunler.map(u => u.ad.length > 22 ? u.ad.slice(0, 21) + '…' : u.ad),
+                        datasets: [{ label: 'Adet', data: urunler.map(u => Number(u.adet)),
+                            backgroundColor: 'rgba(99,102,241,.75)', hoverBackgroundColor: '#6366f1',
+                            borderRadius: 6, maxBarThickness: 38 }],
+                    },
+                    options: { responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false },
+                            tooltip: { callbacks: { afterLabel: (c) => new Intl.NumberFormat('tr-TR').format(Number(urunler[c.dataIndex].tutar)) + ' ₺' } } },
+                        scales: {
+                            x: { ticks: { color: r.kalem, font: { size: 10 } }, grid: { display: false } },
+                            y: { beginAtZero: true, ticks: { color: r.kalem, precision: 0, font: { size: 10 } }, grid: { color: r.izgara } },
+                        } },
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', grafikleriCiz);
+
+            // Dark/Light geçişinde grafikleri tema renkleriyle yeniden çiz
+            new MutationObserver(() => grafikleriCiz()).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        })();
+    </script>
 @endsection
