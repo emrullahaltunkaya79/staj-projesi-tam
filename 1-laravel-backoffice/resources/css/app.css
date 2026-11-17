@@ -473,3 +473,12 @@
 .skip-link:focus {
     top: 1rem;
 }
+
+/* Sidebar hover akordiyon: açılış anında kayıtlı grup durumları uygulanırken
+   geçiş animasyonlarının atlamaması için geçici süpresyon */
+#sidebar.grup-hazirlan .nav-items,
+#sidebar.grup-hazirlan .nav-item,
+#sidebar.grup-hazirlan .nav-chevron,
+#sidebar.grup-hazirlan .group-toggle {
+    transition: none !important;
+}

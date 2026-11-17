@@ -663,25 +663,59 @@ document.head.appendChild(btnStil);
 (function () {
     const sidebar = document.getElementById('sidebar');
 
-    // ---- Açılır gruplar ----
-    document.querySelectorAll('.group-toggle').forEach(btn => {
-        const slug = btn.dataset.group;
-        const items = document.querySelector(`[data-group-items="${slug}"]`);
-        const chevron = btn.querySelector('.group-chevron');
-        const key = 'nav-group-' + slug;
-        const stored = localStorage.getItem(key);
+    // ---- Açılır gruplar: HOVER ile tekli akordiyon (exclusive) ----
+    // Fare bir grup başlığının üzerine gelince (mouseenter): önceden açık olan
+    // grup otomatik kapanır, bu grup açılır. Klavye/dokunmatik için tıklama ile
+    // aç-kapa davranışı da korunur (erişilebilirlik). Geçişler .collapsed
+    // sınıfının max-height/opacity geçişleriyle yumuşak akar; ok işaretleri döner.
+    const gruplar = new Map();
+    document.querySelectorAll('.nav-group[data-group]').forEach(grup => {
+        const slug = grup.dataset.group;
+        const items = grup.querySelector(`[data-group-items="${slug}"]`);
+        const head = grup.querySelector('.group-toggle');
+        if (!items || !head) return; // başlıksız ana grup: her zaman açık kalır
+        gruplar.set(slug, { items, chevron: head.querySelector('.group-chevron'), head });
+    });
 
-        // Kaydedilmiş durum: kapalıysa collapsed class ekle
-        if (stored === 'closed') {
-            items.classList.add('collapsed');
-            chevron.style.transform = 'rotate(-90deg)';
-        }
+    const grupAc = (slug) => {
+        const g = gruplar.get(slug);
+        if (!g) return;
+        g.items.classList.remove('collapsed');
+        g.chevron.style.transform = '';
+    };
+    const grupKapat = (slug) => {
+        const g = gruplar.get(slug);
+        if (!g) return;
+        g.items.classList.add('collapsed');
+        g.chevron.style.transform = 'rotate(-90deg)';
+    };
+    const grubuAktifYap = (slug) => {
+        // Exclusive: diğer her grubu kapat, yalnız bunu aç, tercihi hatırla
+        gruplar.forEach((_, diger) => { if (diger !== slug) grupKapat(diger); });
+        grupAc(slug);
+        localStorage.setItem('nav-acik-grup', slug);
+    };
 
-        btn.addEventListener('click', (e) => {
+    // Başlangıç: kayıtlı aktif grup varsa yalnız o açık, diğerleri kapalı.
+    // Sayfa açılışında geçiş animasyonu atlanması için geçici süpresyon.
+    const kayitliGrup = localStorage.getItem('nav-acik-grup');
+    if (kayitliGrup && gruplar.has(kayitliGrup)) {
+        sidebar.classList.add('grup-hazirlan');
+        gruplar.forEach((_, slug) => { if (slug !== kayitliGrup) grupKapat(slug); });
+        requestAnimationFrame(() => requestAnimationFrame(() => sidebar.classList.remove('grup-hazirlan')));
+    }
+
+    gruplar.forEach((g, slug) => {
+        // HOVER tetikleyici: başlığa mouseenter → exclusive akordiyon geçişi
+        g.head.addEventListener('mouseenter', () => grubuAktifYap(slug));
+        // Tıklama yedeği: açıkken kapatır, kapalıyken exclusive açar
+        g.head.addEventListener('click', (e) => {
             e.stopPropagation();
-            const closed = items.classList.toggle('collapsed');
-            chevron.style.transform = closed ? 'rotate(-90deg)' : '';
-            localStorage.setItem(key, closed ? 'closed' : 'open');
+            if (!g.items.classList.contains('collapsed')) {
+                grupKapat(slug);
+            } else {
+                grubuAktifYap(slug);
+            }
         });
     });
 
