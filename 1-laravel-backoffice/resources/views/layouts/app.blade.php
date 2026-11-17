@@ -146,15 +146,18 @@
         <aside id="sidebar"
                class="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col overflow-hidden bg-slate-900 print:hidden lg:flex">
 
-            {{-- Marka --}}
-            <div class="flex h-14 shrink-0 items-center border-b border-slate-800/80 px-5">
-                <div class="flex min-w-0 items-center gap-2.5">
-                    @if ($companyLogo)
-                        <img src="{{ $companyLogo }}" alt="" class="h-8 w-8 shrink-0 rounded-lg bg-white object-contain p-0.5 ring-1 ring-white/10">
-                    @else
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-xs font-black text-white ring-1 ring-white/10">ÖM</div>
-                    @endif
-                    <span class="truncate text-sm font-bold text-white">{{ auth()->user()->company->name }}</span>
+            {{-- Marka: sidebar zeminine entegre sade ikon + metin bloğu --}}
+            <div class="flex h-14 shrink-0 items-center border-b border-slate-700/60 px-5">
+                <div class="flex min-w-0 items-center gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600/90 text-white shadow-inner ring-1 ring-white/10">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0 leading-tight">
+                        <div class="truncate text-sm font-bold text-white">{{ auth()->user()->company->name }}</div>
+                        <div class="text-[10px] font-semibold uppercase tracking-widest text-indigo-300/80">Ön Muhasebe</div>
+                    </div>
                 </div>
             </div>
 
@@ -243,7 +246,7 @@
         <div id="content-area"
              class="flex min-h-screen w-full min-w-0 flex-col pt-14 print:ml-0 print:pt-0 lg:ml-64 lg:pt-0">
 
-            <header class="sticky top-14 z-[5] border-b border-slate-400 bg-slate-300/90 px-6 py-4 shadow backdrop-blur print:hidden dark:border-slate-600 dark:bg-slate-800 lg:top-0">
+            <header class="sticky top-14 z-[5] border-b border-slate-200 bg-slate-100/90 px-6 py-4 shadow-sm backdrop-blur print:hidden dark:border-slate-700 dark:bg-slate-800 lg:top-0">
                 <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
                     <h1 class="shrink-0 text-lg font-bold text-slate-900 dark:text-slate-100">@yield('title', 'Panel')</h1>
 
@@ -254,7 +257,7 @@
                         </svg>
                         <input type="text" id="global-search" autocomplete="off"
                                placeholder="Cari, ürün veya fatura ara..."
-                               class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-16 text-sm text-slate-700 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:ring-indigo-800">
+                               class="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-16 text-sm text-slate-700 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:ring-indigo-800">
                         <button type="button" id="cmdk-trigger" title="Komut paletini aç (Ctrl+K)"
                                 class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-md border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-500 transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400">
                             Ctrl K
@@ -278,7 +281,7 @@
                     @endphp
                     <div class="relative shrink-0 print:hidden">
                         <button type="button" id="notif-btn" title="Bildirimler"
-                                class="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-500 shadow-sm transition hover:border-indigo-400 hover:text-indigo-600 active:scale-95 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                class="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-indigo-400 hover:text-indigo-600 active:scale-95 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                             </svg>
@@ -354,7 +357,7 @@
 
                     {{-- Dark mode toggle --}}
                     <button type="button" id="dark-toggle"
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-500 shadow-sm transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-800 dark:text-amber-400"
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-amber-400"
                             title="Karanlık/açık tema">
                         <svg id="dark-icon-moon" class="hidden h-4 w-4 dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                         <svg id="dark-icon-sun" class="h-4 w-4 dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -370,7 +373,7 @@
                     @endphp
                     <div class="relative shrink-0">
                         <button type="button" id="user-menu-btn"
-                                class="group flex h-10 items-center gap-2.5 rounded-full border border-slate-300 bg-white py-1 pl-1 pr-3 shadow-sm transition hover:border-indigo-500 hover:shadow-md active:scale-95 dark:border-slate-600 dark:bg-slate-800"
+                                class="group flex h-10 items-center gap-2.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 shadow-sm transition hover:border-indigo-500 hover:shadow-md active:scale-95 dark:border-slate-600 dark:bg-slate-800"
                                 title="{{ auth()->user()->name }}">
                             <span class="relative">
                                 @if ($companyLogo)

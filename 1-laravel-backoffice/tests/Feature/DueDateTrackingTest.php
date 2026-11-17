@@ -52,8 +52,8 @@ class DueDateTrackingTest extends TestCase
         // Yeni ERP dashboard: vadesi geçen alacaklar KPI kartında gösterilir
         $this->get('/panel')
             ->assertOk()
-            ->assertSee('Vadesi Geçen')
-            ->assertSee('300 ₺');
+            ->assertSee('Vadesi Geçen Alacaklar')
+            ->assertSee('300');
     }
 
     /** @test */

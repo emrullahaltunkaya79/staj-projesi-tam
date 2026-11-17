@@ -23,35 +23,57 @@
         };
     @endphp
 
-    {{-- ═══════════ 1) KPI KARTLARI ═══════════ --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5" role="list" aria-label="Kritik göstergeler">
+    {{-- ═══════════ 1) KPI KARTLARI — 4 eşit kolon ═══════════ --}}
+    @php
+        // Büyük rakam + para birimi eki ayrı işlenir: sayı kibar (text-3xl), ek uyumlu küçük
+        $kira = function ($value) {
+            $v = (float) $value;
+            $isaret = $v < 0 ? '-' : '';
+            $v = abs($v);
+            if ($v >= 1_000_000) {
+                $m = rtrim(rtrim(number_format($v / 1_000_000, 1, ',', '.'), '0'), ',');
+                return [$isaret.$m, 'M ₺'];
+            }
+            if ($v >= 1_000) {
+                $m = rtrim(rtrim(number_format($v / 1_000, 1, ',', '.'), '0'), ',');
+                return [$isaret.$m, 'B ₺'];
+            }
+            return [$isaret.number_format($v, 0, ',', '.'), '₺'];
+        };
+        [$cn, $ce] = $kira($ciro['aylik']);
+        [$kn, $ke] = $kira($netKar['aylik']);
+        [$an, $ae] = $kira($alacak['amount']);
+    @endphp
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" role="list" aria-label="Kritik göstergeler">
 
         {{-- 1.1 Toplam Ciro: fiziksel + e-ticaret kırılımlı --}}
-        <div class="card p-5 sm:col-span-2 xl:col-span-2">
-            <div class="flex items-start justify-between">
-                <div>
+        <div class="card flex h-full flex-col justify-between p-6">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Bu Ay Ciro</div>
-                    <div class="mt-1 text-[32px] leading-tight font-bold tabular-nums text-slate-800 dark:text-slate-100">{{ $fmtKisa($ciro['aylik']) }}</div>
-                    <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                    <div class="mt-1.5 flex items-baseline gap-1.5">
+                        <span class="text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-slate-800 dark:text-slate-100">{{ $cn }}</span>
+                        <span class="text-sm font-bold text-slate-400">{{ $ce }}</span>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium dark:text-slate-400">
                         <span class="inline-flex items-center gap-1.5">
                             <span class="h-2 w-2 rounded-full bg-slate-400"></span>
-                            <span class="text-slate-500 dark:text-slate-400">Fiziksel/B2B</span>
-                            <strong class="tabular-nums text-slate-700 dark:text-slate-200">{{ $fmtKisa($ciro['fiziksel']) }}</strong>
+                            Fiziksel/B2B <strong class="tabular-nums text-slate-700 dark:text-slate-200">{{ $fmtKisa($ciro['fiziksel']) }}</strong>
                         </span>
                         <span class="inline-flex items-center gap-1.5">
                             <span class="h-2 w-2 rounded-full bg-violet-500"></span>
-                            <span class="text-slate-500 dark:text-slate-400">E-Ticaret</span>
-                            <strong class="tabular-nums text-violet-600 dark:text-violet-400">{{ $fmtKisa($ciro['eticaret']) }}</strong>
+                            E-Ticaret <strong class="tabular-nums text-violet-600 dark:text-violet-400">{{ $fmtKisa($ciro['eticaret']) }}</strong>
                         </span>
                     </div>
                     @if ($ciro['degisim'] !== null)
-                        <div class="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold {{ $ciro['degisim'] >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300' }}">
+                        <div class="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold {{ $ciro['degisim'] >= 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300' }}">
                             {{ $ciro['degisim'] >= 0 ? '▲' : '▼' }} geçen aya göre %{{ abs($ciro['degisim']) }}
                         </div>
                     @endif
                 </div>
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 13l2.5 2.5L9 12l3 3 4.5-5.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
@@ -59,29 +81,29 @@
         </div>
 
         {{-- 1.2 E-Ticaret Siparişleri: bekleyen (canlı) + onaylı --}}
-        <div class="card p-5">
-            <div class="flex items-start justify-between">
-                <div>
+        <div class="card flex h-full flex-col justify-between p-6">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">E-Ticaret Siparişleri</div>
-                    <div class="mt-1 flex items-baseline gap-2">
+                    <div class="mt-1.5 flex items-baseline gap-2">
                         <span class="relative inline-flex">
-                            <span data-ozet="bekleyen" class="text-[32px] leading-tight font-bold tabular-nums {{ $siparis['bekleyen'] > 0 ? 'text-amber-600' : 'text-slate-800 dark:text-slate-100' }}">{{ $siparis['bekleyen'] }}</span>
+                            <span data-ozet="bekleyen" class="text-2xl xl:text-3xl leading-none font-extrabold tabular-nums {{ $siparis['bekleyen'] > 0 ? 'text-amber-600' : 'text-slate-800 dark:text-slate-100' }}">{{ $siparis['bekleyen'] }}</span>
                             @if ($siparis['bekleyen'] > 0)
-                                <span class="absolute -right-3 top-1 flex h-2.5 w-2.5">
+                                <span class="absolute -right-3 top-0.5 flex h-2.5 w-2.5">
                                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60"></span>
                                     <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
                                 </span>
                             @endif
                         </span>
-                        <span class="text-xs font-semibold text-slate-400">bekliyor · {{ $fmtKisa($siparis['bekleyen_tutar']) }}</span>
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">bekliyor · {{ $fmtKisa($siparis['bekleyen_tutar']) }}</span>
                     </div>
-                    <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        Onaylı (kargolanacak): <strong data-ozet="onayli" class="text-indigo-600 dark:text-indigo-400">{{ $siparis['onayli'] }}</strong>
+                    <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">
+                        Onaylı: <strong data-ozet="onayli" class="text-indigo-600 dark:text-indigo-400">{{ $siparis['onayli'] }}</strong>
                         @if ($siparis['onayli'] > 0) · {{ $fmtKisa($siparis['onayli_tutar']) }} @endif
                     </div>
                 </div>
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                     </svg>
                 </div>
@@ -89,21 +111,21 @@
         </div>
 
         {{-- 1.3 Kargo & Sevk --}}
-        <div class="card p-5">
-            <div class="flex items-start justify-between">
-                <div>
+        <div class="card flex h-full flex-col justify-between p-6">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kargo & Sevk</div>
-                    <div class="mt-1 flex items-baseline gap-2">
-                        <span data-ozet="sevk_bugun" class="text-[32px] leading-tight font-bold tabular-nums text-slate-800 dark:text-slate-100">{{ $kargo['bugun'] }}</span>
-                        <span class="text-xs font-semibold text-slate-400">bugün sevk</span>
+                    <div class="mt-1.5 flex items-baseline gap-2">
+                        <span data-ozet="sevk_bugun" class="text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-slate-800 dark:text-slate-100">{{ $kargo['bugun'] }}</span>
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">bugün sevk</span>
                     </div>
-                    <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                    <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 font-medium dark:text-slate-400">
                         <span>Bu hafta: <strong data-ozet="sevk_hafta" class="text-slate-700 dark:text-slate-200">{{ $kargo['hafta'] }}</strong></span>
                         <span>Yolda: <strong data-ozet="yolda" class="text-indigo-600 dark:text-indigo-400">{{ $kargo['yolda'] }}</strong></span>
                     </div>
                 </div>
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H10a1 1 0 00-1 1v10M9 21h6M3 5h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm10 3h4"/>
                     </svg>
                 </div>
@@ -111,45 +133,83 @@
         </div>
 
         {{-- 1.4 Net Kâr --}}
-        <div class="card p-5">
-            <div class="flex items-start justify-between">
-                <div>
+        <div class="card flex h-full flex-col justify-between p-6">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Net Kâr <span class="font-medium normal-case text-slate-400">(tahmini)</span></div>
-                    <div class="mt-1 text-[32px] leading-tight font-bold tabular-nums {{ $netKar['aylik'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">{{ $fmtKisa($netKar['aylik']) }}</div>
+                    <div class="mt-1.5 flex items-baseline gap-1.5">
+                        <span class="text-2xl xl:text-3xl leading-none font-extrabold tabular-nums {{ $netKar['aylik'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">{{ $kn }}</span>
+                        <span class="text-sm font-bold text-slate-400">{{ $ke }}</span>
+                    </div>
                     @if ($netKar['marj'] !== null)
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Marj: <strong class="{{ $netKar['marj'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">%{{ $netKar['marj'] }}</strong></div>
+                        <div class="mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold {{ $netKar['marj'] >= 10 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : ($netKar['marj'] >= 0 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300') }}">
+                            Marj %{{ $netKar['marj'] }}
+                        </div>
                     @endif
-                    <div class="mt-2 text-[11px] leading-relaxed text-slate-400">
-                        Maliyet −{{ $fmtKisa($netKar['maliyet']) }} · Kargo −{{ $fmtKisa($netKar['kargo']) }} · Komisyon −{{ $fmtKisa($netKar['komisyon']) }} @if ($netKar['iade'] > 0) · İade −{{ $fmtKisa($netKar['iade']) }} @endif
+                    <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">
+                        Maliyet −{{ $fmtKisa($netKar['maliyet']) }} · Kargo −{{ $fmtKisa($netKar['kargo']) }} · Komisyon −{{ $fmtKisa($netKar['komisyon']) }}
                     </div>
                 </div>
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- 1.5 Vadesi Geçen Alacak / Borç --}}
-        <a href="{{ route('faturalar.index') }}" class="card p-5 transition hover:-translate-y-0.5 hover:shadow-md">
-            <div class="flex items-start justify-between">
+    {{-- ═══════════ 1b) FİNANSAL ALT BANT — vadesi geçen (1/3) + kasa (2/3) ═══════════ --}}
+    <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+
+        {{-- Vadesi geçen alacak/borç --}}
+        <a href="{{ route('faturalar.index') }}" class="card flex h-full flex-col justify-between p-6 transition hover:-translate-y-0.5 hover:shadow-md">
+            <div class="flex items-start justify-between gap-3">
                 <div>
-                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Vadesi Geçen</div>
-                    <div class="mt-1 text-[32px] leading-tight font-bold tabular-nums {{ $alacak['count'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100' }}">{{ $fmtKisa($alacak['amount']) }}</div>
-                    <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        Alacak: <strong class="text-red-500">{{ $alacak['count'] }} fatura</strong>
-                        · Borç: <strong class="text-amber-600 dark:text-amber-400">{{ $fmtKisa($borclar) }}</strong>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Vadesi Geçen Alacaklar</div>
+                    <div class="mt-1.5 flex items-baseline gap-1.5">
+                        <span class="text-2xl xl:text-3xl leading-none font-extrabold tabular-nums {{ $alacak['count'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100' }}">{{ $an }}</span>
+                        <span class="text-sm font-bold text-slate-400">{{ $ae }}</span>
                     </div>
-                    <div class="mt-2 text-[11px] text-slate-400">Kasa: Nakit {{ $fmtKisa($kasa['nakit']) }} · Banka {{ $fmtKisa($kasa['banka']) }}</div>
+                    <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">
+                        {{ $alacak['count'] }} fatura vadesi geçti · Borç: <strong class="text-amber-600 dark:text-amber-400">{{ $fmtKisa($borclar) }}</strong>
+                    </div>
                 </div>
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-950/50 dark:text-red-300">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500 dark:bg-red-950/50 dark:text-red-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
             </div>
         </a>
+
+        {{-- Kasa & bu ay nakit akışı --}}
+        <div class="card flex h-full flex-col justify-between p-6 xl:col-span-2">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kasa Durumu</div>
+                    <div class="mt-2 grid grid-cols-2 gap-4">
+                        <div class="rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Nakit</div>
+                            <div class="mt-0.5 text-lg font-extrabold tabular-nums text-slate-800 dark:text-slate-100">{{ $fmtKisa($kasa['nakit']) }}</div>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Banka</div>
+                            <div class="mt-0.5 text-lg font-extrabold tabular-nums text-slate-800 dark:text-slate-100">{{ $fmtKisa($kasa['banka']) }}</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium dark:text-slate-400">
+                        <span>Bu ay tahsilat: <strong class="text-emerald-600 dark:text-emerald-400">+{{ $fmtKisa($nakitAkisi['tahsilat']) }}</strong></span>
+                        <span>Gider: <strong class="text-red-600 dark:text-red-400">−{{ $fmtKisa($nakitAkisi['gider']) }}</strong></span>
+                        <span>Net: <strong class="text-slate-800 dark:text-slate-100">{{ ($nakitAkisi['net'] >= 0 ? '+' : '').$fmtKisa($nakitAkisi['net']) }}</strong></span>
+                    </div>
+                </div>
+                <div class="flex shrink-0 flex-col gap-2">
+                    <a href="{{ route('payments.create') }}" data-modal-url="{{ route('payments.create') }}" data-modal-title="Yeni Tahsilat" class="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-emerald-300 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">+ Tahsilat</a>
+                    <a href="{{ route('giderler.create') }}" data-modal-url="{{ route('giderler.create') }}" data-modal-title="Gider Kaydı" class="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-red-300 hover:text-red-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">+ Gider</a>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- ═══════════ 2) GRAFİKLER ═══════════ --}}
@@ -166,15 +226,21 @@
                     <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-violet-500"></span>E-Ticaret</span>
                 </span>
             </div>
-            <div class="relative h-72 p-4">
+            <div class="relative h-72 p-5">
                 <canvas id="grafikTrend" aria-label="Son 30 günlük satış trendi grafiği" role="img"></canvas>
             </div>
         </div>
 
         {{-- Kargo / gönderi durumu dağılımı --}}
         <div class="card">
-            <div class="card-header text-sm font-bold text-slate-700 dark:text-slate-200">Gönderi Durum Dağılımı</div>
-            <div class="relative mx-auto h-72 p-4">
+            <div class="card-header flex items-center justify-between">
+                <span class="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                    <svg class="h-4 w-4 text-sky-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H10a1 1 0 00-1 1v10M9 21h6M3 5h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/></svg>
+                    Gönderi Durumu
+                </span>
+                <span class="text-[11px] font-semibold text-slate-400">aktif siparişler</span>
+            </div>
+            <div class="relative mx-auto h-72 p-5">
                 <canvas id="grafikDurum" aria-label="Gönderi durum dağılımı grafiği" role="img"></canvas>
             </div>
         </div>
@@ -182,10 +248,13 @@
         {{-- En çok satan ürünler --}}
         <div class="card xl:col-span-3">
             <div class="card-header flex items-center justify-between">
-                <span class="text-sm font-bold text-slate-700 dark:text-slate-200">En Çok Satan Ürünler — Bu Ay (adet)</span>
+                <span class="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                    <svg class="h-4 w-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h4m0 0l-4-4m4 4L13 3m5 12a9 9 0 11-18 0 9 9 0 0118 0z" transform="rotate(90 12 12)"/></svg>
+                    En Çok Satan Ürünler — Bu Ay (adet)
+                </span>
                 <a href="{{ route('urunler.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Ürünlere git →</a>
             </div>
-            <div class="relative h-64 p-4">
+            <div class="relative h-64 p-5">
                 <canvas id="grafikUrun" aria-label="En çok satan ürünler grafiği" role="img"></canvas>
             </div>
         </div>

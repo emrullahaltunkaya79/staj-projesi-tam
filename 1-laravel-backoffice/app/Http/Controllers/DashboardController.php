@@ -93,6 +93,12 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$ayBasi, now()])
             ->sum('pazaryeri_komisyonu');
 
+        // Bu ay nakit akışı: tahsilat − gider
+        $aylikTahsilat = (float) Payment::where('direction', 'tahsilat')
+            ->where('created_at', '>=', $ayBasi)->sum('amount');
+        $aylikGider = (float) Expense::where('expense_date', '>=', $ayBasi)->sum('amount');
+        $aylikNetNakit = $aylikTahsilat - $aylikGider;
+
         $aylikNetKar = $aylikCiro - $aylikSatismaliyeti - $kargoMaliyeti - $komisyonlar;
         $karMarji = $aylikCiro > 0 ? round(($aylikNetKar / $aylikCiro) * 100, 1) : null;
 
@@ -198,6 +204,11 @@ class DashboardController extends Controller
             'alacak' => $vadesiGecenAlacak,
             'borclar' => round($vadesiGecenBorclar, 2),
             'kasa' => ['nakit' => $kasaNakit, 'banka' => $kasaBanka],
+            'nakitAkisi' => [
+                'tahsilat' => round($aylikTahsilat, 2),
+                'gider' => round($aylikGider, 2),
+                'net' => round($aylikNetNakit, 2),
+            ],
             'grafik' => [
                 'trendEtiket' => $trendEtiket,
                 'trendFiziksel' => $trendFiziksel,
