@@ -173,7 +173,8 @@ class InvoiceService
                 $product = $products->get($line['product_id']);
                 if ($product) {
                     $stockBefore = $product->stock_quantity;
-                    Product::where('id', $product->id)->increment('stock_quantity', $line['quantity']);
+                    $product->increment('stock_quantity', $line['quantity']);
+                    $guncel = $product->fresh();
 
                     StockMovement::record(
                         $product,
@@ -191,6 +192,11 @@ class InvoiceService
             $contact->decrement('balance', $total);
 
             DB::commit();
+
+            // Mağaza stoğu anında güncellensin (commit sonrası bildirim)
+            foreach ($lines as $line) {
+                $this->stokBildir($line['product_id']);
+            }
 
             return $refund->fresh(['items.product', 'contact', 'refundOf']);
         } catch (\Throwable $e) {
@@ -423,6 +429,13 @@ class InvoiceService
 
             DB::commit();
 
+            // Mağaza stoğu anında güncellensin (commit sonrası bildirim)
+            if ($type === 'satis') {
+                foreach ($lines as $line) {
+                    $this->stokBildir($line['product']->id);
+                }
+            }
+
             return $invoice->fresh(['items.product', 'contact']);
         } catch (\Throwable $e) {
             // Stok yetersizliği dahil herhangi bir hata tüm işlemi geri alır
@@ -430,5 +443,23 @@ class InvoiceService
 
             throw $e;
         }
+    }
+
+    /**
+     * Ürün stoğu değişti — mağazaya stock.changed bildirimi.
+     */
+    private function stokBildir(int $productId): void
+    {
+        $urun = Product::find($productId);
+        if (! $urun) {
+            return;
+        }
+
+        app(\App\Services\WebhookService::class)->stockChanged(
+            $urun->id,
+            (int) $urun->stock_quantity,
+            (int) ($urun->stock_quantity - $urun->reserved_quantity),
+            $urun->name
+        );
     }
 }

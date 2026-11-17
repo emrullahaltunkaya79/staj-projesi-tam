@@ -379,6 +379,10 @@ class OrderService
                 foreach ($order->items as $item) {
                     Product::where('id', $item['product_id'])->decrement('reserved_quantity', $item['quantity']);
                 }
+                // Rezerv serbest kalınca mağazanın "kaç adet kaldı" göstergesi tazelenir
+                foreach (collect($order->items)->pluck('product_id')->unique() as $pid) {
+                    $this->stokBildir((int) $pid);
+                }
             }
 
             $order->update(['status' => 'cancelled']);
@@ -640,5 +644,23 @@ class OrderService
         }
 
         return $released;
+    }
+
+    /**
+     * Ürün stoğu değişti — mağazaya stock.changed bildirimi (rezerv dahil müsait adet).
+     */
+    private function stokBildir(int $productId): void
+    {
+        $urun = Product::find($productId);
+        if (! $urun) {
+            return;
+        }
+
+        $this->webhookService->stockChanged(
+            $urun->id,
+            (int) $urun->stock_quantity,
+            (int) ($urun->stock_quantity - $urun->reserved_quantity),
+            $urun->name
+        );
     }
 }
