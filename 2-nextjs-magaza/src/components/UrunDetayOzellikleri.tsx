@@ -43,6 +43,7 @@ export function UrunDetayOzellikleri({
     reserved_quantity: number;
     available_quantity: number;
     in_stock: boolean;
+    gorsel_surum?: number;
     image_url: string | null;
     image_count?: number;
     variants?: { id: number; name: string; type?: string; renk?: string | null; beden?: string | null; stock_quantity: number; in_stock: boolean }[];
@@ -102,7 +103,7 @@ export function UrunDetayOzellikleri({
             />
             <div className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-2 shadow backdrop-blur">
               <KalpButonu
-                urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
+                urun={{ id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url, urun.gorsel_surum), kategori: urun.category }}
                 boyut="buyuk"
               />
             </div>
@@ -320,7 +321,7 @@ export function UrunDetayOzellikleri({
           {tumSecildi ? (
             <SepeteEkleButonu
               urun={{
-                id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url), birim: urun.unit,
+                id: urun.id, ad: urun.name, fiyat: netFiyat, gorsel: imgUrl(urun.id, urun.image_url, urun.gorsel_surum), birim: urun.unit,
                 ...(seciliVaryant ? { secenek: seciliVaryant.name, varyantId: seciliVaryant.id } : {}),
               }}
               musait={gercekVaryantlar.length > 0 ? (seciliVaryant?.stock_quantity ?? 0) : urun.pre_order && !urun.in_stock ? 99 : urun.available_quantity}

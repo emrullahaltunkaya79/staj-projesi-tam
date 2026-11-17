@@ -23,11 +23,11 @@ export function UrunKarti({ urun, odaklanabilir = true }: { urun: Urun; odaklana
             {urun.image_url ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imgUrl(urun.id, urun.image_url)} alt={urun.name} loading="lazy"
+                <img src={imgUrl(urun.id, urun.image_url, urun.gorsel_surum)} alt={urun.name} loading="lazy"
                      className={`h-full w-full object-contain p-4 transition-opacity duration-300 ${(urun.image_count ?? 0) > 1 ? "group-hover:opacity-0" : ""}`} />
                 {(urun.image_count ?? 0) > 1 && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/api/img/${urun.id}?v=1`} alt={`${urun.name} — 2. görsel`} loading="lazy"
+                  <img src={`/api/img/${urun.id}?v=1&s=${urun.gorsel_surum ?? 0}`} alt={`${urun.name} — 2. görsel`} loading="lazy"
                        className="absolute inset-0 h-full w-full object-contain p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 )}
               </>
@@ -97,13 +97,13 @@ export function UrunKarti({ urun, odaklanabilir = true }: { urun: Urun; odaklana
       </Link>
       <div className="mt-auto">
         <KartaEkleButonu
-          urun={{ id: urun.id, ad: urun.name, fiyat, gorsel: imgUrl(urun.id, urun.image_url) }}
+          urun={{ id: urun.id, ad: urun.name, fiyat, gorsel: imgUrl(urun.id, urun.image_url, urun.gorsel_surum) }}
           musait={urun.in_stock ? urun.available_quantity : 0}
         />
       </div>
       <div className="absolute right-3 top-3 z-10">
         <KalpButonu
-          urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url), kategori: urun.category }}
+          urun={{ id: urun.id, ad: urun.name, fiyat: urun.sale_price, gorsel: imgUrl(urun.id, urun.image_url, urun.gorsel_surum), kategori: urun.category }}
         />
       </div>
     </div>

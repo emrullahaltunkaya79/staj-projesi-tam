@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createHmac } from "crypto";
+import { gorselOnbellekTemizle } from "@/lib/imgOnbellek";
 
 const SECRET = process.env.BACKOFFICE_WEBHOOK_SECRET ?? "";
 
@@ -8,6 +9,7 @@ export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-signature") ?? "";
   const event = request.headers.get("x-event") ?? request.headers.get("X-Event") ?? "bilinmiyor";
+  const govde = (() => { try { return JSON.parse(body) as Record<string, unknown>; } catch { return {}; } })();
 
   // HMAC doğrulama — PHP hash_hmac(algo, data, key) ile aynı sıra: anahtar = gizli anahtar
   if (SECRET) {
@@ -33,6 +35,16 @@ export async function POST(request: NextRequest) {
     // Fetch cache'i sürüm anahtarıyla kır (production-safe)
     (globalThis as Record<string, unknown>).__katalogSurum =
       ((globalThis as Record<string, unknown>).__katalogSurum as number ?? 0) + 1;
+
+    // Panelde görsel değişti: ilgili ürünün ikili görsel önbelleğini düşür —
+    // /api/img yeni görseli 10 dk TTL beklemeden sunar
+    // (webhook gövdesi {event, timestamp, payload:{…}} saruclıdır; payload içinden okunur)
+    const urunHam = (govde.payload as Record<string, unknown> | undefined)?.product_id ?? govde.product_id;
+    const urunId = Number(urunHam);
+    if (event === "product.upserted" && Number.isFinite(urunId) && urunId > 0) {
+      const silinen = gorselOnbellekTemizle(urunId);
+      (globalThis as Record<string, unknown>).__gorselTemizlenen = silinen;
+    }
   }
 
   if (siparisOlaylari.includes(event)) {

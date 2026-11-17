@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title: `${u.name} — ${fiyat} ₺`,
       description: u.name,
-      images: [`/api/img/${u.id}`],
+      images: [`/api/img/${u.id}?s=${u.gorsel_surum ?? 0}`],
     },
   };
 }
@@ -99,7 +99,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
     "@type": "Product",
     name: u.name,
     description: `${u.name}${u.brand ? ` — ${u.brand}` : ""} — HepsiBirarada mağazasında ${new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(u.final_price ?? u.sale_price)} ₺`,
-    image: [`/api/img/${u.id}`],
+    image: [`/api/img/${u.id}?s=${u.gorsel_surum ?? 0}`],
     brand: { "@type": "Brand", name: u.brand ?? "HepsiBirarada" },
     sku: u.code ?? String(u.id),
     ...(u.rating_avg != null && {
@@ -159,7 +159,7 @@ export default async function UrunSayfasi({ params }: { params: Promise<{ id: st
         id: u.id,
         ad: u.name,
         fiyat: u.final_price ?? u.sale_price,
-        gorsel: u.id ? `/api/img/${u.id}` : null,
+        gorsel: u.id ? `/api/img/${u.id}?s=${u.gorsel_surum ?? 0}` : null,
       }} />
 
       {/* Gerçek değerlendirmeler */}

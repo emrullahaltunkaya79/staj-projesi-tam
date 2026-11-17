@@ -28,6 +28,8 @@ export type Urun = {
   in_stock: boolean;
   image_url: string | null;
   image_count?: number;
+  /** Görsel sürüm damgası — panelde görsel değişince değişir, tarayıcı önbelleğini kırar */
+  gorsel_surum?: number;
   rating_avg?: number | null;
   review_count?: number;
   is_bestseller?: boolean;
@@ -117,10 +119,13 @@ export type IadeTalebi = {
   red_tarihi?: string | null;
 };
 
-/** Base64 data URI'ler sayfa boyutunu ~24MB'a çıkarıyordu; görsel /api/img/{id} proxy'sinden akar. */
+/** Base64 data URI'ler sayfa boyutunu ~24MB'a çıkarıyordu; görsel /api/img/{id} proxy'sinden akar.
+ *  Sürüm parametresi (?s=) panelde görsel değişince değişir → tarayıcı yeni görseli anında çeker. */
 function gorselProxy(p: Urun): Urun {
   // API artık base64 yerine 'ok' işareti döner — görsel proxy URL'sine çevrilir
-  return p.image_url ? { ...p, image_url: `/api/img/${p.id}` } : p;
+  if (!p.image_url) return p;
+  const surum = p.gorsel_surum ?? 0;
+  return { ...p, image_url: `/api/img/${p.id}?s=${surum}` };
 }
 
 async function istek(path: string, init?: RequestInit) {
