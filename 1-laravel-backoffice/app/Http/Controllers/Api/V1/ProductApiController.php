@@ -198,7 +198,9 @@ class ProductApiController extends Controller
     }
 
     /**
-     * Yorum "faydalı oldu" oyu — müşteri token'ıyla, oy tekrar tıklanınca geri alınır.
+     * Yorum "faydalı oldu" oyu — oy tekrar tıklanınca geri alınır.
+     * Mağaza proxy'si sabit token kullandığı için misafir ziyaretçiler
+     * tarayıcı kimliği (misafir) ile ayrılır; oturumlu kullanıcı user_id ile.
      * POST /api/v1/reviews/{review}/faydali
      */
     public function faydaliToggle(Request $request, int $reviewId): JsonResponse
@@ -206,16 +208,32 @@ class ProductApiController extends Controller
         $review = ProductReview::find($reviewId);
         abort_if(! $review, 404, 'Yorum bulunamadı.');
 
-        $mevcut = \App\Models\ReviewVote::where('review_id', $reviewId)
-            ->where('user_id', $request->user()->id)
-            ->first();
+        $misafir = trim((string) $request->input('misafir'));
 
-        if ($mevcut) {
-            $mevcut->delete();
-            $oyVerildi = false;
+        if ($misafir !== '') {
+            $mevcut = \App\Models\ReviewVote::where('review_id', $reviewId)
+                ->where('misafir_id', $misafir)
+                ->first();
+
+            if ($mevcut) {
+                $mevcut->delete();
+                $oyVerildi = false;
+            } else {
+                \App\Models\ReviewVote::create(['review_id' => $reviewId, 'user_id' => null, 'misafir_id' => $misafir]);
+                $oyVerildi = true;
+            }
         } else {
-            \App\Models\ReviewVote::create(['review_id' => $reviewId, 'user_id' => $request->user()->id]);
-            $oyVerildi = true;
+            $mevcut = \App\Models\ReviewVote::where('review_id', $reviewId)
+                ->where('user_id', $request->user()->id)
+                ->first();
+
+            if ($mevcut) {
+                $mevcut->delete();
+                $oyVerildi = false;
+            } else {
+                \App\Models\ReviewVote::create(['review_id' => $reviewId, 'user_id' => $request->user()->id]);
+                $oyVerildi = true;
+            }
         }
 
         return response()->json([
@@ -282,6 +300,9 @@ class ProductApiController extends Controller
         $validated = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:1000'],
+            // Mağaza misafir yorumu: proxy sabit token'la geldiği için ad alanı
+            // verilmişse yorum misafire yazılır, oturum kullanıcıya yazılmaz.
+            'user_name' => ['nullable', 'string', 'max:60'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ], [
             'rating.required' => 'Puan zorunludur (1-5).',
@@ -294,10 +315,12 @@ class ProductApiController extends Controller
             $request->file('image')->storeAs('reviews', basename($gorselYolu), 'public');
         }
 
+        $misafirAdi = trim((string) ($validated['user_name'] ?? ''));
+
         $review = ProductReview::create([
             'product_id' => $id,
-            'user_id' => $request->user()->id,
-            'user_name' => $request->user()->name,
+            'user_id' => $misafirAdi !== '' ? null : $request->user()->id,
+            'user_name' => $misafirAdi !== '' ? $misafirAdi : $request->user()->name,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
             'image_path' => $gorselYolu,

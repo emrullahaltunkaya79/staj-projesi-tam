@@ -6,6 +6,7 @@ use App\Models\Contact;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\StockMovement;
 use App\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -296,6 +297,29 @@ class OrderService
     }
 
     /**
+     * Panel: kargodaki siparişi teslim edilmiş işaretler (shipped → delivered).
+     * delivered_at model kancasında otomatik yazılır; mağazaya order.delivered
+     * bildirilir — müşteri tarafında iade penceresi ancak teslimden sonra açılır.
+     */
+    public function markDelivered(Order $order, int $companyId): Order
+    {
+        $order = Order::where('company_id', $companyId)->where('id', $order->id)->lockForUpdate()->first();
+
+        if (! $order || $order->status !== 'shipped') {
+            throw ValidationException::withMessages(['order' => 'Yalnızca kargodaki siparişler teslim edilebilir.']);
+        }
+
+        $order->update(['status' => 'delivered']);
+
+        $this->webhookService->orderDelivered(
+            $order->order_no,
+            (string) ($order->external_ref ?? '')
+        );
+
+        return $order->fresh();
+    }
+
+    /**
      * Panel: iade talebini reddeder — sipariş teslim durumuna döner, talep temizlenir.
      */
     public function rejectReturn(Order $order, int $companyId, ?string $not = null): Order
@@ -473,7 +497,20 @@ class OrderService
                 // Stok ödeme anında düşmüştü (fatura); yalnızca iade edilen adetler geri alınır
                 if ($order->invoice_id) {
                     foreach ($kalemler as $kalem) {
-                        Product::where('id', $kalem['product_id'])->increment('stock_quantity', $kalem['quantity']);
+                        $product = Product::where('id', $kalem['product_id'])->lockForUpdate()->first();
+                        if ($product) {
+                            $product->increment('stock_quantity', $kalem['quantity']);
+                            // Stok defteri: fatura iadesiyle aynı 'iade' hareketi işlenir
+                            StockMovement::record(
+                                $product,
+                                'iade',
+                                'giris',
+                                (float) $kalem['quantity'],
+                                (float) $product->fresh()->stock_quantity,
+                                $order->invoice,
+                                "{$order->order_no} numaralı siparişin iadesidir."
+                            );
+                        }
                     }
                     $order->contact->decrement('balance', (float) $order->iade_tutari);
                 }
@@ -488,7 +525,19 @@ class OrderService
                     $order->load('invoice.items');
                     foreach ($order->invoice->items as $item) {
                         if ($item->product_id) {
-                            Product::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
+                            $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
+                            if ($product) {
+                                $product->increment('stock_quantity', $item->quantity);
+                                StockMovement::record(
+                                    $product,
+                                    'iade',
+                                    'giris',
+                                    (float) $item->quantity,
+                                    (float) $product->fresh()->stock_quantity,
+                                    $order->invoice,
+                                    "{$order->order_no} numaralı siparişin iadesidir."
+                                );
+                            }
                         }
                     }
                     $order->contact->decrement('balance', $order->invoice->total);

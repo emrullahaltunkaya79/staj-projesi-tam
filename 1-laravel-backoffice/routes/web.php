@@ -138,6 +138,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/siparisler/{order}/iptal', [OrderController::class, 'cancelOrder'])->name('siparisler.iptal');
     Route::post('/siparisler/{order}/kargo', [OrderController::class, 'updateShipping'])->name('siparisler.kargo');
     Route::post('/siparisler/{order}/hazirla', [OrderController::class, 'markPreparing'])->name('siparisler.hazirla');
+    Route::post('/siparisler/{order}/teslim', [OrderController::class, 'markDelivered'])->name('siparisler.teslim');
     Route::post('/siparisler/{order}/iade-onay', [OrderController::class, 'approveReturn'])->name('siparisler.iade.onay');
     Route::post('/siparisler/{order}/iade-reddet', [OrderController::class, 'rejectReturn'])->name('siparisler.iade.reddet');
 

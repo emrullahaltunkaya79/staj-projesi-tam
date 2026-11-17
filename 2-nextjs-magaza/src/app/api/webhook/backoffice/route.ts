@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   }
 
   const katalogOlaylari = ["stock.changed", "product.upserted", "product.deleted"];
-  const siparisOlaylari = ["order.paid", "order.cancelled", "order.shipped", "order.returned"];
+  const siparisOlaylari = ["order.paid", "order.cancelled", "order.shipped", "order.delivered", "order.returned"];
 
   if (katalogOlaylari.includes(event)) {
     // Dev'de revalidatePath, production'da cache tag busting

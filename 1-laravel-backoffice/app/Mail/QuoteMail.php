@@ -15,11 +15,18 @@ class QuoteMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    /**
+     * PDF ikili verisi kuyruk payload'ına JSON olarak yazıldığından
+     * ham binary "Malformed UTF-8" hatasıyla kuyruğu kırar — base64 taşınır.
+     */
+    public string $pdfContents;
+
     public function __construct(
         public Quote $quote,
-        public string $pdfContents,
+        string $pdfBinary,
         public string $pdfFilename,
     ) {
+        $this->pdfContents = base64_encode($pdfBinary);
     }
 
     public function envelope(): Envelope
@@ -42,7 +49,7 @@ class QuoteMail extends Mailable implements ShouldQueue
     public function attachments(): array
     {
         return [
-            Attachment::fromData(fn () => $this->pdfContents, $this->pdfFilename)
+            Attachment::fromData(fn () => base64_decode($this->pdfContents), $this->pdfFilename)
                 ->withMime('application/pdf'),
         ];
     }

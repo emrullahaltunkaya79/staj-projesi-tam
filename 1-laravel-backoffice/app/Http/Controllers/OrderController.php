@@ -102,6 +102,20 @@ class OrderController extends Controller
     }
 
     /**
+     * Panel: kargodaki siparişi teslim edilmiş işaretler (shipped → delivered).
+     */
+    public function markDelivered(Request $request, Order $order, OrderService $orderService)
+    {
+        try {
+            $orderService->markDelivered($order, $request->user()->company_id);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return back()->with('success', 'Sipariş teslim edildi olarak işaretlendi.');
+    }
+
+    /**
      * Panel: iade talebini onaylar — stoğu geri alır, cari bakiyesini düzeltir, siparişi "İade Edildi" yapar.
      */
     public function approveReturn(Request $request, Order $order, OrderService $orderService)

@@ -49,6 +49,17 @@
         </form>
     @endif
 
+    @if ($order->status === 'shipped')
+        <form method="POST" action="{{ route('siparisler.teslim', $order) }}"
+              onsubmit="return confirm('Siparişi Teslim Edildi olarak işaretle? Müşterinin iade penceresi başlar.');">
+            @csrf
+            <button type="submit" class="btn-primary">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Teslim Edildi
+            </button>
+        </form>
+    @endif
+
     @if (in_array($order->status, ['paid', 'preparing']) || ($order->status === 'pending' && $order->payment_method === 'kapida'))
         <form method="POST" action="{{ route('siparisler.kargo', $order) }}"
               class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">

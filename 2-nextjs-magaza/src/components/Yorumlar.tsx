@@ -15,7 +15,7 @@ type Yorum = {
 };
 
 export function Yorumlar({ urunId }: { urunId: number }) {
-  const { girisYapmis } = auth();
+  const { girisYapmis, kullanici } = auth();
   const [yorumlar, setYorumlar] = useState<Yorum[]>([]);
   const [sirala, setSirala] = useState<"yeni" | "yararli">("yeni");
   const [oyVerilenler, setOyVerilenler] = useState<Set<number>>(new Set());
@@ -24,6 +24,8 @@ export function Yorumlar({ urunId }: { urunId: number }) {
   const [sayi, setSayi] = useState(0);
   const [puan, setPuan] = useState(5);
   const [mesaj, setMesaj] = useState("");
+  // Misafir yorumu adıyla kaydedilir; oturumluysa ad alanı sunucu tarafından yok sayılır
+  const [ad, setAd] = useState(girisYapmis ? (kullanici?.name ?? "") : "");
   const [gonderildi, setGonderildi] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [buyuyen, setBuyuyen] = useState<string | null>(null);
@@ -74,6 +76,7 @@ export function Yorumlar({ urunId }: { urunId: number }) {
     setYukleniyor(true);
     const formVerisi = new FormData();
     formVerisi.append("rating", String(puan));
+    if (ad.trim() && !girisYapmis) formVerisi.append("user_name", ad.trim().slice(0, 60));
     if (mesaj) formVerisi.append("comment", mesaj);
     if (foto) formVerisi.append("image", foto);
     try {
@@ -138,6 +141,20 @@ export function Yorumlar({ urunId }: { urunId: number }) {
               <p className="mt-4 text-sm font-bold text-emerald-600">✓ Teşekkürler! Değerlendirmeniz kaydedildi.</p>
             ) : (
               <form onSubmit={gonder} className="mt-4 space-y-3">
+                {!girisYapmis && (
+                  <div>
+                    <label htmlFor="yorum-ad" className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-black/40">Adınız</label>
+                    <input
+                      id="yorum-ad"
+                      type="text"
+                      value={ad}
+                      maxLength={60}
+                      onChange={(e) => setAd(e.target.value)}
+                      placeholder="Adınız (opsiyonel)"
+                      className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-[13px] text-black outline-none transition placeholder:text-black/25 focus:border-black/40"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-black/40">Puanınız</label>
                   <div className="flex gap-1">

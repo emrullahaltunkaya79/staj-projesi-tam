@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 const BASE = process.env.BACKOFFICE_URL ?? "http://127.0.0.1:8000/api/v1";
 const TOKEN = process.env.BACKOFFICE_TOKEN ?? "";
+
+/** Oturumlu müşterinin kendi token'ı — yoksa mağaza servis token'ı (misafir yorumu). */
+async function oturumTokeni(): Promise<string | null> {
+  return (await cookies()).get("hba_oturum")?.value ?? null;
+}
 
 export async function GET(_request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -16,12 +22,15 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ id: st
 export async function POST(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const icerikTuru = request.headers.get("content-type") ?? "";
+  // Girişli müşterinin yorumu kendi adına yazılır; misafirde servis token'ı
+  // ile gelir ve formdaki user_name alanı yazar olarak kullanılır.
+  const token = (await oturumTokeni()) ?? TOKEN;
   // Fotoğraflı yorum: multipart formlar sınır başlığıyla aynen aktarılır
   if (icerikTuru.includes("multipart/form-data")) {
     const form = await request.formData();
     const r = await fetch(`${BASE}/products/${id}/reviews`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/json" },
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
       body: form,
     });
     const d = await r.json().catch(() => ({}));
@@ -31,7 +40,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
   const r = await fetch(`${BASE}/products/${id}/reviews`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${TOKEN}`,
+      Authorization: `Bearer ${token}`,
       Accept: "application/json",
       "Content-Type": "application/json",
     },

@@ -20,19 +20,21 @@ class WebhookService
      */
     public function retry(WebhookDelivery $delivery): WebhookDelivery
     {
-        $success = $this->deliver($delivery->event, $delivery->payload, $delivery->url, $delivery->attempts + 1);
+        // deliver() sonucu yeni satır olarak açar; sonucu eski teslimata
+        // taşıyıp yeni satırı siliyoruz — null güncelleme ve yineleme olmasın.
+        $sonuc = $this->deliver($delivery->event, $delivery->payload, $delivery->url, $delivery->attempts + 1);
 
         $delivery->update([
-            'success' => $success,
-            'response_code' => $this->lastResponseCode,
+            'success' => $sonuc->success,
+            'response_code' => $sonuc->response_code,
             'attempts' => $delivery->attempts + 1,
-            'delivered_at' => now(),
+            'delivered_at' => $sonuc->delivered_at,
         ]);
+
+        $sonuc->delete();
 
         return $delivery->fresh();
     }
-
-    protected int $lastResponseCode = 0;
 
     /**
      * Stok değişimi bildirimi.
@@ -130,6 +132,18 @@ class WebhookService
         ]);
     }
 
+    /**
+     * Teslim bildirimi — mağaza tarafında iade penceresi teslimden sonra açılır.
+     */
+    public function orderDelivered(string $orderNo, string $externalRef): void
+    {
+        $this->send('order.delivered', [
+            'order_no' => $orderNo,
+            'external_ref' => $externalRef,
+            'delivered_at' => now()->toIso8601String(),
+        ]);
+    }
+
     private function send(string $event, array $payload): void
     {
         $url = Setting::webhookUrl();
@@ -144,7 +158,7 @@ class WebhookService
         \App\Jobs\SendWebhookJob::dispatch($event, $payload, $url);
     }
 
-    public function deliver(string $event, array $payload, string $url, int $attempts): void
+    public function deliver(string $event, array $payload, string $url, int $attempts): WebhookDelivery
     {
         $body = [
             'event' => $event,
@@ -169,7 +183,7 @@ class WebhookService
             Log::warning("Webhook gönderilemedi: {$event} — {$e->getMessage()}");
         }
 
-        WebhookDelivery::create([
+        return WebhookDelivery::create([
             'event' => $event,
             'url' => $url,
             'payload' => $payload,
