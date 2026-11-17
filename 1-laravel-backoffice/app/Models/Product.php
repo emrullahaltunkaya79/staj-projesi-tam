@@ -20,10 +20,13 @@ class Product extends Model
         'unit',
         'purchase_price',
         'sale_price',
+        'pazaryeri',
+        'pazaryeri_komisyon_orani',
+        'kargo_maliyeti',
         'discount_percent',
         'stock_quantity',
         'reserved_quantity',
-    
+
         'video_url',
         'pre_order',
         'katalog_gizli',];
@@ -43,6 +46,8 @@ class Product extends Model
         return [
             'purchase_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
+            'pazaryeri_komisyon_orani' => 'decimal:2',
+            'kargo_maliyeti' => 'decimal:2',
             'specs' => 'array',
             'stock_quantity' => 'integer',
             'reserved_quantity' => 'integer',

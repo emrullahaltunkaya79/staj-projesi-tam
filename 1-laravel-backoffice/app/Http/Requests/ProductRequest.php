@@ -6,9 +6,39 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductRequest extends FormRequest
 {
+    /** Bilinen pazar yerlerinin standart komisyon yüzdeleri */
+    public const PAZAR_YERI_KOMISYONLARI = [
+        'trendyol' => 15.0,
+        'hepsiburada' => 14.0,
+        'amazon' => 12.0,
+    ];
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * Simülatör alanlarını normalize eder: bilinen bir pazar yeri seçilip özel
+     * oran boş bırakıldıysa standart komisyon otomatik atanır; "web"/boş ise
+     * komisyon sıfırlanır.
+     */
+    protected function prepareForValidation(): void
+    {
+        $pazaryeri = $this->input('pazaryeri');
+
+        if (! $pazaryeri || $pazaryeri === 'web') {
+            $this->merge([
+                'pazaryeri' => $pazaryeri === 'web' ? 'web' : null,
+                'pazaryeri_komisyon_orani' => $pazaryeri === 'web' ? 0 : null,
+            ]);
+            return;
+        }
+
+        if ($this->input('pazaryeri_komisyon_orani') === null
+            && isset(self::PAZAR_YERI_KOMISYONLARI[$pazaryeri])) {
+            $this->merge(['pazaryeri_komisyon_orani' => self::PAZAR_YERI_KOMISYONLARI[$pazaryeri]]);
+        }
     }
 
     public function rules(): array
@@ -29,6 +59,11 @@ class ProductRequest extends FormRequest
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],
             'stock_quantity' => ['required', 'integer', 'min:0'],
+            // Pazar yeri simülatörü girdileri (advisory — sipariş entegrasyonlarında varsayılan)
+            'pazaryeri' => ['nullable', 'string', 'in:web,ozel,trendyol,hepsiburada,amazon'],
+            'pazaryeri_komisyon_orani' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'kargo_maliyeti' => ['nullable', 'numeric', 'min:0'],
+            'maliyet_kdv_dahil' => ['nullable', 'boolean'],
         ];
     }
 
