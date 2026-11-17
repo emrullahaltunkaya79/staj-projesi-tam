@@ -42,7 +42,7 @@
                         <form method="POST" action="{{ route('mesajlar.sil', $m->id) }}" onsubmit="return confirm('Mesaj silinsin mi?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="rounded-full border border-red-200 px-3 py-1 text-xs font-bold text-red-600 transition hover:bg-red-50">Sil</button>
+                            <x-icon-trash title="Mesajı sil"/>
                         </form>
                     </div>
                 </div>

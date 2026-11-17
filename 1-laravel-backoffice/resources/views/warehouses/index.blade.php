@@ -112,7 +112,7 @@
                                     <form method="POST" action="{{ route('depolar.destroy', $wh) }}"
                                           onsubmit="return confirm('Bu depoyu silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Sil</button>
+                                        <x-icon-trash title="Depoyu sil"/>
                                     </form>
                                 @endcan
                             </div>

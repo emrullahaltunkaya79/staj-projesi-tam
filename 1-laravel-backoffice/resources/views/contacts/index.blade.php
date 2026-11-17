@@ -82,12 +82,14 @@
                                     </svg>
                                     Detay / Ekstre
                                 </a>
-                                <a href="{{ route('cariler.edit', $contact) }}" data-modal-url="{{ route('cariler.edit', $contact) }}" data-modal-title="Cariyi Düzenle — {{ $contact->name }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Düzenle</a>
+                                <a href="{{ route('cariler.edit', $contact) }}" data-modal-url="{{ route('cariler.edit', $contact) }}" data-modal-title="Cariyi Düzenle — {{ $contact->name }}">
+                                    <x-icon-pencil title="Cariyi düzenle"/>
+                                </a>
                                 @can('delete', $contact)
                                     <form method="POST" action="{{ route('cariler.destroy', $contact) }}"
                                           onsubmit="return confirm('Bu cariyi silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Sil</button>
+                                        <x-icon-trash title="Cariyi sil"/>
                                     </form>
                                 @endcan
                             </div>

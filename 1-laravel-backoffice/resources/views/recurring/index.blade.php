@@ -54,7 +54,7 @@
                                     <form method="POST" action="{{ route('tekrarlayan.destroy', $rule) }}"
                                           onsubmit="return confirm('Bu kuralı silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Sil</button>
+                                        <x-icon-trash title="Tekrarlayan kaydı sil"/>
                                     </form>
                                 </div>
                             @endcan

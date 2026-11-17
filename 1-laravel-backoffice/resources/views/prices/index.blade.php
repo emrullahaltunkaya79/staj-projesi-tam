@@ -91,7 +91,7 @@
                                     <form method="POST" action="{{ route('fiyatlar.destroy', $price) }}"
                                           onsubmit="return confirm('Bu özel fiyatı silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Sil</button>
+                                        <x-icon-trash title="Özel fiyatı sil"/>
                                     </form>
                                 </div>
                             @endcan

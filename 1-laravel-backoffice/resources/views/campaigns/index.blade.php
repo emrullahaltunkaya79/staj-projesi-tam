@@ -97,7 +97,7 @@
                                       onsubmit="return confirm('Kampanya silinsin mi?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="rounded-full border border-red-200 px-3 py-1 text-xs font-bold text-red-600">Sil</button>
+                                    <x-icon-trash title="Kampanyayı sil"/>
                                 </form>
                             </div>
                         </td>

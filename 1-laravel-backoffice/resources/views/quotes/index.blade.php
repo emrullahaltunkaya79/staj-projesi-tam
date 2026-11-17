@@ -54,13 +54,15 @@
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('teklifler.show', $quote) }}" data-modal-url="{{ route('teklifler.show', $quote) }}" data-modal-title="Teklif {{ $quote->quote_no }}" data-modal-view="1" data-modal-wide="1" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Görüntüle</a>
                                 @if ($quote->status === 'acik')
-                                    <a href="{{ route('teklifler.edit', $quote) }}" data-modal-url="{{ route('teklifler.edit', $quote) }}" data-modal-title="Teklifi Düzenle — {{ $quote->quote_no }}" data-modal-wide="1" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Düzenle</a>
+                                    <a href="{{ route('teklifler.edit', $quote) }}" data-modal-url="{{ route('teklifler.edit', $quote) }}" data-modal-title="Teklifi Düzenle — {{ $quote->quote_no }}" data-modal-wide="1">
+                                        <x-icon-pencil title="Teklifi düzenle"/>
+                                    </a>
                                 @endif
                                 @can('delete', $quote)
                                     <form method="POST" action="{{ route('teklifler.destroy', $quote) }}"
                                           onsubmit="return confirm('Bu teklifi silmek istediğinize emin misiniz? (Geri dönüşüm kutusuna taşınır)');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Sil</button>
+                                        <x-icon-trash title="Teklifi sil"/>
                                     </form>
                                 @endcan
                             </div>

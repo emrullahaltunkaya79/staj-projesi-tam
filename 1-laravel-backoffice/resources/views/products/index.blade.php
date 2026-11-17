@@ -116,12 +116,14 @@
                         <td>
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('urunler.show', $product) }}" data-modal-url="{{ route('urunler.show', $product) }}" data-modal-title="Ürün: {{ $product->name }}" data-modal-view="1" class="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">Detay</a>
-                                <a href="{{ route('urunler.edit', $product) }}" data-modal-url="{{ route('urunler.edit', $product) }}" data-modal-title="Ürünü Düzenle" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Düzenle</a>
+                                <a href="{{ route('urunler.edit', $product) }}" data-modal-url="{{ route('urunler.edit', $product) }}" data-modal-title="Ürünü Düzenle">
+                                    <x-icon-pencil title="Ürünü düzenle"/>
+                                </a>
                                 @can('delete', $product)
                                     <form method="POST" action="{{ route('urunler.destroy', $product) }}"
                                           onsubmit="return confirm('Bu ürünü silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Sil</button>
+                                        <x-icon-trash title="Ürünü sil"/>
                                     </form>
                                 @endcan
                             </div>
