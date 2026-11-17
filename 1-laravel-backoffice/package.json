@@ -15,6 +15,8 @@
         "vite": "^6.0.11"
     },
     "dependencies": {
-        "@hotwired/turbo": "^8.0.23"
+        "@alpinejs/collapse": "^3.17.5",
+        "@hotwired/turbo": "^8.0.23",
+        "alpinejs": "^3.17.5"
     }
 }
