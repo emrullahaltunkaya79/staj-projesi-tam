@@ -482,3 +482,46 @@
 #sidebar.grup-hazirlan .group-toggle {
     transition: none !important;
 }
+
+/* ═══════════ Mini sidebar (daraltılmış ray) ═══════════ */
+#sidebar.mini { width: 68px; }
+#sidebar.mini .brand-metin { display: none; }
+#sidebar.mini .group-toggle .nav-label { display: none; }
+#sidebar.mini .group-toggle { justify-content: center; padding-left: 0; padding-right: 0; }
+#sidebar.mini .group-chevron { display: none; }
+/* Mini modda tüm gruplar açık kalır — akordiyon sınıfları etkisiz */
+#sidebar.mini .nav-items {
+    max-height: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+#sidebar.mini .nav-item {
+    opacity: 1 !important;
+    transform: none !important;
+    justify-content: center;
+    gap: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+#sidebar.mini .nav-item .nav-item-text,
+#sidebar.mini .nav-active-dot { display: none; }
+#sidebar.mini .nav-group-sep { margin: 6px 8px; }
+#sidebar.mini.is-active-bar { }
+
+/* Aktif sayfa: koyu hap yerine sol accent + şeffaf tint (Linear tarzı) */
+.nav-item.is-active {
+    color: #eef2ff;
+    background: rgb(99 102 241 / .18);
+    box-shadow: none;
+}
+.nav-item.is-active:hover { background: rgb(99 102 241 / .26); }
+.nav-item.is-active::before {
+    content: '';
+    position: absolute;
+    left: -0.6875rem;
+    top: 18%;
+    height: 64%;
+    width: 3px;
+    border-radius: 99px;
+    background: #818cf8;
+}
