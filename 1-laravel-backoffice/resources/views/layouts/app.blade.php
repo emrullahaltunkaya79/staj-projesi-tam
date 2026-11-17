@@ -632,6 +632,34 @@
 <script src="{{ asset('js/global-search.js') }}"></script>
 <script src="{{ asset('js/header-widgets.js') }}"></script>
 <script>
+// ---- Çift gönderim koruması (tüm panel formları) ----
+// Kullanıcı aynı butona hızlıca iki kez basınca ikinci istek engellenir:
+// submit anında buton kilitlenir, metni "İşleniyor…" olur. HTML5 doğrulama
+// submit'i iptal ederse buton hiç kilitlenmez; AJAX'sız akışta sayfa
+// yeniden yüklendiği için butonlar zaten taze gelir.
+document.addEventListener('submit', function (e) {
+    const gonderen = e.submitter || e.target.querySelector('button[type="submit"], input[type="submit"]');
+    if (!gonderen || gonderen.dataset.kilitli) { e.preventDefault(); return; }
+
+    // Yalnızca gerçek gönderim butonlarını kilitle; type="button" dokunulmaz
+    if (gonderen.type !== 'submit') return;
+
+    gonderen.dataset.kilitli = '1';
+    gonderen.dataset.orijinalMetin = gonderen.innerHTML;
+    gonderen.style.width = gonderen.offsetWidth + 'px';
+    gonderen.style.pointerEvents = 'none';
+    gonderen.setAttribute('aria-busy', 'true');
+    gonderen.style.opacity = '0.7';
+    gonderen.innerHTML = '<span style="display:inline-flex;align-items:center;gap:.5rem;">' +
+        '<svg style="animation:btn-donus 0.8s linear infinite" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' +
+        '<path stroke-linecap="round" d="M21 12a9 9 0 11-6.219-8.56"/></svg> İşleniyor…</span>';
+}, true);
+
+// Kilitli buton stili için spinner animasyonu
+const btnStil = document.createElement('style');
+btnStil.textContent = '@keyframes btn-donus{to{transform:rotate(360deg)}}';
+document.head.appendChild(btnStil);
+
 (function () {
     const sidebar = document.getElementById('sidebar');
 
