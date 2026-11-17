@@ -58,6 +58,7 @@ class ProductRequest extends FormRequest
             'unit' => ['required', 'string', 'max:20'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],
+            'discount_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
             'stock_quantity' => ['required', 'integer', 'min:0'],
             'min_stock_level' => ['nullable', 'integer', 'min:0'],
             'supplier_id' => ['nullable', 'integer', 'exists:contacts,id'],

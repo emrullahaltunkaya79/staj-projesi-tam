@@ -163,6 +163,46 @@
             @error('sale_price') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        <div>
+            <label class="label" for="discount_percent">İndirim Oranı (%)</label>
+            <div class="relative">
+                <input type="number" id="discount_percent" name="discount_percent" min="0" max="100" step="1"
+                       value="{{ old('discount_percent', $product->discount_percent) }}"
+                       class="input pr-8" placeholder="0" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-400">
+                Mağazada eski fiyat <span id="indirim-eski" class="font-semibold text-slate-500">—</span> yerine
+                <span id="indirim-yeni" class="font-bold text-emerald-600">—</span> görünür.
+            </p>
+            @error('discount_percent') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <script>
+        (function () {
+            const oku = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+            const guncelle = () => {
+                const satis = oku('sale_price');
+                const oran = Math.min(100, Math.max(0, oku('discount_percent')));
+                const eskiEl = document.getElementById('indirim-eski');
+                const yeniEl = document.getElementById('indirim-yeni');
+                if (!eskiEl) return;
+                if (satis <= 0 || oran <= 0) {
+                    eskiEl.textContent = satis > 0 ? new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(satis) + ' ₺' : '—';
+                    yeniEl.textContent = satis > 0 && oran <= 0 ? new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(satis) + ' ₺' : '—';
+                    return;
+                }
+                eskiEl.textContent = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(satis) + ' ₺';
+                yeniEl.textContent = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(satis * (100 - oran) / 100) + ' ₺';
+            };
+            document.addEventListener('DOMContentLoaded', () => {
+                ['sale_price', 'discount_percent'].forEach(id =>
+                    document.getElementById(id)?.addEventListener('input', guncelle));
+                guncelle();
+            });
+        })();
+        </script>
+
         {{-- ═══ Pazar Yeri Komisyon ve Net Kâr Simülatörü ═══ --}}
         <div class="sm:col-span-2">
             <div class="rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/20">
