@@ -38,3 +38,6 @@ Schedule::command('gonder:sepet-hatirlatma')->hourly();
 
 // Doğum günü kuponları: günü gelen müşteriye %15 kupon
 Schedule::command('gonder:dogum-gunu-kuponlari')->dailyAt('09:30');
+
+// Yetim ürün görselleri haftada bir temizlenir (kalıcı silinen ürünlerin dosyaları dahil)
+Schedule::command('gorsel:temizle --calistir')->weeklyOn(0, '03:30');

@@ -719,6 +719,19 @@ document.head.appendChild(btnStil);
         });
     });
 
+    // Sidebar'dan tamamen çıkınca (mouseleave) açık grupları yumuşakça kapat —
+    // 250 ms gecikme: başlık ↔ öğe geçişlerindeki kenar titremesini önler
+    let cikisZamani = null;
+    document.querySelector('nav.sidebar-scroll')?.addEventListener('mouseleave', () => {
+        cikisZamani = setTimeout(() => {
+            gruplar.forEach((_, slug) => grupKapat(slug));
+        }, 250);
+    });
+    // Geri girilirse bekleyen kapatmayı iptal et
+    document.querySelector('nav.sidebar-scroll')?.addEventListener('mouseenter', () => {
+        if (cikisZamani) { clearTimeout(cikisZamani); cikisZamani = null; }
+    });
+
     // ---- Kullanıcı dropdown ----
     const userBtn = document.getElementById('user-menu-btn');
     const userMenu = document.getElementById('user-menu');
