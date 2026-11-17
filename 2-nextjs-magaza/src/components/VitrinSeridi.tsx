@@ -1,13 +1,28 @@
+"use client";
+
 import Link from "next/link";
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, Star, Sparkles, Clock, type LucideIcon } from "lucide-react";
 import type { Urun } from "@/lib/backoffice";
 import { UrunKarti } from "./Catalog";
 import { GeriSayim } from "./GeriSayim";
+import { MarqueeSerit } from "./MarqueeSerit";
 
-/** Ana sayfa yatay ürün vitrini — Flaş İndirimler / En Çok Satanlar şeritleri. */
+/**
+ * İkonlar STRING anahtar olarak alınır: sunucu bileşeninden client bileşenine
+ * bileşen/fonksiyon prop'u geçilemez (RSC sınırı) — sayfa sunucudan çağrıldığında
+ * bu, "Functions cannot be passed directly to Client Components" hatasına yol açar.
+ */
+const IKONLAR: Record<string, LucideIcon> = {
+  star: Star,
+  sparkles: Sparkles,
+  clock: Clock,
+};
+
+/** Ana sayfa yatay ürün vitrini — Çok Satanlar / Sezon / Yeni Gelenler şeritleri.
+ *  Sonsuz marquee ile sağdan sola akar; hover'da durur, kenarlarda yumuşak maske var. */
 export function VitrinSeridi({
   baslik,
-  ikon: Ikon,
+  ikon,
   urunler,
   tur,
   aciklama,
@@ -15,13 +30,15 @@ export function VitrinSeridi({
   tumunuGor,
 }: {
   baslik: string;
-  ikon: LucideIcon;
+  /** İkon anahtarı: "star" | "sparkles" | "clock" */
+  ikon: string;
   urunler: Urun[];
   tur: "flas" | "cokSatan" | "sezon";
   aciklama?: string;
   geriSayim?: boolean;
   tumunuGor?: string;
 }) {
+  const Ikon = IKONLAR[ikon] ?? Star;
   if (urunler.length === 0) return null;
 
   return (
@@ -55,10 +72,13 @@ export function VitrinSeridi({
           </div>
         </div>
 
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {urunler.map((u) => (
-            <div key={u.id} className="w-[204px] shrink-0 snap-start">
-              <UrunKarti urun={u} />
+        {/* Sonsuz akan şerit: kopyalarda odak tek kopyayla sınırlı (odaklanabilir) */}
+        <MarqueeSerit
+          ogeler={urunler}
+          etiket={`${baslik} — sonsuz kayan ürün şeridi`}
+          kart={(u, kopya) => (
+            <div key={u.id} className="mr-3 w-[204px] shrink-0">
+              <UrunKarti urun={u} odaklanabilir={kopya === 0} />
               {tur === "flas" && u.in_stock && (
                 <div className="mt-1.5">
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/10">
@@ -73,8 +93,8 @@ export function VitrinSeridi({
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          )}
+        />
       </div>
     </section>
   );

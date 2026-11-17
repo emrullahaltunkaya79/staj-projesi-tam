@@ -2,10 +2,11 @@
 
 import { Heart } from "lucide-react";
 import { UrunKarti } from "./Catalog";
+import { MarqueeSerit } from "./MarqueeSerit";
 import { favori } from "./FavoriProvider";
 import type { Urun } from "@/lib/backoffice";
 
-/** "Beğendiklerine benzer" — favorilerdeki ürünlerin kategorisinden öneriler. */
+/** "Beğendiklerine benzer" — favorilerdeki ürünlerin kategorisinden öneriler, sonsuz akan şerit. */
 export function BegendiklerineBenzer({ tumu }: { tumu: Urun[] }) {
   const { favoriler } = favori();
 
@@ -26,11 +27,15 @@ export function BegendiklerineBenzer({ tumu }: { tumu: Urun[] }) {
           </h2>
           <span className="text-[11px] font-medium text-black/35">favorilerine göre önerildi</span>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {adaylar.map((u) => (
-            <UrunKarti key={u.id} urun={u} />
-          ))}
-        </div>
+        <MarqueeSerit
+          ogeler={adaylar}
+          etiket="Beğendiklerine benzer ürünler — sonsuz kayan şerit"
+          kart={(u, kopya) => (
+            <div key={u.id} className="mr-4 w-[204px] shrink-0">
+              <UrunKarti urun={u} odaklanabilir={kopya === 0} />
+            </div>
+          )}
+        />
       </div>
     </section>
   );

@@ -8,15 +8,17 @@ import { QuickViewButonu } from "./QuickView";
 import { Star } from "lucide-react";
 import { KartaEkleButonu } from "./KartaEkleButonu";
 
-export function UrunKarti({ urun }: { urun: Urun }) {
+export function UrunKarti({ urun, odaklanabilir = true }: { urun: Urun; odaklanabilir?: boolean }) {
   const fmt = (v: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(v);
   const indirim = urun.discount_percent ?? 0;
   const fiyat = indirim > 0 ? indirimliFiyat(urun) : urun.sale_price;
+  // Marquee kopyalarında odak kopyasının dışında kalır (klavye gezinmesi tek kopyayı gezer)
+  const tab = odaklanabilir ? undefined : -1;
 
   return (
     <div className="group relative flex flex-col">
       <div className="relative">
-        <Link href={`/urun/${urun.id}`} className="block">
+        <Link href={`/urun/${urun.id}`} tabIndex={tab} className="block">
           <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#f4f4f4] transition-transform duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.015]">
             {urun.image_url ? (
               <>
@@ -66,7 +68,7 @@ export function UrunKarti({ urun }: { urun: Urun }) {
         {/* Hızlı Bakış butonu linkin İÇİNDE olmaz: bağlantı-içi etkileşimli öğe geçersiz HTML'dir */}
         <QuickViewButonu urunId={urun.id} />
       </div>
-      <Link href={`/urun/${urun.id}`} className="block">
+      <Link href={`/urun/${urun.id}`} tabIndex={tab} className="block">
         <div className="mt-2 flex items-end justify-between gap-2">
           <div className="min-w-0">
             {urun.brand && (

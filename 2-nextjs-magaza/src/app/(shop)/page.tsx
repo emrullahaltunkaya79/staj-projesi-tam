@@ -1,4 +1,4 @@
-import { Star, Sparkles } from "lucide-react";
+
 import Hero from "@/components/Hero";
 import { KatalogIcerik } from "@/components/KatalogIcerik";
 import { VitrinSeridi } from "@/components/VitrinSeridi";
@@ -72,7 +72,7 @@ export default async function Home() {
       {!hata && cokSatanlar.length > 0 && (
         <VitrinSeridi
           baslik="En Çok Satanlar"
-          ikon={Star}
+          ikon="star"
           tur="cokSatan"
           urunler={cokSatanlar}
           aciklama="Satış verilerinden"
@@ -84,7 +84,7 @@ export default async function Home() {
       {!hata && yeniGelenler.length > 0 && (
         <VitrinSeridi
           baslik="Yeni Gelenler"
-          ikon={Sparkles}
+          ikon="sparkles"
           tur="sezon"
           urunler={yeniGelenler}
           aciklama="Kataloğa en son eklenenler"

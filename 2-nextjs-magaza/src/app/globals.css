@@ -166,3 +166,24 @@ body {
   from { opacity: 0; transform: translateY(12px) scale(.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* ═══════════ Sonsuz marquee şerit (Flaş İndirimler, Çok Satanlar, Benzer Ürünler…) ═══════════
+   MarqueeSerit bileşeni kullanır: kartlar kopya sayısı kadar tekrarlanır, iz
+   translateX(0 → -50%) ile akar; -%50 noktası kopya sınırına denk geldiğinden
+   döngü pürüzsüz sarar. Hover'da durur, kenarlar bileşende maskelenir. */
+@keyframes marquee-akis {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-iz {
+  animation: marquee-akis var(--marquee-sure, 28s) linear infinite;
+}
+
+.marquee-alan:hover .marquee-iz {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-iz { animation: none; }
+}
