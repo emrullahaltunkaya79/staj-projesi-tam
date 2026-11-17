@@ -271,14 +271,8 @@
                              class="absolute left-0 right-0 top-full z-20 mt-2 hidden max-h-96 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg"></div>
                     </div>
 
-                    {{-- Sağ küme: tarih + hızlı işlem + bildirim + tema + kullanıcı (simetrik) --}}
+                    {{-- Sağ küme: hızlı işlem + bildirim + tema + kullanıcı (simetrik) --}}
                     <div class="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
-
-                    {{-- Tarih bilgisi --}}
-                    <div class="hidden h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 shadow-sm xl:flex dark:border-slate-700 dark:bg-slate-800">
-                        <svg class="h-4 w-4 text-indigo-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <span id="header-tarih" class="text-xs font-semibold text-slate-600 dark:text-slate-300"></span>
-                    </div>
 
                     {{-- Hızlı işlem: Yeni Fatura --}}
                     <button type="button" data-modal-url="{{ route('faturalar.create') }}" data-modal-title="Yeni Satış Faturası" data-modal-wide="1"
@@ -704,11 +698,6 @@ document.head.appendChild(btnStil);
         miniUygula(!sidebar.classList.contains('mini'));
     });
 
-    // ---- Header tarih bilgisi ----
-    const tarihEl = document.getElementById('header-tarih');
-    if (tarihEl) {
-        tarihEl.textContent = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' }).format(new Date());
-    }
 
     // ---- Açılır gruplar: HOVER ile tekli akordiyon (exclusive) ----
     // Fare bir grup başlığının üzerine gelince (mouseenter): önceden açık olan
