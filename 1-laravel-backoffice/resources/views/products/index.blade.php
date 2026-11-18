@@ -71,7 +71,9 @@
                     <th>Ürün Adı</th>
                     <th>Kategori</th>
                     <th>Birim</th>
+                    @can('maliyet')
                     <th class="!text-right">Alış Fiyatı</th>
+                    @endcan
                     <th class="!text-right">Satış Fiyatı</th>
                     <th class="!text-right">Stok</th>
                     <th class="!text-right">İşlem</th>
@@ -106,7 +108,9 @@
                             @endif
                         </td>
                         <td>{{ $product->unit }}</td>
+                        @can('maliyet')
                         <td class="text-right tabular-nums">{{ $fmt($product->purchase_price) }}</td>
+                        @endcan
                         <td class="text-right tabular-nums">{{ $fmt($product->sale_price) }}</td>
                         <td class="text-right tabular-nums">
                             <span class="{{ $product->stock_quantity == 0 ? 'badge-red' : ($product->isLowStock() ? 'badge-amber' : 'badge-green') }}">
@@ -115,7 +119,7 @@
                         </td>
                         <td>
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('urunler.show', $product) }}" data-modal-url="{{ route('urunler.show', $product) }}" data-modal-title="Ürün: {{ $product->name }}" data-modal-view="1" class="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">Detay</a>
+                                <a href="{{ route('urunler.show', $product) }}" data-modal-url="{{ route('urunler.show', $product) }}" data-modal-title="Ürün: {{ $product->name }}" data-modal-view="1"><x-icon-eye title="Ürünü görüntüle"/></a>
                                 <a href="{{ route('urunler.edit', $product) }}" data-modal-url="{{ route('urunler.edit', $product) }}" data-modal-title="Ürünü Düzenle">
                                     <x-icon-pencil title="Ürünü düzenle"/>
                                 </a>

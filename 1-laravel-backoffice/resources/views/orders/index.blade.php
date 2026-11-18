@@ -123,7 +123,7 @@
                                 @if (in_array($order->status, ['paid', 'preparing', 'shipped', 'delivered']))
                                     <a href="{{ route('siparisler.etiket', $order) }}" title="Kargo etiketini indir" data-turbo="false" class="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">Etiket</a>
                                 @endif
-                                <a href="{{ route('siparisler.show', $order) }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Detay</a>
+                                <a href="{{ route('siparisler.show', $order) }}" ><x-icon-eye title="Sipariş detayını görüntüle"/></a>
                             </div>
                         </td>
                     </tr>

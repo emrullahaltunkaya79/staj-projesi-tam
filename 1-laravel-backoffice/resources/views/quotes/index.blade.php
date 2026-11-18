@@ -52,7 +52,7 @@
                         <td><span class="{{ $quote->statusBadgeClass() }}">{{ $quote->statusLabel() }}</span></td>
                         <td class="text-right tabular-nums">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('teklifler.show', $quote) }}" data-modal-url="{{ route('teklifler.show', $quote) }}" data-modal-title="Teklif {{ $quote->quote_no }}" data-modal-view="1" data-modal-wide="1" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Görüntüle</a>
+                                <a href="{{ route('teklifler.show', $quote) }}" data-modal-url="{{ route('teklifler.show', $quote) }}" data-modal-title="Teklif {{ $quote->quote_no }}" data-modal-view="1" data-modal-wide="1"><x-icon-eye title="Teklifi görüntüle"/></a>
                                 @if ($quote->status === 'acik')
                                     <a href="{{ route('teklifler.edit', $quote) }}" data-modal-url="{{ route('teklifler.edit', $quote) }}" data-modal-title="Teklifi Düzenle — {{ $quote->quote_no }}" data-modal-wide="1">
                                         <x-icon-pencil title="Teklifi düzenle"/>

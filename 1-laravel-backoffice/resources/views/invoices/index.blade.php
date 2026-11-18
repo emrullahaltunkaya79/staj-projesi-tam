@@ -70,7 +70,7 @@
                         <td class="text-right tabular-nums">%{{ rtrim(rtrim(number_format($invoice->tax_rate, 2, ',', '.'), '0'), ',') }} ({{ $fmt($invoice->tax_amount) }})</td>
                         <td class="text-right font-bold">{{ $fmt($invoice->total) }}</td>
                         <td class="text-right tabular-nums">
-                            <a href="{{ route('faturalar.show', $invoice) }}" data-modal-url="{{ route('faturalar.show', $invoice) }}" data-modal-title="Fatura {{ $invoice->invoice_no }}" data-modal-wide="1" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Görüntüle</a>
+                            <a href="{{ route('faturalar.show', $invoice) }}" data-modal-url="{{ route('faturalar.show', $invoice) }}" data-modal-title="Fatura {{ $invoice->invoice_no }}" data-modal-wide="1"><x-icon-eye title="Faturayı görüntüle"/></a>
                         </td>
                     </tr>
                 @empty
