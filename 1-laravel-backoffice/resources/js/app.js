@@ -94,4 +94,76 @@ Alpine.data('panelVerisi', () => ({
     },
 }));
 
+// ─── Raporlar: dönem filtresi (raporlar/veriler ucunu çağırır) ───
+Alpine.data('raporFiltre', () => ({
+    donem: '12ay',
+    donemAcik: false,
+    yukleniyor: false,
+    hazirDonemler: [
+        { deger: '12ay', etiket: 'Son 12 Ay' },
+        { deger: 'ay', etiket: 'Bu Ay' },
+        { deger: 'yil', etiket: 'Bu Yıl' },
+    ],
+    get donemEtiketi() {
+        return this.hazirDonemler.find((d) => d.deger === this.donem)?.etiket ?? 'Son 12 Ay';
+    },
+    donemSec(deger) {
+        this.donem = deger;
+        this.donemAcik = false;
+        this.yukle();
+    },
+    async yukle() {
+        if (this.yukleniyor) return;
+        this.yukleniyor = true;
+        try {
+            const yanit = await fetch(`/raporlar/veriler?donem=${this.donem}`, {
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
+            });
+            if (!yanit.ok) throw new Error('rapor verileri');
+            const sonuc = await yanit.json();
+            const d = sonuc.data ?? {};
+            // Grafik verisini tazele — sayfadaki çizim işleyicisi 'rapor-veriler'i dinler
+            window.reportData = {
+                chart: {
+                    labels: d.grafik?.labels ?? [],
+                    sales: d.grafik?.sales ?? [],
+                    purchases: d.grafik?.purchases ?? [],
+                    expenses: d.grafik?.expenses ?? [],
+                },
+                topProducts: {
+                    labels: (d.enCokSatan ?? []).map((x) => x.ad),
+                    quantities: (d.enCokSatan ?? []).map((x) => x.adet),
+                },
+            };
+            // Özet kartları: data-rapor-deger işaretli alanları biçimli değerlerle güncelle
+            const esle = {
+                sales_total: d.stats?.sales_tam,
+                purchase_total: d.stats?.purchase_tam,
+                gross_profit: d.stats?.gross_tam,
+                collection_total: d.stats?.collection_tam,
+                expense_total: d.stats?.gider_fmt,
+            };
+            document.querySelectorAll('[data-rapor-deger]').forEach((el) => {
+                const yeni = esle[el.dataset.raporDeger];
+                if (yeni) el.textContent = yeni;
+            });
+            window.dispatchEvent(new CustomEvent('rapor-veriler'));
+        } catch {
+            // sessiz — eski değerler kalır
+        } finally {
+            this.yukleniyor = false;
+        }
+    },
+}));
+
+// ─── Raporlar: dışa aktarma açılır menüsü ───
+Alpine.data('diswaAktarma', () => ({
+    acik: false,
+    pdfAl() {
+        this.acik = false;
+        window.print();
+    },
+}));
+
 Alpine.start();

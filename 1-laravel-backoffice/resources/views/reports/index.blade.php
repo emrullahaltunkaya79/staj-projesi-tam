@@ -63,7 +63,7 @@
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Toplam Satış</div>
-                    <div class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-emerald-600 dark:text-emerald-400">{{ $fmt($stats['sales_total']) }}</div>
+                    <div data-rapor-deger="sales_total" class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-emerald-600 dark:text-emerald-400">{{ $fmt($stats['sales_total']) }}</div>
                     <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">Satış faturaları (KDV dahil)</div>
                 </div>
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
@@ -75,7 +75,7 @@
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Toplam Alış</div>
-                    <div class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-amber-600 dark:text-amber-400">{{ $fmt($stats['purchase_total']) }}</div>
+                    <div data-rapor-deger="purchase_total" class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-amber-600 dark:text-amber-400">{{ $fmt($stats['purchase_total']) }}</div>
                     <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">Alış faturaları (KDV dahil)</div>
                 </div>
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300">
@@ -87,7 +87,7 @@
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Brüt Kâr</div>
-                    <div class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums {{ $stats['gross_profit'] >= 0 ? 'text-slate-800 dark:text-slate-100' : 'text-red-600 dark:text-red-400' }}">{{ $fmt($stats['gross_profit']) }}</div>
+                    <div data-rapor-deger="gross_profit" class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums {{ $stats['gross_profit'] >= 0 ? 'text-slate-800 dark:text-slate-100' : 'text-red-600 dark:text-red-400' }}">{{ $fmt($stats['gross_profit']) }}</div>
                     <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">Satış − Alış (KDV hariç)</div>
                 </div>
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
@@ -99,7 +99,7 @@
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Toplam Tahsilat</div>
-                    <div class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-indigo-600 dark:text-indigo-400">{{ $fmt($stats['collection_total']) }}</div>
+                    <div data-rapor-deger="collection_total" class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-indigo-600 dark:text-indigo-400">{{ $fmt($stats['collection_total']) }}</div>
                     <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">Nakit + havale toplamı</div>
                 </div>
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300">
@@ -119,7 +119,7 @@
                 </div>
                 <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Giderler</div>
-                    <div class="mt-0.5 text-xl font-extrabold tabular-nums text-rose-600 dark:text-rose-400">{{ $fmt($stats['expense_total']) }}</div>
+                    <div data-rapor-deger="expense_total" class="mt-0.5 text-xl font-extrabold tabular-nums text-rose-600 dark:text-rose-400">{{ $fmt($stats['expense_total']) }}</div>
                 </div>
             </div>
             <div class="card flex items-center gap-3.5 p-5">
@@ -312,6 +312,11 @@
                     if (!document.getElementById('monthly-chart')) return;
                     if (typeof Chart === 'undefined' || !window.reportData) return;
 
+                    // Dönem değişimlerinde yeniden çizim: eski instance'ı yok et
+                    ['monthly-chart', 'top-products-chart'].forEach((kimlik) => {
+                        window.Chart.getChart(document.getElementById(kimlik))?.destroy();
+                    });
+
                     const { chart, topProducts } = window.reportData;
                     const money = (v) => new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(v) + ' ₺';
 
@@ -370,6 +375,9 @@
                 if (!window.__raporGrafikBagli) {
                     window.__raporGrafikBagli = true;
                     document.addEventListener('turbo:load', () => chartYukle().then(ciz));
+                    // raporFiltre dönem seçiminde: veriler ucundan tazelenen reportData ile yeniden çiz
+                    // (olay window'a dispatch ediliyor — dinleyici de window'da olmalı)
+                    window.addEventListener('rapor-veriler', () => chartYukle().then(ciz));
                 }
                 ciz();
             })();
