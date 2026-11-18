@@ -38,6 +38,10 @@
                     </tr>
                     </thead>
                     <tbody>
+                    @php
+                        // Stok barı ölçeği: sayfadaki en yüksek stok = tam dolu çubuk (adetle orantılı yeşil)
+                        $maxStok = max(1, $stocks->getCollection()->max('stock_quantity'));
+                    @endphp
                     @forelse ($stocks as $row)
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
                             <td>
@@ -52,9 +56,18 @@
                                 @endif
                             </td>
                             <td class="text-right">
-                                <span class="{{ $row->stock_quantity < 5 ? 'badge-amber' : 'badge-green' }}">
-                                    {{ $row->stock_quantity }} {{ $row->product->unit }}
-                                </span>
+                                @php
+                                    $stok = (int) $row->stock_quantity;
+                                    $stokOran = (int) round(min(100, $stok / $maxStok * 100));
+                                    $stokRenk = $stok == 0 ? 'bg-red-500' : ($stok < 5 ? 'bg-amber-500' : 'bg-emerald-500');
+                                    $stokYazi = $stok == 0 ? 'text-red-600 dark:text-red-400' : ($stok < 5 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400');
+                                @endphp
+                                <div class="inline-flex items-center justify-end gap-2" title="Stok: {{ $stok }} {{ $row->product->unit }} — sayfa en yüksek stoku {{ $maxStok }}">
+                                    <span class="w-10 text-xs font-bold {{ $stokYazi }}">{{ $stok }}</span>
+                                    <span class="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                                        <span class="block h-full rounded-full {{ $stokRenk }}" style="width: {{ $stokOran }}%"></span>
+                                    </span>
+                                </div>
                             </td>
                             <td class="text-right font-semibold">{{ $fmt($row->stock_quantity * $row->product->purchase_price) }}</td>
                             <td>

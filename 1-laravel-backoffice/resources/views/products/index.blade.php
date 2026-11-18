@@ -80,6 +80,10 @@
                 </tr>
                 </thead>
                 <tbody>
+                @php
+                    // Stok barı ölçeği: sayfadaki en yüksek stok = tam dolu çubuk (adetle orantılı yeşil)
+                    $maxStok = max(1, $products->getCollection()->max('stock_quantity'));
+                @endphp
                 @forelse ($products as $product)
                     <tr class="hover:bg-slate-50">
                         <td>
@@ -113,9 +117,18 @@
                         @endcan
                         <td class="text-right tabular-nums">{{ $fmt($product->sale_price) }}</td>
                         <td class="text-right tabular-nums">
-                            <span class="{{ $product->stock_quantity == 0 ? 'badge-red' : ($product->isLowStock() ? 'badge-amber' : 'badge-green') }}">
-                                {{ $product->stock_quantity }} {{ $product->unit }}
-                            </span>
+                            @php
+                                $stok = (int) $product->stock_quantity;
+                                $stokOran = (int) round(min(100, $stok / $maxStok * 100));
+                                $stokRenk = $stok == 0 ? 'bg-red-500' : ($product->isLowStock() ? 'bg-amber-500' : 'bg-emerald-500');
+                                $stokYazi = $stok == 0 ? 'text-red-600 dark:text-red-400' : ($product->isLowStock() ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400');
+                            @endphp
+                            <div class="inline-flex items-center justify-end gap-2" title="Stok: {{ $stok }} {{ $product->unit }} — sayfa en yüksek stoku {{ $maxStok }}">
+                                <span class="w-10 text-xs font-bold {{ $stokYazi }}">{{ $stok }}</span>
+                                <span class="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                                    <span class="block h-full rounded-full {{ $stokRenk }}" style="width: {{ $stokOran }}%"></span>
+                                </span>
+                            </div>
                         </td>
                         <td>
                             <div class="flex items-center justify-end gap-2">
