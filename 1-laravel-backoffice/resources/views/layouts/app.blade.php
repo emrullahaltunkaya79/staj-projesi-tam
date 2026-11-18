@@ -801,27 +801,24 @@ document.head.appendChild(btnStil);
     }
 
     // ---- Bildirim çanı ----
-    const notifBtn = document.getElementById('notif-btn');
-    const notifMenu = document.getElementById('notif-menu');
-    if (notifBtn && notifMenu) {
-        const openNotif = () => {
-            notifMenu.classList.remove('opacity-0', 'scale-95', 'translate-y-1', 'pointer-events-none');
-        };
-        const closeNotif = () => {
-            notifMenu.classList.add('opacity-0', 'scale-95', 'translate-y-1', 'pointer-events-none');
-        };
-        notifBtn.addEventListener('click', (e) => {
+    // Delege edilmiş: Turbo gövdeyi değiştirdiğinde de çalışır (menü taze sorgulanır)
+    const notifKapat = () => document.getElementById('notif-menu')
+        ?.classList.add('opacity-0', 'scale-95', 'translate-y-1', 'pointer-events-none');
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('notif-menu');
+        if (!menu) return;
+        if (e.target.closest('#notif-btn')) {
             e.stopPropagation();
-            const kapali = notifMenu.classList.contains('opacity-0');
-            kapali ? openNotif() : closeNotif();
-        });
-        document.addEventListener('click', (e) => {
-            if (!notifMenu.contains(e.target) && e.target !== notifBtn) closeNotif();
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeNotif();
-        });
-    }
+            const kapali = menu.classList.contains('opacity-0');
+            if (kapali) menu.classList.remove('opacity-0', 'scale-95', 'translate-y-1', 'pointer-events-none');
+            else notifKapat();
+            return;
+        }
+        if (!menu.contains(e.target)) notifKapat();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') notifKapat();
+    });
 
     // ---- Dark mode ----
     const root = document.documentElement;
@@ -829,35 +826,39 @@ document.head.appendChild(btnStil);
     if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         root.classList.add('dark');
     }
-    const darkBtn = document.getElementById('dark-toggle');
-    if (darkBtn) {
-        darkBtn.addEventListener('click', function () {
-            root.classList.toggle('dark');
-            localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
-        });
-    }
+    // Delege: tema düğmesi Turbo sonrası da çalışır
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#dark-toggle')) return;
+        root.classList.toggle('dark');
+        localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+    });
 
     // ---- Mobil menü ----
-    const mobileBtn = document.getElementById('mobile-menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    if (mobileBtn && mobileMenu) {
-        mobileBtn.addEventListener('click', function () {
-            const willOpen = mobileMenu.classList.toggle('menu-open');
-            mobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-        });
-    }
+    // Delege: Turbo sonrası da çalışır
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#mobile-menu-btn');
+        if (!btn) return;
+        const menu = document.getElementById('mobile-menu');
+        if (!menu) return;
+        const willOpen = menu.classList.toggle('menu-open');
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
 
     // ---- Komut paleti (Ctrl+K) + klavye kısayolları ----
     const CMDK_ITEMS = @json($paletteItems);
-    const cmdkOverlay = document.getElementById('cmdk-overlay');
-    const cmdkPanel = cmdkOverlay ? cmdkOverlay.querySelector('.cmdk-panel') : null;
-    const cmdkBackdrop = cmdkOverlay ? cmdkOverlay.querySelector('.cmdk-backdrop') : null;
-    const cmdkInput = document.getElementById('cmdk-input');
-    const cmdkResults = document.getElementById('cmdk-results');
-    const helpOverlay = document.getElementById('shortcut-help-overlay');
-    const helpPanel = helpOverlay ? helpOverlay.querySelector('.help-panel') : null;
-    const helpBackdrop = helpOverlay ? helpOverlay.querySelector('.help-backdrop') : null;
-    const globalSearchInput = document.getElementById('global-search');
+    // Elementler çağrı anında sorgulanır: Turbo gövde değişiminde eski düğümler geçersizdir
+    const cmdkElemanlari = () => ({
+        overlay: document.getElementById('cmdk-overlay'),
+        panel: document.querySelector('#cmdk-overlay .cmdk-panel'),
+        backdrop: document.querySelector('#cmdk-overlay .cmdk-backdrop'),
+        input: document.getElementById('cmdk-input'),
+        results: document.getElementById('cmdk-results'),
+    });
+    const yardimElemanlari = () => ({
+        overlay: document.getElementById('shortcut-help-overlay'),
+        panel: document.querySelector('#shortcut-help-overlay .help-panel'),
+        backdrop: document.querySelector('#shortcut-help-overlay .help-backdrop'),
+    });
     let cmdkIndex = 0;
     let overlayOpener = null; // kart kapanınca odak geri döner
 
@@ -867,6 +868,7 @@ document.head.appendChild(btnStil);
     );
 
     const openCmdk = () => {
+        const { overlay: cmdkOverlay, panel: cmdkPanel, backdrop: cmdkBackdrop, input: cmdkInput } = cmdkElemanlari();
         if (!cmdkOverlay) return;
         cmdkOverlay.classList.remove('hidden');
         if (cmdkPanel) cmdkPanel.setAttribute('aria-label', 'Komut paleti');
@@ -880,6 +882,7 @@ document.head.appendChild(btnStil);
     };
 
     const closeCmdk = () => {
+        const { overlay: cmdkOverlay, panel: cmdkPanel, backdrop: cmdkBackdrop } = cmdkElemanlari();
         if (!cmdkOverlay || cmdkOverlay.classList.contains('hidden')) return;
         cmdkBackdrop.classList.replace('opacity-100', 'opacity-0');
         cmdkPanel.classList.add('translate-y-2', 'scale-[.98]', 'opacity-0');
@@ -887,6 +890,7 @@ document.head.appendChild(btnStil);
     };
 
     const toggleHelp = (show) => {
+        const { overlay: helpOverlay, panel: helpPanel, backdrop: helpBackdrop } = yardimElemanlari();
         if (!helpOverlay) return;
         if (show) {
             helpOverlay.classList.remove('hidden');
@@ -901,6 +905,7 @@ document.head.appendChild(btnStil);
     };
 
     function renderCmdk(query) {
+        const { results: cmdkResults } = cmdkElemanlari();
         const q = query.trim().toLocaleLowerCase('tr');
         const matches = q
             ? CMDK_ITEMS.filter((i) => (i.label + ' ' + i.hint).toLocaleLowerCase('tr').includes(q))
@@ -926,11 +931,13 @@ document.head.appendChild(btnStil);
     }
 
     const cmdkSelectedUrl = () => {
+        const { results: cmdkResults } = cmdkElemanlari();
         const el = cmdkResults.querySelector(`[data-idx="${cmdkIndex}"]`);
         return el ? el.getAttribute('href') : null;
     };
 
     const moveCmdk = (delta) => {
+        const { results: cmdkResults } = cmdkElemanlari();
         const items = cmdkResults.querySelectorAll('.cmdk-item');
         if (!items.length) return;
         cmdkIndex = (cmdkIndex + delta + items.length) % items.length;
@@ -945,45 +952,53 @@ document.head.appendChild(btnStil);
         if (sel) sel.scrollIntoView({ block: 'nearest' });
     };
 
-    if (cmdkOverlay) {
-        cmdkInput.addEventListener('input', () => { cmdkIndex = 0; renderCmdk(cmdkInput.value); });
-        cmdkInput.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowDown') { e.preventDefault(); moveCmdk(1); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); moveCmdk(-1); }
-            else if (e.key === 'Enter') {
-                e.preventDefault();
-                const el = cmdkResults.querySelector(`[data-idx="${cmdkIndex}"]`);
-                if (!el) return;
-                closeCmdk();
-                if (el.dataset.modalUrl) {
-                    openModalForm(el.dataset.modalUrl, el.dataset.modalTitle, el.dataset.modalWide === '1', el.dataset.modalView === '1');
-                } else {
-                    window.location.href = el.getAttribute('href');
-                }
-            } else if (e.key === 'Escape') { closeCmdk(); }
-        });
-        cmdkBackdrop.addEventListener('click', closeCmdk);
-        cmdkResults.addEventListener('click', () => setTimeout(closeCmdk, 0));
-        const cmdkTrigger = document.getElementById('cmdk-trigger');
-        if (cmdkTrigger) cmdkTrigger.addEventListener('click', openCmdk);
-    }
-    if (helpOverlay) {
-        helpBackdrop.addEventListener('click', () => toggleHelp(false));
-    }
+    // Palet + yardım etkileşimleri delege edilmiş: Turbo gövde değişiminden etkilenmez
+    document.addEventListener('input', (e) => {
+        if (e.target.id !== 'cmdk-input') return;
+        cmdkIndex = 0;
+        renderCmdk(e.target.value);
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.target.id !== 'cmdk-input') return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); moveCmdk(1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); moveCmdk(-1); }
+        else if (e.key === 'Enter') {
+            e.preventDefault();
+            const { results: cmdkResults } = cmdkElemanlari();
+            const el = cmdkResults?.querySelector(`[data-idx="${cmdkIndex}"]`);
+            if (!el) return;
+            closeCmdk();
+            if (el.dataset.modalUrl) {
+                openModalForm(el.dataset.modalUrl, el.dataset.modalTitle, el.dataset.modalWide === '1', el.dataset.modalView === '1');
+            } else {
+                window.location.href = el.getAttribute('href');
+            }
+        } else if (e.key === 'Escape') { closeCmdk(); }
+    });
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#cmdk-trigger')) { openCmdk(); return; }
+        if (e.target.closest('.cmdk-backdrop')) { closeCmdk(); return; }
+        const m = cmdkElemanlari();
+        if (m.results?.contains(e.target)) setTimeout(closeCmdk, 0);
+        if (e.target.closest('.help-backdrop')) toggleHelp(false);
+    });
 
     document.addEventListener('keydown', (e) => {
         // Ctrl+K / Cmd+K → komut paleti
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
             e.preventDefault();
-            cmdkOverlay && (cmdkOverlay.classList.contains('hidden') ? openCmdk() : closeCmdk());
+            const m = cmdkElemanlari();
+            m.overlay && (m.overlay.classList.contains('hidden') ? openCmdk() : closeCmdk());
             return;
         }
         // ESC → açık paleti / form kartını / yardım kartını kapat
         if (e.key === 'Escape') {
-            if (cmdkOverlay && !cmdkOverlay.classList.contains('hidden')) { closeCmdk(); return; }
+            const c = cmdkElemanlari();
+            if (c.overlay && !c.overlay.classList.contains('hidden')) { closeCmdk(); return; }
             const m = modalElemanlari();
             if (m.overlay && !m.overlay.classList.contains('hidden')) { closeModalForm(); return; }
-            if (helpOverlay && !helpOverlay.classList.contains('hidden')) { toggleHelp(false); return; }
+            const y = yardimElemanlari();
+            if (y.overlay && !y.overlay.classList.contains('hidden')) { toggleHelp(false); return; }
         }
         if (isTyping(e.target)) return;
         // Alt+D → tema
@@ -996,13 +1011,14 @@ document.head.appendChild(btnStil);
         // / → global arama
         if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
             e.preventDefault();
-            if (globalSearchInput) globalSearchInput.focus();
+            document.getElementById('global-search')?.focus();
             return;
         }
         // ? → kısayol yardımı
         if (e.key === '?') {
             e.preventDefault();
-            toggleHelp(helpOverlay.classList.contains('hidden'));
+            const y = yardimElemanlari();
+            toggleHelp(y.overlay?.classList.contains('hidden') ?? true);
             return;
         }
     });
@@ -1251,7 +1267,8 @@ document.head.appendChild(btnStil);
     const activeOverlayPanel = () => {
         const m = modalElemanlari();
         if (m.overlay && !m.overlay.classList.contains('hidden')) return m.panel;
-        if (typeof cmdkOverlay !== 'undefined' && cmdkOverlay && !cmdkOverlay.classList.contains('hidden')) return cmdkPanel;
+        const c = cmdkElemanlari();
+        if (c.overlay && !c.overlay.classList.contains('hidden')) return c.panel;
         return null;
     };
     document.addEventListener('keydown', (e) => {
