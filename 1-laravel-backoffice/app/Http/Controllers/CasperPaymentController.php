@@ -73,28 +73,4 @@ class CasperPaymentController extends Controller
         return redirect()->route('faturalar.show', $order->fresh()->invoice_id)
             ->with('success', '[TEST] CSPR ödemesi elle onaylandı — fatura kesildi.');
     }
-
-    /**
-     * API: ödeme durumu JSON (e-ticaret polling).
-     * GET /api/v1/cspr-payments/{memo}
-     */
-    public function apiStatus(string $memo): JsonResponse
-    {
-        $payment = CasperPayment::where('memo', $memo)->first();
-
-        if (! $payment) {
-            return response()->json(['message' => 'Ödeme bulunamadı.'], 404);
-        }
-
-        return response()->json([
-            'data' => [
-                'memo' => $payment->memo,
-                'status' => $payment->status,
-                'amount_cspr' => (float) $payment->amount_cspr,
-                'amount_try' => (float) $payment->amount_try,
-                'expires_at' => $payment->expires_at?->toIso8601String(),
-                'deploy_hash' => $payment->deploy_hash,
-            ],
-        ]);
-    }
 }

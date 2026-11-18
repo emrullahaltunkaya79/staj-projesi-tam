@@ -15,29 +15,6 @@ use Illuminate\Http\Request;
  */
 class KartOdemeController extends Controller
 {
-    /** Mağaza uç: 3DS başlatma — token + yönlendirme adresi döner. */
-    public function baslat(Request $request, string $orderNo): mixed
-    {
-        $siparis = Order::where('company_id', $request->user()->company_id)
-            ->where('order_no', $orderNo)
-            ->firstOrFail();
-
-        abort_if($siparis->status !== 'pending', 422, 'Yalnızca bekleyen siparişler için ödeme başlatılabilir.');
-        abort_if($siparis->payment_method !== 'kart', 422, 'Sipariş kart ödemesine ait değil.');
-
-        $gateway = OdemeGatewayFactory::olustur();
-        $baslangic = $gateway->baslat($siparis);
-        $siparis->update(['odeme_token' => $baslangic['token']]);
-
-        return response()->json([
-            'data' => [
-                'odeme_url' => $baslangic['odeme_url'],
-                'token' => $baslangic['token'],
-                'saglayici' => $gateway->ad(),
-            ],
-        ]);
-    }
-
     /** PSP / sandbox formu: gerçek iyzicoda PSP sayfasına yönlendirme, sandbox'ta kart formu. */
     public function form(string $token)
     {

@@ -21,16 +21,4 @@ class CategoryController extends Controller
 
         return back()->with('success', "'{$validated['name']}' kategorisi eklendi.");
     }
-
-    public function destroy(Request $request, Category $category)
-    {
-        if (! $request->user()->isAdmin()) {
-            return back()->with('error', 'Silme işlemi için yönetici yetkisi gerekiyor.');
-        }
-
-        $name = $category->name;
-        $category->delete(); // ürünlerdeki category_id null olur
-
-        return back()->with('success', "'{$name}' kategorisi silindi (ürünler kategorisiz kaldı).");
-    }
 }

@@ -92,14 +92,16 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('cariler', ContactController::class)->parameters(['cariler' => 'contact']);
     // Ürün oluşturma/silme YÖNETİCİ; düzenleme personel için stok ile sınırlı (ProductRequest)
-    Route::resource('urunler', ProductController::class)
-        ->except(['create', 'store', 'destroy'])
-        ->parameters(['urunler' => 'product']);
+    // create/store/destroy resource'tan önce tanımlanır: /urunler/create aksi halde
+    // urunler/{product} show bağlamasına çarpar ve ürün bulunamadı 404'ü döner
     Route::middleware('admin')->group(function () {
         Route::get('/urunler/create', [ProductController::class, 'create'])->name('urunler.create');
         Route::post('/urunler', [ProductController::class, 'store'])->name('urunler.store');
         Route::delete('/urunler/{product}', [ProductController::class, 'destroy'])->name('urunler.destroy');
     });
+    Route::resource('urunler', ProductController::class)
+        ->except(['create', 'store', 'destroy'])
+        ->parameters(['urunler' => 'product']);
     Route::post('/urunler/{product}/gorseller', [ProductController::class, 'uploadImage'])->name('urunler.gorsel.upload');
     Route::delete('/urunler/{product}/gorseller/{image}', [ProductController::class, 'destroyImage'])->name('urunler.gorsel.destroy');
     Route::post('/urunler/{product}/gorseller/{image}/ana-gorsel', [ProductController::class, 'setPrimaryImage'])->name('urunler.gorsel.ana');
@@ -122,6 +124,7 @@ Route::middleware('auth')->group(function () {
     // Stok hareket geçmişi ve raporlar
     Route::get('/stok-hareketleri', [StockMovementController::class, 'index'])->name('movements.index');
     Route::get('/raporlar', [ReportController::class, 'index'])->name('raporlar.index')->middleware('admin');
+    Route::get('/raporlar/veriler', [ReportController::class, 'veriler'])->name('raporlar.veriler')->middleware('admin');
 
     // Paket kampanyaları (mağaza sepet motoruna beslenir)
     Route::get('/mesajlar', [ContactMessageController::class, 'index'])->name('mesajlar.index');
@@ -177,7 +180,6 @@ Route::middleware('auth')->group(function () {
 
     // Ürün kategorileri
     Route::post('/kategoriler', [CategoryController::class, 'store'])->name('kategoriler.store');
-    Route::delete('/kategoriler/{category}', [CategoryController::class, 'destroy'])->name('kategoriler.destroy');
 
     // Kasa ↔ Banka virmanları (finansal: yönetici)
     Route::middleware('admin')->group(function () {
