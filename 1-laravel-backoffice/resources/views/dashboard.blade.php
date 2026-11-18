@@ -68,9 +68,10 @@
         {{-- ═══════════ 1) KPI KARTLARI — 4 eşit kolon ═══════════ --}}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" role="list" aria-label="Kritik göstergeler">
 
-        {{-- 1.1 Toplam Ciro (finansal — yönetici) / Personel: açık iade talepleri --}}
+        {{-- 1.1 Toplam Ciro (finansal — yönetici) / Personel: açık iade talepleri — kartlar ilgili birime götürür --}}
         @can('finans')
-        <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
+        <a href="{{ route('raporlar.index') }}" title="Raporlar bölümüne git"
+           class="card flex h-full flex-col justify-between p-6 transition hover:-translate-y-0.5 hover:shadow-md" :class="yukleniyor && 'animate-pulse opacity-40'">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Bu Dönem Ciro</div>
@@ -99,9 +100,10 @@
                     </svg>
                 </div>
             </div>
-        </div>
+        </a>
         @else
-        <div class="card flex h-full flex-col justify-between p-6">
+        <a href="{{ route('siparisler.index', ['status' => 'return_requested']) }}" title="İade taleplerine git"
+           class="card flex h-full flex-col justify-between p-6 transition hover:-translate-y-0.5 hover:shadow-md">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Açık İade Talepleri</div>
@@ -114,11 +116,12 @@
                     </svg>
                 </div>
             </div>
-        </div>
+        </a>
         @endcan
 
-            {{-- 1.2 E-Ticaret Siparişleri --}}
-            <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
+            {{-- 1.2 E-Ticaret Siparişleri — bekleyen siparişlere götürür --}}
+            <a href="{{ route('siparisler.index', ['status' => 'pending']) }}" title="Bekleyen e-ticaret siparişlerine git"
+               class="card flex h-full flex-col justify-between p-6 transition hover:-translate-y-0.5 hover:shadow-md" :class="yukleniyor && 'animate-pulse opacity-40'">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
                         <div class="text-xs font-bold uppercase tracking-wider text-slate-400">E-Ticaret Siparişleri</div>
@@ -150,10 +153,11 @@
                         </svg>
                     </div>
                 </div>
-            </div>
+            </a>
 
-            {{-- 1.3 Kargo & Sevk --}}
-            <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
+            {{-- 1.3 Kargo & Sevk — sipariş/sevk listesine götürür --}}
+            <a href="{{ route('siparisler.index') }}" title="Kargo ve sevkiyat işlemlerine git"
+               class="card flex h-full flex-col justify-between p-6 transition hover:-translate-y-0.5 hover:shadow-md" :class="yukleniyor && 'animate-pulse opacity-40'">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
                         <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kargo & Sevk</div>
@@ -177,11 +181,12 @@
                         </svg>
                     </div>
                 </div>
-            </div>
+            </a>
 
             {{-- 1.4 Net Kâr (finansal — yönetici) / Personel: kritik stok sayacı --}}
             @can('finans')
-            <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
+            <a href="{{ route('raporlar.index') }}" title="Raporlar bölümüne git"
+               class="card flex h-full flex-col justify-between p-6 transition hover:-translate-y-0.5 hover:shadow-md" :class="yukleniyor && 'animate-pulse opacity-40'">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
                         <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Net Kâr <span class="font-medium normal-case text-slate-400">(tahmini)</span></div>
@@ -203,9 +208,10 @@
                         </svg>
                     </div>
                 </div>
-            </div>
+            </a>
             @else
-            <div class="card flex h-full flex-col justify-between p-6">
+            <a href="{{ route('urunler.index', ['low_stock' => 1]) }}" title="Kritik stok ürünlerine git"
+               class="card flex h-full flex-col justify-between p-6 transition hover:-translate-y-0.5 hover:shadow-md">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kritik Stok</div>
@@ -218,7 +224,7 @@
                         </svg>
                     </div>
                 </div>
-            </div>
+            </a>
             @endcan
         </div>
 
@@ -271,6 +277,8 @@
                         </div>
                     </div>
                     <div class="flex shrink-0 flex-col gap-2">
+                        <a href="{{ route('virmanlar.index') }}" title="Kasa ↔ Banka aktarımı — virman kaydı oluştur"
+                           class="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">⇄ Virman</a>
                         <a href="{{ route('payments.create') }}" data-modal-url="{{ route('payments.create') }}" data-modal-title="Yeni Tahsilat" class="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-emerald-300 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">+ Tahsilat</a>
                         <a href="{{ route('giderler.create') }}" data-modal-url="{{ route('giderler.create') }}" data-modal-title="Gider Kaydı" class="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">+ Gider</a>
                     </div>
@@ -280,7 +288,6 @@
         @endcan
 
         {{-- ═══════════ 2) GRAFİKLER ═══════════ --}}
-        <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
             {{-- Satış trendi: fiziksel vs e-ticaret (30 gün) — finansal: yönetici --}}
             @can('finans')
