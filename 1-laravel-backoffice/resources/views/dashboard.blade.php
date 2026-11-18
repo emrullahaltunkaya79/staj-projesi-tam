@@ -68,37 +68,54 @@
         {{-- ═══════════ 1) KPI KARTLARI — 4 eşit kolon ═══════════ --}}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" role="list" aria-label="Kritik göstergeler">
 
-            {{-- 1.1 Toplam Ciro --}}
-            <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Bu Dönem Ciro</div>
-                        <div class="group relative mt-1.5 inline-flex cursor-help items-baseline gap-1.5">
-                            <span class="text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-slate-800 dark:text-slate-100" x-text="k.ciro.kisa.n"></span>
-                            <span class="text-sm font-bold text-slate-400" x-text="k.ciro.kisa.ek"></span>
-                            <span class="ipucu-baloncuk" x-text="k.ciro.tam"></span>
-                        </div>
-                        <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium dark:text-slate-400">
-                            <span class="inline-flex items-center gap-1.5">
-                                <span class="h-2 w-2 rounded-full bg-slate-400"></span>
-                                Fiziksel/B2B <strong class="tabular-nums text-slate-700 dark:text-slate-200" x-text="k.ciro.fiziksel_kisa"></strong>
-                            </span>
-                            <span class="inline-flex items-center gap-1.5">
-                                <span class="h-2 w-2 rounded-full bg-violet-500"></span>
-                                E-Ticaret <strong class="tabular-nums text-violet-600 dark:text-violet-400" x-text="k.ciro.eticaret_kisa"></strong>
-                            </span>
-                        </div>
-                        <div class="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
-                             :class="k.ciro.degisim_tur === 'iyi' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : (k.ciro.degisim_tur === 'kotu' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300')"
-                             x-text="k.ciro.degisim_metin"></div>
+        {{-- 1.1 Toplam Ciro (finansal — yönetici) / Personel: açık iade talepleri --}}
+        @can('finans')
+        <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Bu Dönem Ciro</div>
+                    <div class="group relative mt-1.5 inline-flex cursor-help items-baseline gap-1.5">
+                        <span class="text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-slate-800 dark:text-slate-100" x-text="k.ciro.kisa.n"></span>
+                        <span class="text-sm font-bold text-slate-400" x-text="k.ciro.kisa.ek"></span>
+                        <span class="ipucu-baloncuk" x-text="k.ciro.tam"></span>
                     </div>
-                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13l2.5 2.5L9 12l3 3 4.5-5.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+                    <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium dark:text-slate-400">
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-slate-400"></span>
+                            Fiziksel/B2B <strong class="tabular-nums text-slate-700 dark:text-slate-200" x-text="k.ciro.fiziksel_kisa"></strong>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-violet-500"></span>
+                            E-Ticaret <strong class="tabular-nums text-violet-600 dark:text-violet-400" x-text="k.ciro.eticaret_kisa"></strong>
+                        </span>
                     </div>
+                    <div class="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                         :class="k.ciro.degisim_tur === 'iyi' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : (k.ciro.degisim_tur === 'kotu' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300')"
+                         x-text="k.ciro.degisim_metin"></div>
+                </div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13l2.5 2.5L9 12l3 3 4.5-5.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
                 </div>
             </div>
+        </div>
+        @else
+        <div class="card flex h-full flex-col justify-between p-6">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Açık İade Talepleri</div>
+                    <div class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-slate-800 dark:text-slate-100" x-text="k.operasyonel.bekleyen_iade"></div>
+                    <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">İade kararı yöneticide</div>
+                </div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3M8 10l3-3M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2h-2.5"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        @endcan
 
             {{-- 1.2 E-Ticaret Siparişleri --}}
             <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
@@ -162,7 +179,8 @@
                 </div>
             </div>
 
-            {{-- 1.4 Net Kâr --}}
+            {{-- 1.4 Net Kâr (finansal — yönetici) / Personel: kritik stok sayacı --}}
+            @can('finans')
             <div class="card flex h-full flex-col justify-between p-6 transition-opacity" :class="yukleniyor && 'animate-pulse opacity-40'">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
@@ -186,9 +204,26 @@
                     </div>
                 </div>
             </div>
+            @else
+            <div class="card flex h-full flex-col justify-between p-6">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kritik Stok</div>
+                        <div class="mt-1.5 text-2xl xl:text-3xl leading-none font-extrabold tabular-nums text-slate-800 dark:text-slate-100" x-text="k.operasyonel.kritik_stok"></div>
+                        <div class="mt-3 text-xs text-slate-500 font-medium dark:text-slate-400">Eşik altındaki ürün sayısı</div>
+                    </div>
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            @endcan
         </div>
 
-        {{-- ═══════════ 1b) FİNANSAL ALT BANT — vadesi geçen (1/3) + kasa (2/3) ═══════════ --}}
+        {{-- ═══════════ 1b) FİNANSAL ALT BANT — vadesi geçen (1/3) + kasa (2/3) — yönetici ═══════════ --}}
+        @can('finans')
         <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
             {{-- Vadesi geçen alacak/borç (rose paleti) --}}
@@ -242,10 +277,13 @@
                 </div>
             </div>
         </div>
+        @endcan
 
         {{-- ═══════════ 2) GRAFİKLER ═══════════ --}}
         <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-            {{-- Satış trendi: fiziksel vs e-ticaret (30 gün) --}}
+        <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+            {{-- Satış trendi: fiziksel vs e-ticaret (30 gün) — finansal: yönetici --}}
+            @can('finans')
             <div class="card xl:col-span-2">
                 <div class="card-header flex items-center justify-between">
                     <span class="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
@@ -261,9 +299,10 @@
                     <canvas id="grafikTrend" aria-label="Son 30 günlük satış trendi grafiği" role="img"></canvas>
                 </div>
             </div>
+            @endcan
 
             {{-- Kargo / gönderi durumu dağılımı --}}
-            <div class="card">
+            <div class="card @unless(auth()->user()->can('finans')) xl:col-span-3 @endunless">
                 <div class="card-header flex items-center justify-between">
                     <span class="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
                         <svg class="h-4 w-4 text-sky-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H10a1 1 0 00-1 1v10M9 21h6M3 5h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/></svg>

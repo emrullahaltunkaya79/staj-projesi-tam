@@ -185,6 +185,10 @@ class DashboardController extends Controller
         $overdue = app(ReceivableService::class)->overdueInvoices($companyId);
         $borclar = (float) Contact::where('type', 'tedarikci')->where('balance', '>', 0)->sum('balance');
 
+        // Personel görünümü için operasyonel sayaçlar
+        $bekleyenIade = Order::where('status', 'return_requested')->count();
+        $kritikStokAdet = Product::whereColumn('stock_quantity', '<=', 'min_stock_level')->count();
+
         $kasa = fn (string $tip) => (float) Payment::where('direction', 'tahsilat')->where('payment_type', $tip)->sum('amount')
             - (float) Payment::where('direction', 'odeme')->where('payment_type', $tip)->sum('amount')
             - (float) Expense::where('payment_type', $tip)->sum('amount');
@@ -259,6 +263,8 @@ class DashboardController extends Controller
                 'kisa' => $kisa((float) $overdue->sum('remaining')),
                 'tam' => $fmt((float) $overdue->sum('remaining')),
                 'borclar_fmt' => $fmt($borclar),
+                'kritik_stok' => Product::whereColumn('stock_quantity', '<=', 'min_stock_level')->count(),
+                'bekleyen_iade' => Order::where('status', 'return_requested')->count(),
             ],
             'kasa' => [
                 'nakit_kisa' => $kisa($kasaNakit)['n'],
@@ -270,6 +276,10 @@ class DashboardController extends Controller
             ],
             'nakit_akisi' => ['tahsilat_fmt' => $fmt($tahsilat), 'gider_fmt' => $fmt($gider), 'net_fmt' => ($tahsilat - $gider >= 0 ? '+' : '').$fmt($tahsilat - $gider), 'net' => round($tahsilat - $gider, 2)],
             'iade' => round($iade, 2),
+            'operasyonel' => [
+                'bekleyen_iade' => Order::where('status', 'return_requested')->count(),
+                'kritik_stok' => Product::whereColumn('stock_quantity', '<=', 'min_stock_level')->count(),
+            ],
         ];
     }
 

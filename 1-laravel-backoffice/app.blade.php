@@ -146,19 +146,29 @@
         <aside id="sidebar"
                class="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col overflow-hidden bg-slate-900 print:hidden lg:flex">
 
-            {{-- Marka: sidebar zeminine entegre sade ikon + metin bloğu --}}
-            <div class="flex h-14 shrink-0 items-center border-b border-slate-700/60 px-5">
+            {{-- Marka: sidebar zeminine entegre sade ikon + metin bloğu + mini toggle --}}
+            <div class="flex h-14 shrink-0 items-center justify-between border-b border-slate-700/60 px-5">
                 <div class="flex min-w-0 items-center gap-3">
-                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600/90 text-white shadow-inner ring-1 ring-white/10">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                        </svg>
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-indigo-600/90 text-white shadow-inner ring-1 ring-white/10">
+                        @if ($companyLogo)
+                            {{-- Ayarlar'dan yüklenen şirket logosu — koyu sidebar üstünde beyaz zeminle okunur --}}
+                            <img src="{{ $companyLogo }}" alt="" class="h-full w-full object-contain p-0.5">
+                        @else
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                        @endif
                     </div>
-                    <div class="min-w-0 leading-tight">
+                    <div class="brand-metin min-w-0 leading-tight">
                         <div class="truncate text-sm font-bold text-white">{{ auth()->user()->company->name }}</div>
                         <div class="text-[10px] font-semibold uppercase tracking-widest text-indigo-300/80">Ön Muhasebe</div>
                     </div>
                 </div>
+                <button type="button" id="sidebar-mini-toggle" title="Menüyü daralt/genişlet"
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-700/60 hover:text-white">
+                    <svg class="h-4 w-4 mini-ikon-kapat" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    <svg class="h-4 w-4 mini-ikon-ac hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                </button>
             </div>
 
             {{-- Menü (açılır gruplar + akıcı animasyon) --}}
@@ -243,8 +253,8 @@
         </div>
 
         {{-- ============ İÇERİK ============ --}}
-        <div id="content-area"
-             class="flex min-h-screen w-full min-w-0 flex-col pt-14 print:ml-0 print:pt-0 lg:ml-64 lg:pt-0">
+        <div id="content-area" data-ana-sarmal
+             class="flex min-h-screen w-full min-w-0 flex-col pt-14 print:ml-0 print:pt-0 lg:ml-64 lg:pt-0 lg:transition-[margin] lg:duration-300">
 
             <header class="sticky top-14 z-[5] border-b border-slate-200 bg-slate-100/90 px-6 py-4 shadow-sm backdrop-blur print:hidden dark:border-slate-700 dark:bg-slate-800 lg:top-0">
                 <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
@@ -266,15 +276,22 @@
                              class="absolute left-0 right-0 top-full z-20 mt-2 hidden max-h-96 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg"></div>
                     </div>
 
-                    {{-- Sağ küme: bildirim + saat + tema + kullanıcı (birlikte hareket eder) --}}
+                    {{-- Sağ küme: hızlı işlem + bildirim + tema + kullanıcı (simetrik) --}}
                     <div class="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+
+                    {{-- Hızlı işlem: Yeni Fatura --}}
+                    <button type="button" data-modal-url="{{ route('faturalar.create') }}" data-modal-title="Yeni Satış Faturası" data-modal-wide="1"
+                            class="hidden h-10 items-center gap-1.5 rounded-full bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 lg:inline-flex">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Yeni Fatura
+                    </button>
 
                     {{-- Bildirim çanı --}}
                     @php
                         $notifOverdue = app(\App\Services\ReceivableService::class)->overdueInvoices(auth()->user()->company_id);
                         $notifOverdueCount = $notifOverdue->count();
                         $notifOverdueAmount = round($notifOverdue->sum('remaining'), 2);
-                        $notifLowStock = \App\Models\Product::where('stock_quantity', '<', 5)->count();
+                        $notifLowStock = \App\Models\Product::whereColumn('stock_quantity', '<=', 'min_stock_level')->count();
                         $notifPendingOrders = \App\Models\Order::where('status', 'pending')->count();
                         $notifTotal = $notifOverdueCount + $notifLowStock + $notifPendingOrders;
                         $notifFmt = fn ($v) => number_format((float) $v, 2, ',', '.').' ₺';
@@ -665,6 +682,27 @@ document.head.appendChild(btnStil);
 
 (function () {
     const sidebar = document.getElementById('sidebar');
+    const anaSarmal = document.querySelector('[data-ana-sarmal]');
+
+    // ---- Mini sidebar (daraltılmış ray) ----
+    const miniUygula = (mini) => {
+        sidebar.classList.toggle('mini', mini);
+        anaSarmal?.classList.toggle('lg:ml-16', mini);
+        anaSarmal?.classList.toggle('lg:ml-64', !mini);
+        document.querySelector('.mini-ikon-kapat')?.classList.toggle('hidden', mini);
+        document.querySelector('.mini-ikon-ac')?.classList.toggle('hidden', !mini);
+        localStorage.setItem('sidebar-mini', mini ? '1' : '0');
+    };
+    const miniKayitli = localStorage.getItem('sidebar-mini') === '1';
+    if (miniKayitli) {
+        sidebar.classList.add('grup-hazirlan');
+        miniUygula(true);
+        requestAnimationFrame(() => requestAnimationFrame(() => sidebar.classList.remove('grup-hazirlan')));
+    }
+    document.getElementById('sidebar-mini-toggle')?.addEventListener('click', () => {
+        miniUygula(!sidebar.classList.contains('mini'));
+    });
+
 
     // ---- Açılır gruplar: HOVER ile tekli akordiyon (exclusive) ----
     // Fare bir grup başlığının üzerine gelince (mouseenter): önceden açık olan
