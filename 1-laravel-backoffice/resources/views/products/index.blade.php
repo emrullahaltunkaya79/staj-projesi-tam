@@ -119,12 +119,11 @@
                         </td>
                         <td>
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('urunler.show', $product) }}" data-modal-url="{{ route('urunler.show', $product) }}" data-modal-title="Ürün: {{ $product->name }}" data-modal-view="1"><x-icon-eye title="Ürünü görüntüle"/></a>
-                                <a href="{{ route('urunler.edit', $product) }}" data-modal-url="{{ route('urunler.edit', $product) }}" data-modal-title="Ürünü Düzenle">
-                                    <x-icon-pencil title="Ürünü düzenle"/>
-                                </a>
+                                <x-icon-eye href="{{ route('urunler.show', $product) }}" data-modal-url="{{ route('urunler.show', $product) }}" data-modal-title="Ürün: {{ $product->name }}" data-modal-view="1" title="Ürünü görüntüle"/>
+                                <x-icon-pencil href="{{ route('urunler.edit', $product) }}" data-modal-url="{{ route('urunler.edit', $product) }}" data-modal-title="Ürünü Düzenle" title="Ürünü düzenle"/>
                                 @can('delete', $product)
                                     <form method="POST" action="{{ route('urunler.destroy', $product) }}"
+                                          class="flex items-center"
                                           onsubmit="return confirm('Bu ürünü silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
                                         <x-icon-trash title="Ürünü sil"/>

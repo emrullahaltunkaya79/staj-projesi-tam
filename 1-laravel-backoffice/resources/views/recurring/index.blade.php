@@ -52,6 +52,7 @@
                             @can('delete', $rule)
                                 <div class="flex justify-end">
                                     <form method="POST" action="{{ route('tekrarlayan.destroy', $rule) }}"
+                                          class="flex items-center"
                                           onsubmit="return confirm('Bu kuralı silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
                                         <x-icon-trash title="Tekrarlayan kaydı sil"/>

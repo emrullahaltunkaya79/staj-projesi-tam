@@ -61,6 +61,7 @@
                             @can('delete', $expense)
                                 <div class="flex justify-end">
                                     <form method="POST" action="{{ route('giderler.destroy', $expense) }}"
+                                          class="flex items-center"
                                           onsubmit="return confirm('Bu gider kaydını silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
                                         <x-icon-trash title="Gideri sil"/>

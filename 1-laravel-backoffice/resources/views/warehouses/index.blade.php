@@ -110,6 +110,7 @@
                                 <a href="{{ route('depolar.excel', $wh) }}" data-turbo="false" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700" title="Excel'e aktar">Excel</a>
                                 @can('delete', $wh)
                                     <form method="POST" action="{{ route('depolar.destroy', $wh) }}"
+                                          class="flex items-center"
                                           onsubmit="return confirm('Bu depoyu silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
                                         <x-icon-trash title="Depoyu sil"/>

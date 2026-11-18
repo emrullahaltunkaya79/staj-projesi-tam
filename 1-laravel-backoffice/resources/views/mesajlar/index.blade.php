@@ -39,7 +39,7 @@
                                 <button type="submit" class="rounded-full border border-emerald-300 px-3 py-1 text-xs font-bold text-emerald-700 transition hover:bg-emerald-50">Okundu</button>
                             </form>
                         @endunless
-                        <form method="POST" action="{{ route('mesajlar.sil', $m->id) }}" onsubmit="return confirm('Mesaj silinsin mi?')">
+                        <form method="POST" action="{{ route('mesajlar.sil', $m->id) }}" class="flex items-center" onsubmit="return confirm('Mesaj silinsin mi?')">
                             @csrf
                             @method('DELETE')
                             <x-icon-trash title="Mesajı sil"/>

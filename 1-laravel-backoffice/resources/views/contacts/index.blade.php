@@ -73,20 +73,13 @@
                         </td>
                         <td>
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('cariler.show', $contact) }}"
-                                   data-modal-url="{{ route('cariler.show', $contact) }}" data-modal-title="{{ $contact->name }}" data-modal-view="1"
-                                   class="btn-secondary !px-2.5 !py-1.5 text-xs"
-                                   title="Cari detay ve ekstre kartını aç">
-                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                    </svg>
-                                    <x-icon-eye title="Detay ve ekstreyi görüntüle"/>
-                                </a>
-                                <a href="{{ route('cariler.edit', $contact) }}" data-modal-url="{{ route('cariler.edit', $contact) }}" data-modal-title="Cariyi Düzenle — {{ $contact->name }}">
-                                    <x-icon-pencil title="Cariyi düzenle"/>
-                                </a>
+                                <x-icon-eye href="{{ route('cariler.show', $contact) }}"
+                                            data-modal-url="{{ route('cariler.show', $contact) }}" data-modal-title="{{ $contact->name }}" data-modal-view="1"
+                                            title="Cari detay ve ekstre kartını aç"/>
+                                <x-icon-pencil href="{{ route('cariler.edit', $contact) }}" data-modal-url="{{ route('cariler.edit', $contact) }}" data-modal-title="Cariyi Düzenle — {{ $contact->name }}" title="Cariyi düzenle"/>
                                 @can('delete', $contact)
                                     <form method="POST" action="{{ route('cariler.destroy', $contact) }}"
+                                          class="flex items-center"
                                           onsubmit="return confirm('Bu cariyi silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
                                         <x-icon-trash title="Cariyi sil"/>

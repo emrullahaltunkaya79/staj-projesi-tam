@@ -89,6 +89,7 @@
                             @can('delete', $price)
                                 <div class="flex justify-end">
                                     <form method="POST" action="{{ route('fiyatlar.destroy', $price) }}"
+                                          class="flex items-center"
                                           onsubmit="return confirm('Bu özel fiyatı silmek istediğinize emin misiniz?');">
                                         @csrf @method('DELETE')
                                         <x-icon-trash title="Özel fiyatı sil"/>

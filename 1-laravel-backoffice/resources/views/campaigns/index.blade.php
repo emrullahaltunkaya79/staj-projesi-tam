@@ -87,13 +87,14 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <form method="POST" action="{{ route('kampanyalar.toggle', $k) }}">
+                                <form method="POST" action="{{ route('kampanyalar.toggle', $k) }}" class="flex items-center">
                                     @csrf
                                     <button type="submit" class="rounded-full border px-3 py-1 text-xs font-bold {{ $k->aktif ? 'border-emerald-300 text-emerald-700' : 'border-slate-300 text-slate-500' }}">
                                         {{ $k->aktif ? 'Aktif' : 'Pasif' }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('kampanyalar.destroy', $k) }}"
+                                      class="flex items-center"
                                       onsubmit="return confirm('Kampanya silinsin mi?')">
                                     @csrf
                                     @method('DELETE')
