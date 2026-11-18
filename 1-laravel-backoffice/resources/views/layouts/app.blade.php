@@ -981,7 +981,8 @@ document.head.appendChild(btnStil);
         // ESC → açık paleti / form kartını / yardım kartını kapat
         if (e.key === 'Escape') {
             if (cmdkOverlay && !cmdkOverlay.classList.contains('hidden')) { closeCmdk(); return; }
-            if (modalOverlay && !modalOverlay.classList.contains('hidden')) { closeModalForm(); return; }
+            const m = modalElemanlari();
+            if (m.overlay && !m.overlay.classList.contains('hidden')) { closeModalForm(); return; }
             if (helpOverlay && !helpOverlay.classList.contains('hidden')) { toggleHelp(false); return; }
         }
         if (isTyping(e.target)) return;
@@ -1007,12 +1008,16 @@ document.head.appendChild(btnStil);
     });
 
     // ---- Form kartı (sayfa içi modal) ----
-    const modalOverlay = document.getElementById('modal-overlay');
-    const modalPanel = modalOverlay ? modalOverlay.querySelector('.modal-panel') : null;
-    const modalBackdrop = modalOverlay ? modalOverlay.querySelector('.modal-backdrop') : null;
-    const modalTitle = document.getElementById('modal-title');
-    const modalBody = document.getElementById('modal-body');
-    const modalFooter = document.getElementById('modal-footer');
+    // Modal elementleri çağrı anında sorgulanır: Turbo gövdeyi değiştirdiğinde
+    // closure'a yakalanmış eski düğümler DOM'dan kopar — kart görünmez olur.
+    const modalElemanlari = () => ({
+        overlay: document.getElementById('modal-overlay'),
+        panel: document.querySelector('#modal-overlay .modal-panel'),
+        backdrop: document.querySelector('#modal-overlay .modal-backdrop'),
+        title: document.getElementById('modal-title'),
+        body: document.getElementById('modal-body'),
+        footer: document.getElementById('modal-footer'),
+    });
     let modalAbort = null;
 
     const showToast = (message, type = 'success') => {
@@ -1045,6 +1050,7 @@ document.head.appendChild(btnStil);
     }, true);
 
     const closeModalForm = () => {
+        const { overlay: modalOverlay, panel: modalPanel, backdrop: modalBackdrop, body: modalBody } = modalElemanlari();
         if (!modalOverlay || modalOverlay.classList.contains('hidden')) return;
         if (modalAbort) { modalAbort.abort(); modalAbort = null; }
         document.documentElement.classList.remove('modal-open');
@@ -1113,6 +1119,8 @@ document.head.appendChild(btnStil);
     };
 
     const openModalForm = async (url, title, wide, forceView) => {
+        // Taze DOM referansları: Turbo gezinmesi sonrası eski düğümler geçersizdir
+        const { overlay: modalOverlay, panel: modalPanel, backdrop: modalBackdrop, title: modalTitle, body: modalBody, footer: modalFooter } = modalElemanlari();
         if (!modalOverlay) return;
         modalOverlay.classList.remove('hidden');
         document.documentElement.classList.add('modal-open');
@@ -1218,14 +1226,20 @@ document.head.appendChild(btnStil);
         }
     };
 
-    if (modalOverlay) {
-        modalBackdrop.addEventListener('click', closeModalForm);
-        const modalCloseBtn = document.getElementById('modal-close');
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModalForm);
+    {
+        // Backdrop + kapat butonu delege edilmiş: Turbo gövde değişiminden etkilenmez
+        document.addEventListener('click', (e) => {
+            const m = modalElemanlari();
+            if (!m.overlay || m.overlay.classList.contains('hidden')) return;
+            if (e.target.closest('#modal-close') || (e.target.closest('.modal-backdrop') && !e.target.closest('.modal-panel'))) {
+                closeModalForm();
+            }
+        });
         // data-modal-url taşıyan her buton/bağlantı form kartını açar
         document.addEventListener('click', (e) => {
             const trigger = e.target.closest('[data-modal-url]');
             if (!trigger) return;
+            if (!modalElemanlari().overlay) return;
             e.preventDefault();
             openModalForm(trigger.dataset.modalUrl, trigger.dataset.modalTitle, trigger.dataset.modalWide === '1', trigger.dataset.modalView === '1');
         });
@@ -1235,7 +1249,8 @@ document.head.appendChild(btnStil);
     const focusablesIn = (root) => [...root.querySelectorAll('a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])')]
         .filter((el) => el.offsetParent !== null);
     const activeOverlayPanel = () => {
-        if (typeof modalOverlay !== 'undefined' && modalOverlay && !modalOverlay.classList.contains('hidden')) return modalPanel;
+        const m = modalElemanlari();
+        if (m.overlay && !m.overlay.classList.contains('hidden')) return m.panel;
         if (typeof cmdkOverlay !== 'undefined' && cmdkOverlay && !cmdkOverlay.classList.contains('hidden')) return cmdkPanel;
         return null;
     };
