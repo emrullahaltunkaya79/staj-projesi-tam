@@ -107,7 +107,7 @@
 
         @if ($prices->hasPages())
             <div class="border-t border-slate-100 px-4 py-3 dark:border-slate-700">
-                {{ $prices->links() }}
+                {{ $prices->withQueryString()->links() }}
             </div>
         @endif
     </div>

@@ -66,7 +66,7 @@
             </table>
         </div>
         <div class="border-t border-slate-100 px-4 py-3">
-            {{ $logs->links() }}
+            {{ $logs->withQueryString()->links() }}
         </div>
     </div>
 @endsection

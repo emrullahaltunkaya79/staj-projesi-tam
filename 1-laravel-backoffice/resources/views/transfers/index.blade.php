@@ -76,7 +76,7 @@
             </table>
         </div>
         <div class="border-t border-slate-100 px-4 py-3">
-            {{ $transfers->links() }}
+            {{ $transfers->withQueryString()->links() }}
         </div>
     </div>
 @endsection
