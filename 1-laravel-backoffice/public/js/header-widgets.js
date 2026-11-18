@@ -4,6 +4,7 @@
  */
 (function () {
     let clockInterval = null;
+    let havaAralik = null;
 
     function initHeaderWidgets() {
     // ---------- Saat + tarih ----------
@@ -97,8 +98,9 @@
     });
 
     load();
-    // 30 dakikada bir tazele
-    setInterval(load, 30 * 60 * 1000);
+    // 30 dakikada bir tazele (turbo:load ile yeniden init'te eski aralık temizlenir)
+    if (havaAralik) clearInterval(havaAralik);
+    havaAralik = setInterval(load, 30 * 60 * 1000);
     }
 
     initHeaderWidgets();

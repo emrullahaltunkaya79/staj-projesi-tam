@@ -135,13 +135,14 @@
             <script>
                 // Kritik stok sipariş taslağı: dashboarddan gelen tedarikci/urun/adet
                 // parametreleriyle tedarikçi + ilk kalem önceden doldurulur
-                document.addEventListener('DOMContentLoaded', () => {
+                // readyState-duyarlı: modal kartta DOMContentLoaded hiç gelmez, hemen uygula
+                const taslaUygula = () => {
                     const tas = @json($onTasarla);
                     if (!tas || !tas.urun) return;
 
                     if (tas.tedarikci) {
                         const contact = document.getElementById('contact_id');
-                        if ([...contact.options].some(o => o.value === String(tas.tedarikci))) {
+                        if (contact && [...contact.options].some(o => o.value === String(tas.tedarikci))) {
                             contact.value = String(tas.tedarikci);
                             contact.dispatchEvent(new Event('change', { bubbles: true }));
                         }
@@ -149,7 +150,7 @@
 
                     const bekle = (ms) => new Promise(r => setTimeout(r, ms));
                     (async () => {
-                        document.getElementById('add-row').click();
+                        document.getElementById('add-row')?.click();
                         await bekle(80);
                         const satir = document.querySelector('#invoice-items tr:last-child');
                         if (!satir) return;
@@ -162,7 +163,12 @@
                         adet.value = tas.adet;
                         adet.dispatchEvent(new Event('input', { bubbles: true }));
                     })();
-                });
+                };
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', taslaUygula, { once: true });
+                } else {
+                    taslaUygula();
+                }
             </script>
         @endonce
     @endpush

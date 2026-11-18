@@ -651,7 +651,16 @@
 
 <script src="{{ asset('js/global-search.js') }}"></script>
 <script src="{{ asset('js/header-widgets.js') }}"></script>
+{{-- Turbo 8 gezinmelerde gövde inline betiklerini detached belgede yeniden değerlendirir:
+    top-level const ikinci çalıştırmada SyntaxError fırlatıp render'i tümüyle iptal
+    ederdi (visit "started" takılır, sayfa hiç değişmezdi). IIFE + tek-seferlik koruma
+    ile betik bir kez bağlanır; etkileşimler delege edilmiş, element erişimleri çağrı
+    anında taze sorgulanır. --}}
 <script>
+(function () {
+    if (window.__panelKabuk) return;
+    window.__panelKabuk = true;
+
 // ---- Çift gönderim koruması (tüm panel formları) ----
 // Kullanıcı aynı butona hızlıca iki kez basınca ikinci istek engellenir:
 // submit anında buton kilitlenir, metni "İşleniyor…" olur. HTML5 doğrulama
@@ -709,96 +718,119 @@ document.head.appendChild(btnStil);
     // grup otomatik kapanır, bu grup açılır. Klavye/dokunmatik için tıklama ile
     // aç-kapa davranışı da korunur (erişilebilirlik). Geçişler .collapsed
     // sınıfının max-height/opacity geçişleriyle yumuşak akar; ok işaretleri döner.
-    const gruplar = new Map();
-    document.querySelectorAll('.nav-group[data-group]').forEach(grup => {
+    // Sidebar grupları: taze sorgulama — Turbo gövde değişse de çalışır
+    const grupOge = (grup) => {
         const slug = grup.dataset.group;
-        const items = grup.querySelector(`[data-group-items="${slug}"]`);
-        const head = grup.querySelector('.group-toggle');
-        if (!items || !head) return; // başlıksız ana grup: her zaman açık kalır
-        gruplar.set(slug, { items, chevron: head.querySelector('.group-chevron'), head });
-    });
+        return {
+            items: grup.querySelector(`[data-group-items="${slug}"]`),
+            head: grup.querySelector('.group-toggle'),
+            chevron: grup.querySelector('.group-chevron'),
+            slug,
+        };
+    };
 
     const grupAc = (slug) => {
-        const g = gruplar.get(slug);
-        if (!g) return;
+        const grup = document.querySelector(`.nav-group[data-group="${slug}"]`);
+        if (!grup) return;
+        const g = grupOge(grup);
+        if (!g.items || !g.head) return;
         g.items.classList.remove('collapsed');
         g.chevron.style.transform = '';
     };
     const grupKapat = (slug) => {
-        const g = gruplar.get(slug);
-        if (!g) return;
+        const grup = document.querySelector(`.nav-group[data-group="${slug}"]`);
+        if (!grup) return;
+        const g = grupOge(grup);
+        if (!g.items || !g.head) return;
         g.items.classList.add('collapsed');
         g.chevron.style.transform = 'rotate(-90deg)';
     };
     const grubuAktifYap = (slug) => {
         // Exclusive: diğer her grubu kapat, yalnız bunu aç, tercihi hatırla
-        gruplar.forEach((_, diger) => { if (diger !== slug) grupKapat(diger); });
+        document.querySelectorAll('.nav-group[data-group]').forEach((diger) => {
+            if (diger.dataset.group !== slug) grupKapat(diger.dataset.group);
+        });
         grupAc(slug);
         localStorage.setItem('nav-acik-grup', slug);
     };
 
-    // Başlangıç: kayıtlı aktif grup varsa yalnız o açık, diğerleri kapalı.
-    // Sayfa açılışında geçiş animasyonu atlanması için geçici süpresyon.
-    const kayitliGrup = localStorage.getItem('nav-acik-grup');
-    if (kayitliGrup && gruplar.has(kayitliGrup)) {
-        sidebar.classList.add('grup-hazirlan');
-        gruplar.forEach((_, slug) => { if (slug !== kayitliGrup) grupKapat(slug); });
-        requestAnimationFrame(() => requestAnimationFrame(() => sidebar.classList.remove('grup-hazirlan')));
-    }
+    // Başlangıç + her Turbo gezinmesi: kayıtlı aktif grup açık, diğerleri kapalı.
+    // Geçiş animasyonu atlanması için geçici süpresyon.
+    const navDurumUygula = () => {
+        const kayitliGrup = localStorage.getItem('nav-acik-grup');
+        const tumGruplar = [...document.querySelectorAll('.nav-group[data-group]')];
+        if (!tumGruplar.length) return;
+        if (kayitliGrup) {
+            sidebar.classList.add('grup-hazirlan');
+            tumGruplar.forEach((grup) => { if (grup.dataset.group !== kayitliGrup) grupKapat(grup.dataset.group); });
+            requestAnimationFrame(() => requestAnimationFrame(() => sidebar.classList.remove('grup-hazirlan')));
+        }
+    };
+    navDurumUygula();
+    document.addEventListener('turbo:load', navDurumUygula);
 
-    gruplar.forEach((g, slug) => {
-        // HOVER tetikleyici: başlığa mouseenter → exclusive akordiyon geçişi
-        g.head.addEventListener('mouseenter', () => grubuAktifYap(slug));
-        // Tıklama yedeği: açıkken kapatır, kapalıyken exclusive açar
-        g.head.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (!g.items.classList.contains('collapsed')) {
-                grupKapat(slug);
-            } else {
-                grubuAktifYap(slug);
-            }
-        });
+    // Delege: başlık hover'ı exclusive akordiyon, tıklama aç/kapat yedeği
+    // (sidebar referansı taze sorgulanır — Turbo gövde değişiminden etkilenmez)
+    document.addEventListener('mouseover', (e) => {
+        const head = e.target.closest('.group-toggle');
+        if (!head || !document.getElementById('sidebar')?.contains(head)) return;
+        grubuAktifYap(head.closest('.nav-group[data-group]')?.dataset.group);
+    });
+    document.addEventListener('click', (e) => {
+        const head = e.target.closest('.group-toggle');
+        if (!head || !document.getElementById('sidebar')?.contains(head)) return;
+        e.stopPropagation();
+        const slug = head.closest('.nav-group[data-group]')?.dataset.group;
+        const items = slug && document.querySelector(`.nav-group[data-group="${slug}"] [data-group-items="${slug}"]`);
+        if (!slug || !items) return;
+        if (!items.classList.contains('collapsed')) grupKapat(slug);
+        else grubuAktifYap(slug);
     });
 
     // Sidebar'dan tamamen çıkınca (mouseleave) açık grupları yumuşakça kapat —
     // 250 ms gecikme: başlık ↔ öğe geçişlerindeki kenar titremesini önler
     let cikisZamani = null;
-    document.querySelector('nav.sidebar-scroll')?.addEventListener('mouseleave', () => {
+    document.addEventListener('mouseout', (e) => {
+        const nav = e.target.closest?.('nav.sidebar-scroll');
+        if (!nav || e.relatedTarget?.closest?.('nav.sidebar-scroll')) return;
         cikisZamani = setTimeout(() => {
-            gruplar.forEach((_, slug) => grupKapat(slug));
+            document.querySelectorAll('.nav-group[data-group]').forEach((grup) => grupKapat(grup.dataset.group));
         }, 250);
     });
     // Geri girilirse bekleyen kapatmayı iptal et
-    document.querySelector('nav.sidebar-scroll')?.addEventListener('mouseenter', () => {
-        if (cikisZamani) { clearTimeout(cikisZamani); cikisZamani = null; }
+    document.addEventListener('mouseover', (e) => {
+        if (e.target.closest?.('nav.sidebar-scroll') && cikisZamani) {
+            clearTimeout(cikisZamani);
+            cikisZamani = null;
+        }
     });
 
     // ---- Kullanıcı dropdown ----
-    const userBtn = document.getElementById('user-menu-btn');
-    const userMenu = document.getElementById('user-menu');
-    if (userBtn && userMenu) {
-        const openMenu = () => {
-            userMenu.style.opacity = '1';
-            userMenu.style.transform = 'translateY(0) scale(1)';
-            userMenu.style.pointerEvents = 'auto';
-        };
-        const closeMenu = () => {
-            userMenu.style.opacity = '0';
-            userMenu.style.transform = 'translateY(-6px) scale(.97)';
-            userMenu.style.pointerEvents = 'none';
-        };
-        userBtn.addEventListener('click', (e) => {
+    // Delege edilmiş: Turbo sonrası da çalışır (menü taze sorgulanır)
+    const userMenuKapat = () => {
+        const menu = document.getElementById('user-menu');
+        if (!menu) return;
+        menu.style.opacity = '0';
+        menu.style.transform = 'translateY(-6px) scale(.97)';
+        menu.style.pointerEvents = 'none';
+    };
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('user-menu');
+        if (!menu) return;
+        if (e.target.closest('#user-menu-btn')) {
             e.stopPropagation();
-            const isOpen = userMenu.style.opacity === '1';
-            isOpen ? closeMenu() : openMenu();
-        });
-        document.addEventListener('click', (e) => {
-            if (!userMenu.contains(e.target) && e.target !== userBtn) closeMenu();
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeMenu();
-        });
-    }
+            const acik = menu.style.opacity === '1';
+            if (acik) { userMenuKapat(); return; }
+            menu.style.opacity = '1';
+            menu.style.transform = 'translateY(0) scale(1)';
+            menu.style.pointerEvents = 'auto';
+            return;
+        }
+        if (!menu.contains(e.target)) userMenuKapat();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') userMenuKapat();
+    });
 
     // ---- Bildirim çanı ----
     // Delege edilmiş: Turbo gövdeyi değiştirdiğinde de çalışır (menü taze sorgulanır)
@@ -1237,6 +1269,9 @@ document.head.appendChild(btnStil);
         if (scriptLoads.length) await Promise.all(scriptLoads);
         if (form) {
             wireModalForm(form);
+            // Harici form betiği (kalem satırları) zaten yükliyse eski form düğümlerine
+            // bağlıdır — kancayla taze modal içeriğine yeniden bağlanır
+            if (typeof window.initFaturaFormu === 'function') window.initFaturaFormu();
             const firstInput = form.querySelector('input:not([type="hidden"]):not([type="radio"]), select, textarea');
             if (firstInput) firstInput.focus();
         }
@@ -1337,6 +1372,7 @@ document.head.appendChild(btnStil);
             });
         }, 0);
     }, true);
+})();
 })();
 </script>
 @stack('scripts')

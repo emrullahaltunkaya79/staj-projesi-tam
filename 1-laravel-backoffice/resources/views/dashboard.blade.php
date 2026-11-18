@@ -481,6 +481,10 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
         <script>
         (function () {
+            // Tek seferlik: Turbo her gezinmede betiği yeniden çalıştırır —
+            // koruma olmadan dinleyiciler (panel-veriler/MutationObserver) birikir
+            if (window.__panelGrafik) return;
+            window.__panelGrafik = true;
             let trendGrafik, durumGrafik, urunGrafik;
 
             const temaKoyuMu = () => document.documentElement.classList.contains('dark');
@@ -494,8 +498,21 @@
                 return String(Math.round(v));
             };
 
-            function grafikleriCiz(g) {
-                if (typeof Chart === 'undefined') { setTimeout(() => grafikleriCiz(g), 150); return; }
+            // Chart.js kütüphanesi CDN'den gelir; Turbo harici betikleri yeniden
+            // çalıştırmadığı için gezinme sonrası eksikse burada yüklenir
+            const chartYukle = () => new Promise((resolve) => {
+                if (typeof Chart !== 'undefined') { resolve(); return; }
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+                s.onload = resolve;
+                s.onerror = resolve;
+                document.head.appendChild(s);
+            });
+
+            async function grafikleriCiz(g) {
+                if (!document.getElementById('grafikTrend')) return; // panel dışı sayfa: no-op
+                if (typeof Chart === 'undefined') await chartYukle();
+                if (typeof Chart === 'undefined') return; // CDN erişilemedi
                 const r = renkler();
                 const yaygin = { responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: r.kalem, boxWidth: 12, font: { size: 11 } } } } };
@@ -555,6 +572,8 @@
             }
 
             document.addEventListener('DOMContentLoaded', () => grafikleriCiz(window.__panelBaslangic?.grafik));
+            // Turbo gezinmesiyle panele dönüldüğünde de çiz
+            document.addEventListener('turbo:load', () => grafikleriCiz(window.__panelBaslangic?.grafik));
             // Alpine dönem değişiminde yeni veriyi olayla taşır
             document.addEventListener('panel-veriler', (e) => grafikleriCiz(e.detail?.grafik ?? window.__panelBaslangic?.grafik));
 

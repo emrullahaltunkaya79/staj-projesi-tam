@@ -1,8 +1,11 @@
 /**
  * Fatura kesme formu: dinamik kalem satırları ve canlı toplam hesabı.
  * window.invoiceProducts verisi Blade şablonundan gelir.
+ *
+ * initFaturaFormu(): her çağrıda güncel form düğümlerine yeniden bağlanır —
+ * tam yükleme, Turbo gezinmesi ve modal içi kart aynı giriş noktasını kullanır.
  */
-(function () {
+function initFaturaFormu() {
     const tbody = document.getElementById('invoice-items');
     if (!tbody) return;
 
@@ -210,4 +213,8 @@
         addRow();
     }
     recalcTotals();
-})();
+}
+
+window.initFaturaFormu = initFaturaFormu;
+initFaturaFormu();
+document.addEventListener('turbo:load', initFaturaFormu);

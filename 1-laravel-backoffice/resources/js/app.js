@@ -1,6 +1,23 @@
 import './bootstrap';
 import '@hotwired/turbo';
 
+// ─── rAF yedeği: gömülü webview'da rAF hiç tetiklenmez ───
+// Turbo render önceki kare beklediğinden görünümsüz/duruk ortamda gezinme
+// kilitleniyordu; rAF 50 ms içinde tetiklenmezse timeout devreye girer.
+const yerelRaf = window.requestAnimationFrame.bind(window);
+window.requestAnimationFrame = (callback) => {
+    let tetiklendi = false;
+    const bir = (deger) => {
+        if (tetiklendi) return;
+        tetiklendi = true;
+        clearTimeout(yedek);
+        callback(deger);
+    };
+    const kimlik = yerelRaf(bir);
+    const yedek = setTimeout(() => bir(performance.now()), 50);
+    return kimlik;
+};
+
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse';
 
