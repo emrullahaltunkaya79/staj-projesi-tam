@@ -13,6 +13,9 @@
     if (clockInterval) clearInterval(clockInterval);
 
     if (clockTime) {
+        // Kompakt tarih ("Sal, 18 Kas"): 96px pill'e tek satırda sığar, sarma yapmaz
+        const GUNLER = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+        const AYLAR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
         const tick = () => {
             const now = new Date();
             const t = document.getElementById('clock-time');
@@ -20,7 +23,7 @@
             if (!t || !d) return;
             t.textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
             if (clockDate) {
-                clockDate.textContent = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' });
+                clockDate.textContent = GUNLER[now.getDay()] + ', ' + now.getDate() + ' ' + AYLAR[now.getMonth()];
             }
         };
         tick();
@@ -60,8 +63,8 @@
         const [icon, label] = CODES[code] ?? ['🌡️', ''];
         weatherEl.innerHTML =
             '<span class="text-base leading-none">' + icon + '</span>' +
-            '<span class="font-semibold text-slate-700">' + Math.round(temp) + '°</span>' +
-            '<span class="text-slate-500">' + city.name + '</span>';
+            '<span class="whitespace-nowrap font-semibold tabular-nums text-slate-700">' + Math.round(temp) + '°</span>' +
+            '<span class="min-w-0 truncate text-slate-500">' + city.name + '</span>';
         weatherEl.title = label + ' · ' + city.name + ' (değiştirmek için tıklayın)';
     };
 

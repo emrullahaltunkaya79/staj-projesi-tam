@@ -362,13 +362,13 @@
                     {{-- Saat + hava durumu --}}
                     <div class="hidden shrink-0 items-center gap-2 2xl:flex">
                         <div id="weather-widget"
-                             class="flex h-10 w-[88px] cursor-pointer select-none items-center justify-center gap-1.5 overflow-hidden rounded-full border border-slate-300 bg-white px-3 text-xs shadow-sm transition hover:border-indigo-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                             class="flex h-10 w-[118px] cursor-pointer select-none items-center justify-center gap-1.5 overflow-hidden rounded-full border border-slate-300 bg-white px-3 text-xs shadow-sm transition hover:border-indigo-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                              title="Hava durumu — şehri değiştirmek için tıklayın">
                             <span class="text-slate-400">…</span>
                         </div>
-                        <div class="flex h-10 w-[96px] shrink-0 flex-col items-end justify-center rounded-full border border-slate-300 bg-white px-3 text-right shadow-sm leading-tight dark:border-slate-600 dark:bg-slate-800">
-                            <span id="clock-time" class="font-mono text-[13px] font-bold tabular-nums text-slate-800 dark:text-slate-100">--:--</span>
-                            <span id="clock-date" class="text-[10px] capitalize text-slate-500 dark:text-slate-400">—</span>
+                        <div class="flex h-10 w-[96px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-full border border-slate-300 bg-white px-3 text-center shadow-sm leading-none dark:border-slate-600 dark:bg-slate-800">
+                            <span id="clock-time" class="whitespace-nowrap font-mono text-[13px] font-bold tabular-nums text-slate-800 dark:text-slate-100">--:--</span>
+                            <span id="clock-date" class="whitespace-nowrap text-[10px] capitalize text-slate-500 dark:text-slate-400">—</span>
                         </div>
                     </div>
 
